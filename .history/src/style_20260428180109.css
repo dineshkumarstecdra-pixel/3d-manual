@@ -1,0 +1,1286 @@
+/* Add to the bottom of style.css */
+@media (max-width: 768px){
+
+  #ui{
+    position: absolute;
+    z-index: 10;
+    width: 80%;        /* 🔥 mobile sidebar */
+    height: 100%;
+  }
+
+  canvas{
+    width: 100% !important;
+  }
+
+}
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #1f1f2e; /* Matches your dark theme */
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  transition: opacity 0.5s ease;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(100, 108, 255, 0.2);
+  border-top-color: #646cff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+.sidebar-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:15px;
+}
+
+#homeBtn{
+  border:none;
+  color:white;
+
+  width:36px;
+  height:36px;
+
+  border-radius:8px;
+  cursor:pointer;
+  font-size:16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#homeBtn:hover{
+  background:#000000;
+}
+/* ================= LOGIN PAGE ================= */
+
+.login-body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  font-family:"Poppins",sans-serif;
+}
+
+/* Glass Card */
+.auth-card{
+  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,0.08);
+  padding:40px;
+  width:380px;
+  border-radius:20px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.4);
+  text-align:center;
+  color:white;
+  transition:0.3s ease;
+}
+
+.auth-card h1{
+  margin-bottom:10px;
+}
+
+.subtitle{
+  font-size:14px;
+  opacity:0.7;
+  margin-bottom:25px;
+}
+
+/* Input Groups */
+.input-group{
+  margin-bottom:15px;
+  position:relative;
+}
+
+.input-group input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:rgba(255,255,255,0.15);
+  color:white;
+  outline:none;
+  font-size:14px;
+  transition:0.3s ease;
+}
+
+.input-group input:focus{
+  background:rgba(255,255,255,0.25);
+  box-shadow:0 0 8px rgba(100,108,255,0.6);
+}
+
+.input-group input::placeholder{
+  color:#ddd;
+}
+
+/* Password Eye Icon */
+.password-wrapper .eye{
+  position:absolute;
+  right:12px;
+  top:10px;
+  cursor:pointer;
+  font-size:14px;
+  opacity:0.8;
+}
+#logoutBtn{
+  margin-top:auto;
+  background:#ff4b5c;
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+  font-weight:500;
+  transition:0.3s ease;
+}
+
+/* Primary Button */
+.primary-btn{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#646cff;
+  color:white;
+  cursor:pointer;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  font-weight:500;
+  transition:0.3s ease;
+}
+
+.primary-btn:hover{
+  background:#535bf2;
+  transform:translateY(-2px);
+}
+
+/* Loader */
+.loader{
+  width:18px;
+  height:18px;
+  border:3px solid white;
+  border-top:3px solid transparent;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
+
+.hidden{
+  display:none;
+}
+
+/* Error Message */
+.error-message{
+  color:#ff6b6b;
+  font-size:13px;
+  min-height:18px;
+  margin-bottom:10px;
+  text-align:left;
+}
+
+/* Shake Animation */
+.shake{
+  animation:shake 0.3s;
+}
+
+@keyframes shake{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-5px)}
+  50%{transform:translateX(5px)}
+  75%{transform:translateX(-5px)}
+  100%{transform:translateX(0)}
+}
+
+/* Toggle Text */
+.toggle-text{
+  margin-top:15px;
+  font-size:13px;
+  color:white;
+}
+
+.auth-link{
+  color:#646cff;
+  cursor:pointer;
+  font-weight:500;
+}
+
+.auth-link:hover{
+  text-decoration:underline;
+}
+
+/* RESET */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins",sans-serif;
+}
+
+body{
+  overflow:hidden;
+   display: flex;
+}
+
+/* SIDEBAR PANEL */
+#ui{
+   flex-shrink: 0;
+  left:0;
+  top:0;
+  width:500px;
+  height:100vh;
+  background: #1f1f2e;
+  color:white;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:4px 0 20px rgba(0,0,0,0.4);
+  
+}
+
+/* TITLE */
+#ui h3{
+  font-size:18px;
+  margin-bottom:5px;
+}
+
+/* PART TEXT */
+#part{
+  font-size:14px;
+  opacity:0.8;
+  margin-bottom:10px;
+}
+
+/* BUTTON STYLE */
+#showAllBtn{
+  padding:6px 14px;
+  font-size:12px;
+  border:none;
+  border-radius:20px;
+  background:linear-gradient(135deg,#646cff,#4b5fff);
+  color:white;
+  cursor:pointer;
+  transition:all 0.25s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:28px;
+}
+#showAllBtn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(100,108,255,0.4);
+}
+button{
+  height:42px;
+  border-radius:8px;
+  border:none;
+  background: rgba(255,255,255,0.05);
+  color:white;
+  font-size:14px;
+  cursor:pointer;
+  transition:all 0.25s ease;
+}
+
+button:hover{
+  background:#646cff;
+  transform:translateY(-2px);
+}
+
+/* 3D CANVAS */
+canvas{
+  position:absolute;
+  left:500px;
+  top:0;
+}
+
+/* PARTS PANEL */
+#partsPanel{
+  margin-top:0px;
+  border-top:1px solid #333;
+  padding-top:5px;
+  padding-bottom:5px;
+  flex:1;
+  min-height: 0;
+  overflow:hidden;
+  
+  /* 🔥 THE FIX 1: Make the panel a flex column */
+  display: flex; 
+  flex-direction: column; 
+}
+
+/* ... keep your #partsPanel h4 rule as it is ... */
+
+#partsPanel h4{
+  font-size:14px;
+  margin-bottom:5px;
+  opacity:0.8;
+}
+.part-name { /* Replace with your actual CSS class name for the part name */
+  white-space: normal; /* Allows text to wrap */
+  overflow: visible;  /* Make overflow visible */
+  text-overflow: clip; /* Stop the ellipsis */
+}
+#partsList {
+  overflow-y: auto;
+  
+  /* 🔥 THE FIX 2: Let flexbox calculate the exact remaining height automatically */
+  flex: 1; 
+  height: auto; 
+  
+  /* 🔥 THE FIX 3: Add some padding at the bottom so the last item isn't completely flush with the edge */
+  padding-bottom: 0px; 
+}
+
+/* TABLE */
+#partsList table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+#part {
+  display: none;
+}
+#partsList th,
+#partsList td{
+  padding:6px;
+  border-bottom:1px solid #333;
+  text-align:left;
+}
+
+/* Sticky Header */
+#partsList thead th{
+  position:sticky;
+  top:0;
+  background: #1f1f2e;
+  z-index:10;
+}
+
+/* Hover */
+#partsList tr:hover{
+  background:rgba(255,255,255,0.08);
+  cursor:pointer;
+}
+
+/* ================= CLEAN PREMIUM ACTIVE ROW ================= */
+
+#partsList tr.active{
+  background:rgba(100,108,255,0.15);
+  box-shadow: inset 4px 0 0 #646cff;
+  transition:background 0.3s ease;
+}
+
+
+
+/* Glow Animation */
+@keyframes glowPulse{
+  0%{ box-shadow:inset 4px 0 0 #646cff; }
+  50%{ box-shadow:inset 4px 0 0 #4b5fff; }
+  100%{ box-shadow:inset 4px 0 0 #646cff; }
+}
+
+#partsList tr.active{
+  animation:glowPulse 0.6s ease;
+}
+
+/* Hidden Row */
+
+.hidden-row{
+  opacity:0.4;
+  background:#331111;
+}
+
+/* Hidden Header */
+#hiddenHeader{
+  font-size:12px;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+#hiddenCount{
+  padding:2px 6px;
+  font-size:11px;
+  color:rgb(255, 255, 255);
+}
+
+/* Explode Options */
+.explode-options{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+  margin-bottom:10px;
+}
+
+.explode-btn{
+  flex:1;
+  padding:10px 0;
+  border:none;
+  border-radius:8px;
+ background: #1f1f2e;
+  color:white;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.3s ease;
+}
+
+.explode-btn:hover{
+  background:linear-gradient(135deg,#646cff,#4b5fff);
+  transform:translateY(-2px);
+}
+
+.explode-btn.active{
+  background:linear-gradient(135deg,#646cff,#4b5fff);
+  box-shadow:0 0 10px rgba(100,108,255,0.6);
+}
+
+/* Smooth Scroll */
+html{
+  scroll-behavior:smooth;
+}
+/* ===== SMART EXPLODE DROPDOWN ===== */
+
+.explode-main {
+  position: relative;
+}
+
+/* ===== PREMIUM EXPLODE DROPDOWN ===== */
+
+.explode-dropdown{
+  display:none;
+  flex-direction:column;
+  background:#1a1a1a;
+  border-radius:12px;
+  margin-top:10px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 15px 30px rgba(0,0,0,0.5);
+}
+
+/* Highlight sliding bar */
+.dropdown-highlight{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:48px;   /* Must match item height */
+  background:rgba(100,108,255,0.15);
+  border-radius:10px;
+  transition:transform 0.25s ease;
+  pointer-events:none;
+}
+
+/* Dropdown item */
+.dropdown-item{
+  height:48px;   /* FIXED HEIGHT */
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  color:white;
+  position:relative;
+  z-index:2;
+  transition:all 0.25s ease;
+}
+
+/* Hover glow */
+.dropdown-item:hover{
+  color:#646cff;
+  text-shadow:0 0 8px rgba(100,108,255,0.5);
+}
+
+/* Icon */
+.dropdown-item .icon{
+  font-size:14px;
+  opacity:0.8;
+}
+
+
+@keyframes fadeIn {
+  from { opacity:0; transform: translateY(-5px); }
+  to { opacity:1; transform: translateY(0); }
+}
+#partDetails {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding: 5px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  font-size: 13px;
+   flex: 0 0 auto;
+}
+
+#partDetails h4 {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+#floatingLabel {
+  position: absolute;
+  width: 260px;
+  padding: 16px;
+  border-radius: 18px;
+
+  background: rgba(25, 25, 35, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: #ffffff;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+
+  box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+
+  pointer-events: none;
+  transform: translate(-50%, -120%);
+  display: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+
+  z-index: 10;
+
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+#floatingLabel.show {
+  opacity: 1;
+}
+
+#floatingLabel::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 10px;
+  border-style: solid;
+  border-color: rgba(25, 25, 35, 0.88) transparent transparent transparent;
+}
+.vehicle-page {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f8;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  background: #1f1f2e;
+  color: white;
+  padding: 20px;
+   display:flex;
+  flex-direction:column;
+  height:100vh;
+}
+
+.sidebar ul{
+  list-style:none;
+  padding:0;
+  margin-top:20px;
+}
+
+.sidebar li {
+  padding: 12px 0;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.sidebar li:hover {
+  opacity: 1;
+}
+
+.content {
+  flex: 1;
+  padding: 40px;
+}
+
+.vehicle-grid {
+  display: flex;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.vehicle-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  width: 220px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.vehicle-card:hover {
+  transform: translateY(-6px);
+}
+
+.vehicle-card img {
+  width: 100%;
+  border-radius: 12px;
+}
+.catalogue-page {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f8;
+}
+
+.parts-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.parts-table th,
+.parts-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.parts-table tr:hover {
+  background: #f0f3ff;
+  cursor: pointer;
+}
+
+.sidebar .active {
+  font-weight: bold;
+}
+.manual-page {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f8;
+}
+
+.system-grid {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.system-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  width: 180px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: 0.3s;
+}
+
+.system-card:hover {
+  transform: translateY(-5px);
+}
+
+.procedure-section {
+  margin-top: 40px;
+}
+
+.procedure-card {
+  background: white;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.procedure-card h3 {
+  margin-top: 20px;
+}
+
+.procedure-card button {
+  margin-top: 20px;
+  padding: 10px 18px;
+  background: #646cff;
+  border: none;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+#viewerTools{
+  position:absolute;
+  top:20px;
+  right:20px;
+  display:flex;
+  gap:10px;
+  z-index:1000;
+}
+
+.tool-btn{
+  width:42px;
+  height:42px;
+  border:none;
+  border-radius:10px;
+  background:#1e1e2f;
+  color:white;
+  font-size:18px;
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+
+/* hover */
+.tool-btn:hover{
+  background:#2c2c40;
+}
+
+/* ACTIVE GLOW */
+.tool-btn.active{
+  background:#646cff;
+  box-shadow:
+    0 0 10px #646cff,
+    0 0 20px rgba(100,108,255,0.6);
+}
+#contextMenu{
+  position:absolute;
+  background:#1e1e1e;
+  backdrop-filter: blur(8px);
+  color:white;
+  padding:10px 0;
+  border-radius:6px;
+  display:none;
+  min-width:160px;
+  z-index:9999;
+  box-shadow:0 5px 15px rgba(0,0,0,0.4);
+}
+
+#contextMenu div{
+  padding:8px 14px;
+  cursor:pointer;
+}
+
+#contextMenu div:hover{
+  background:#646cff;
+}
+.context-menu{
+  position:absolute;
+  background:rgba(30,30,40,0.95);
+  color:white;
+  border-radius:10px;
+  padding:6px 0;
+  min-width:150px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+  display:none;
+
+  z-index:9999;   /* IMPORTANT */
+}
+
+.context-menu button{
+  width:100%;
+  background:none;
+  border:none;
+  color:white;
+  padding:10px 14px;
+  cursor:pointer;
+  text-align:left;
+}
+
+.context-menu button:hover{
+  background:rgba(255,255,255,0.08);
+}
+/* SYSTEM PANEL */
+
+.system-btn{
+
+width:100%;
+background:#2c2c3a;
+color:white;
+border:none;
+padding:10px;
+margin-top:6px;
+border-radius:6px;
+cursor:pointer;
+
+}
+
+.subsystem-btn{
+
+width:100%;
+background:#3d3d55;
+color:white;
+border:none;
+padding:8px;
+margin-top:5px;
+border-radius:6px;
+cursor:pointer;
+
+}
+.systems{
+margin-top:12px;
+padding:10px;
+border-radius:10px;
+background:#1e1e2f;
+}
+
+.system-btn{
+
+width:100%;
+background:#2c2c3a;
+color:white;
+border:none;
+padding:10px;
+margin-top:6px;
+border-radius:8px;
+cursor:pointer;
+
+}
+
+.system-btn:hover{
+background:#3c3c55;
+}
+
+.subsystem-btn{
+
+width:100%;
+background:#444463;
+color:white;
+border:none;
+padding:8px;
+margin-top:6px;
+border-radius:8px;
+cursor:pointer;
+
+}
+
+.system-btn{
+
+width:100%;
+
+background:#2c2c3a;
+
+color:white;
+
+border:none;
+
+padding:10px;
+
+margin-top:8px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+.subsystem-btn{
+
+width:100%;
+
+background:#444463;
+
+color:white;
+
+border:none;
+
+padding:8px;
+
+margin-top:6px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+
+/* ================= SYSTEM PANEL ================= */
+
+
+
+
+
+.system-btn:hover{
+background:#3c3c55;
+}
+
+.subsystem-btn{
+
+width:100%;
+
+background:#444463;
+
+color:white;
+
+border:none;
+
+padding:8px;
+
+margin-top:6px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+}
+/* ================= SYSTEM PANEL ================= */
+
+
+
+.systems h3{
+font-size:16px;
+margin-bottom:6px;
+}
+
+.system-btn{
+
+width:100%;
+
+padding:10px;
+
+border:none;
+
+border-radius:8px;
+
+background:rgba(255,255,255,0.05);
+
+color:white;
+
+cursor:pointer;
+
+transition:0.25s;
+
+}
+
+.system-btn:hover{
+background:#646cff;
+}
+
+.subsystem-btn{
+
+width:100%;
+
+padding:8px;
+
+border:none;
+
+border-radius:6px;
+
+background:#2c2c40;
+
+color:white;
+
+cursor:pointer;
+
+font-size:13px;
+
+}
+
+.subsystem-btn:hover{
+background:#646cff;
+}
+/* ===== SYSTEM TREE ===== */
+
+
+
+.system-item{
+
+padding:6px 0;
+
+cursor:pointer;
+
+opacity:0.9;
+
+transition:0.2s;
+
+}
+
+
+.system-item{
+font-weight:600;
+margin-top:8px;
+cursor:pointer;
+}
+
+.subsystem-item{
+padding-left:15px;
+font-size:13px;
+margin-top:4px;
+cursor:pointer;
+opacity:0.8;
+}
+/* ================= SYSTEM TREE ================= */
+
+/* Clean Systems Panel inside Sidebar */
+#systemsPanel {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+   flex: 0 0 auto;
+}
+
+#systemsPanel h3 { font-size: 16px; margin-bottom: 8px; }
+.system-item { font-weight: 600; margin-top: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.subsystems { max-height: 0; overflow: hidden; transition: 0.3s ease; padding-left: 14px; }
+.subsystems.open { max-height: 500px; }
+.subsystem-item { font-size: 13px; opacity: 0.85; cursor: pointer; margin-top: 5px; }
+.subsystem-item:hover { color: #646cff; }
+
+/* Premium Floating Bottom UI */
+#canvasBottomUI {
+  position: absolute;
+  bottom: 30px;
+  left: 500px; /* Offset by sidebar width */
+  width: calc(100% - 500px);
+  display: flex;
+  justify-content: center; /* Spreads buttons: Left, Center, Right */
+  align-items: flex-end;
+  pointer-events: none; /* Lets you click 3D space between buttons */
+  z-index: 100;
+  padding: 0 40px;
+}
+
+.glass-btn {
+  pointer-events: auto;
+  background: rgba(30, 30, 40, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.glass-btn:hover { background: rgba(100, 108, 255, 0.8); transform: translateY(-3px); }
+
+/* Explode Menu & Slider */
+.explode-wrapper {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.glass-menu {
+  background: rgba(30, 30, 40, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 15px;
+  width: 250px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.explode-types { display: flex; gap: 10px; margin-bottom: 15px; }
+.glass-sub { flex: 1; padding: 8px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; cursor: pointer; transition: 0.2s; }
+.glass-sub.active { background: #646cff; }
+
+#sliderWrapper { display: flex; flex-direction: column; gap: 8px; font-size: 12px; opacity: 0.9; }
+#sliderTypeLabel {
+  color: #ffffff; /* 🔥 Change this to any color you want */
+  font-weight: 600;
+}
+#explodeSlider { width: 100%; cursor: pointer; accent-color: #646cff; }
+
+.system-item{
+
+cursor:pointer;
+
+margin-top:8px;
+
+font-weight:600;
+
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+}
+
+.system-arrow{
+
+transition:0.25s;
+
+}
+
+.system-item.active .system-arrow{
+
+transform:rotate(90deg);
+
+}
+
+.subsystems{
+
+max-height:0;
+
+overflow:hidden;
+
+transition:0.3s ease;
+
+padding-left:14px;
+
+}
+
+.subsystems.open{
+
+max-height:500px;
+
+}
+
+.subsystem-item{
+
+font-size:13px;
+
+opacity:0.85;
+
+cursor:pointer;
+
+margin-top:5px;
+
+}
+
+.subsystem-item:hover{
+
+color:#646cff;
+
+}
+#partSearch{
+
+width:100%;
+
+padding:7px;
+
+border:none;
+
+border-radius:6px;
+
+margin-bottom:10px;
+
+background:#2c2c3a;
+
+color:white;
+
+font-size:13px;
+
+outline:none;
+
+box-sizing:border-box;
+
+}
+
+#partSearch::placeholder{
+color:#aaa;
+}
+.column-containing-name { /* Replace with the actual container class */
+  width: auto;             /* Set width to adjust automatically */
+  min-width: 250px;       /* Ensure it has a reasonable minimum width */
+  flex-grow: 1;            /* If using flexbox, let it grow to fill space */
+}
+
+/* ================= CUSTOM SCROLLBAR FOR DARK THEME ================= */
+
+/* 1. ஸ்க்ரோல்பாரின் மொத்த அகலம் */
+::-webkit-scrollbar {
+  width: 8px; 
+  height: 8px; /* Horizontal scrollbar தேவைப்பட்டால் */
+}
+
+/* 2. 🔥 THE FIX: அந்த வெள்ளை நிறப் பாதையை கருப்பாகவோ அல்லது Transparent-ஆகவோ மாற்றுவது */
+::-webkit-scrollbar-track {
+  background: #1e1e2d; /* உங்கள் UI-ன் பின்னணி நிறத்தைக் கொடுங்கள் (உதா: #1e1e2d) */
+  border-radius: 4px;
+}
+
+/* 3. நகரும் பகுதி (Thumb) */
+::-webkit-scrollbar-thumb {
+  background: #6b6b83; /* மெல்லிய சாம்பல் நிறம் */
+  border-radius: 4px;
+}
+
+/* 4. மவுஸ் வைக்கும்போது (Hover) நிறம் மாற */
+::-webkit-scrollbar-thumb:hover {
+  background: #8e8ea8; 
+}
+
+/* 5. மூலைகளில் வரும் வெள்ளை நிறத்தை மறைக்க */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+#systemsPanel h3{
+  margin-bottom: 10px;
+}
+#systemsPanel{
+  font-size:16px;
+  margin-bottom:0%;
+  padding: 10px ;
+}
+.system-card{
+  width: 100%;             /* 🔥 full grid width */
+  height: 50px;
+padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+  border-radius: 10px;
+
+  background: #2c2c40;
+  color: white;
+  font-size: 13px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.system-card:hover{
+  background:#3a3a55;
+  transform:translateY(-2px);
+}
+
+.system-card.active{
+  background:#646cff;
+  box-shadow:0 0 8px rgba(100,108,255,0.4);
+}
+
+.systems-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  justify-items: center;   /* 🔥 center each button */
+}
+#systemsPanel{
+  display: flex;
+  flex-direction: column;
+}

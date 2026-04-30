@@ -1,0 +1,1285 @@
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { auth } from "./firebase.js"
+import { signOut } from "firebase/auth"
+
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
+/* ================= SYSTEM STRUCTURE ================= */
+
+
+
+const selectedVehicle = localStorage.getItem("selectedVehicle")
+
+if (!selectedVehicle) {
+  alert("Vehicle missing")
+  window.location.href = "home.html"
+}
+
+
+
+const floatingLabel = document.getElementById("floatingLabel")
+
+
+function formatName(name) {
+  return name
+    .replaceAll("_", " ")
+    .replace(/\d+/g, "")
+}
+function getCategory(name){
+
+  const n = name.toLowerCase()
+
+  if(n.includes("wheel") || n.includes("rim") || n.includes("tire"))
+    return "Wheel"
+
+  if(n.includes("light") || n.includes("lamp"))
+    return "Lighting"
+
+  if(n.includes("glass"))
+    return "Glass"
+
+  if(n.includes("brake") || n.includes("caliper"))
+    return "Braking System"
+
+  if(n.includes("chassis"))
+    return "Chassis"
+
+  if(n.includes("door"))
+    return "Body"
+
+  if(n.includes("hood") || n.includes("bumper") || n.includes("body"))
+    return "Body"
+
+  if(n.includes("seat") || n.includes("interior"))
+    return "Interior"
+
+  return "Others"
+}
+function generatePartData(){
+
+  const data = {}
+
+  parts.forEach((p, i) => {
+
+    data[p.name] = {
+      sno: i + 1,
+      displayName: p.name,
+      category: getCategory(p.name),
+      position: "General",
+      qty: 1,
+      description: `Component: ${p.name}`
+    }
+
+  })
+
+  console.log("AUTO GENERATED ✅", data)
+
+  return data
+}
+/* ================= PART DESCRIPTIONS ================= */
+
+let partDescriptions = {}
+
+
+ 
+const partMetadata = {
+  "polymsh_detached29_SUB1_LIVREA_0": "Main housing structure.",
+  "polymsh66_SUB1_LIVREA_0": "Front cover assembly.",
+  "Part 2": "Internal support bracket.",
+}
+
+
+
+/* ================= CONSTANT ================= */
+
+const SIDEBAR_WIDTH = 500
+
+/* ================= SCENE ================= */
+
+const scene = new THREE.Scene()
+scene.background = new THREE.Color(0xeeeeee)
+
+/* ================= CAMERA ================= */
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  (window.innerWidth - SIDEBAR_WIDTH) / window.innerHeight,
+  0.1,
+  2000
+)
+
+/* ================= RENDERER ================= */
+
+const renderer = new THREE.WebGLRenderer({ antialias: true })
+renderer.setSize(window.innerWidth - SIDEBAR_WIDTH, window.innerHeight)
+renderer.domElement.style.position = "absolute"
+renderer.domElement.style.left = SIDEBAR_WIDTH + "px"
+renderer.domElement.style.top = "0"
+document.body.appendChild(renderer.domElement)
+
+/* ================= CONTROLS ================= */
+
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.enableDamping = true
+
+/* ================= LIGHT ================= */
+
+/* ================= LIGHT ================= */
+
+const rgbeLoader = new RGBELoader()
+
+rgbeLoader.load('/hdr/studio.hdr', function(texture){
+  texture.mapping = THREE.EquirectangularReflectionMapping
+  scene.environment = texture
+  // Optional: You can also set scene.background = texture if you want to see the studio
+})
+
+// 1. Soft ambient light so shadows aren't pitch black
+scene.add(new THREE.AmbientLight(0xffffff, 0.6))
+
+// 2. Main directional light (acts like a key light)
+const mainLight = new THREE.DirectionalLight(0xffffff, 2.5)
+mainLight.position.set(10, 15, 10)
+scene.add(mainLight)
+
+// 3. Softer fill light from the opposite side to highlight details
+const fillLight = new THREE.DirectionalLight(0xeeeeff, 1.2) 
+fillLight.position.set(-10, 10, -10)
+scene.add(fillLight)
+
+// Renderer settings
+renderer.outputEncoding = THREE.sRGBEncoding
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 1.0 // Lowered from 1.2 to 1.0 to reduce blowout
+
+/* ================= DATA ================= */
+
+let model = null
+let parts = []
+let defaultCameraPosition = new THREE.Vector3()
+let defaultControlsTarget = new THREE.Vector3()
+let selectedPart = null
+let selectedPartsGroup = []
+let hiddenParts = []
+
+let explodeProgress = 0
+let explodeDirection = 0
+let exploded = false
+
+/* ================= LOAD MODEL ================= */
+
+
+const loader = new GLTFLoader()
+console.log("Selected Vehicle:", selectedVehicle)
+loader.load(`/models/${selectedVehicle}.glb`, (gltf) => {
+
+  model = gltf.scene
+  scene.add(model)
+   parts = []
+  gltf.scene.traverse(obj => {
+    if (obj.isMesh) {
+
+      obj.material = obj.material.clone()
+
+      parts.push(obj)
+
+      obj.userData.original = obj.position.clone()
+      obj.userData.target = obj.position.clone()
+
+      if (obj.material.color) {
+        obj.userData.originalColor = obj.material.color.clone()
+      }
+    }
+  })
+  // 🔥🔥 ADD THIS BLOCK
+  partDescriptions = generatePartData()
+  buildSystemTree()
+  frameModel(model)
+  
+  createPartsTable()
+}, undefined, (error) => {
+  console.error("Model Load Error ❌", error)
+})
+  // ✅ highlight after model loads
+  const highlightPart = localStorage.getItem("highlightPart")
+
+  if (highlightPart) {
+    const part = parts.find(p => p.name === highlightPart)
+    if (part) selectPart(part)
+    localStorage.removeItem("highlightPart")
+  }
+
+
+/* ================= CENTER MODEL ================= */
+
+function frameModel(model) {
+
+  const box = new THREE.Box3().setFromObject(model)
+  const size = box.getSize(new THREE.Vector3())
+  const center = box.getCenter(new THREE.Vector3())
+
+  // 🔥 Center model
+  model.position.sub(center)
+
+  // 🔥 Auto scale to consistent size
+  const maxDim = Math.max(size.x, size.y, size.z)
+  const desiredSize = 30  // you can adjust this
+
+  const scale = desiredSize / maxDim
+  model.scale.setScalar(scale)
+
+  // Recalculate bounding box after scaling
+  const newBox = new THREE.Box3().setFromObject(model)
+  const newSize = newBox.getSize(new THREE.Vector3())
+  const newMaxDim = Math.max(newSize.x, newSize.y, newSize.z)
+
+  // 🔥 Position camera dynamically
+  const fov = camera.fov * (Math.PI / 180)
+const cameraDistance = newMaxDim / (2 * Math.tan(fov / 2))
+
+camera.position.set(0, newMaxDim * 0.4, cameraDistance * 1.3)
+
+  controls.target.set(0, 0, 0)
+  controls.update()
+  // 🔥 NEW: Save the perfect starting angle for later!
+  defaultCameraPosition.copy(camera.position)
+  defaultControlsTarget.copy(controls.target)
+}
+
+/* ================= TABLE (MERGED PARTS) ================= */
+
+function createPartsTable() {
+
+  const container = document.getElementById("partsList")
+  if (!container) return
+  container.innerHTML = ""
+
+  const table = document.createElement("table")
+
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>S.NO</th>
+        <th>PART NAME</th>
+        <th>QTY</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `
+
+  // 1. ஒரே பெயருடைய பாகங்களை ஒன்றிணைக்க ஒரு Object-ஐ உருவாக்குதல்
+  const groupedParts = {}
+
+  parts.forEach((p) => {
+    // formatName மூலம் பெயரைச் சுத்தப்படுத்துகிறோம்
+    const cleanName = formatName(p.name)
+
+    // இந்தப் பெயர் ஏற்கனவே இல்லையென்றால், புதிதாகச் சேர்க்கவும்
+    if (!groupedParts[cleanName]) {
+      groupedParts[cleanName] = {
+        qty: 0,
+        partsArray: [] // அந்தப் பெயரில் உள்ள எல்லா 3D Object-களையும் சேமிக்க
+      }
+    }
+
+    // QTY-ஐ 1 கூட்டுகிறோம், மற்றும் Object-ஐ Array-ல் சேர்க்கிறோம்
+    groupedParts[cleanName].qty += 1
+    groupedParts[cleanName].partsArray.push(p)
+  })
+
+  // 2. ஒன்றிணைக்கப்பட்ட டேட்டாவை வைத்து Table-ல் Rows உருவாக்குதல்
+  let serialNo = 1
+  
+  for (const [name, data] of Object.entries(groupedParts)) {
+    const row = document.createElement("tr")
+    
+    // UI-ல் தேடுவதற்காக (Search/Highlight) முதல் part-ன் பெயரை dataset-ல் வைக்கிறோம்
+    row.dataset.name = data.partsArray[0].name 
+
+    row.innerHTML = `
+      <td>${serialNo}</td>
+      <td>${name}</td>
+      <td>${data.qty}</td>
+    `
+
+    // Row-ஐ கிளிக் செய்யும் போது, அந்த குரூப்பில் உள்ள முதல் Part-ஐ செலக்ட் செய்ய
+    row.onclick = () => selectPart(data.partsArray[0])
+
+    table.querySelector("tbody").appendChild(row)
+    serialNo++
+  }
+
+  container.appendChild(table)
+}
+
+/* ================= SELECT ================= */
+
+function selectPart(part) {
+
+  if (selectedPart === part) {
+    clearSelection()
+    return
+  }
+
+  // Remove previous highlight
+  if (selectedPart && selectedPart.material.emissive)
+    selectedPart.material.emissive.set(0x000000)
+
+  selectedPart = part
+
+  if (part.material && part.material.emissive) {
+    part.material.emissive.set(0x646cff)
+    part.material.emissiveIntensity = 0.6
+  }
+
+  // 🔥 Get data from JSON
+  const data = partDescriptions[part.name]
+
+  if (data) {
+
+    // Sidebar info
+    document.getElementById("part").innerText =
+      data.displayName
+
+    document.getElementById("partDescription").innerText =
+      "S.NO: " + data.sno +
+      "\nCategory: " + data.category +
+      "\nPosition: " + data.position +
+      "\nQuantity: " + data.qty +
+      "\n\n" + data.description
+
+    // 🔥 Floating label with HTML formatting
+    floatingLabel.innerHTML = `
+  <div style="
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:6px;
+    white-space: normal;
+    word-break: break-word;
+  ">
+   ${formatName(data.displayName)}
+  </div>
+
+  <div style="
+    opacity:0.8;
+    font-size:12px;
+    margin-bottom:6px;
+  ">
+    ${data.category} • ${data.position}
+  </div>
+
+  <div style="
+    font-size:12px;
+    background:#646cff;
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:8px;
+    margin-bottom:8px;
+  ">
+    Qty: ${data.qty}
+  </div>
+
+  <div style="
+    font-size:12px;
+    opacity:0.85;
+    word-break: break-word;
+  ">
+    ${data.description}
+  </div>
+`
+
+  } else {
+
+    document.getElementById("part").innerText =
+      part.name
+
+    document.getElementById("partDescription").innerText =
+      "No description found for this part."
+
+    floatingLabel.innerHTML = `
+      <strong>${part.name}</strong>
+    `
+  }
+
+  // 🔥 Always show label
+ floatingLabel.style.display = "block"
+
+setTimeout(() => {
+  floatingLabel.classList.add("show")
+}, 10)
+
+if (selectedPart && floatingLabel.style.display === "block") {
+
+  const partWorld = new THREE.Vector3()
+  selectedPart.getWorldPosition(partWorld)
+
+  const partScreen = partWorld.clone().project(camera)
+
+  const canvasWidth = window.innerWidth - SIDEBAR_WIDTH
+  const canvasHeight = window.innerHeight
+
+  const partX =
+    (partScreen.x * 0.5 + 0.5) * canvasWidth + SIDEBAR_WIDTH
+
+  const partY =
+    (-partScreen.y * 0.5 + 0.5) * canvasHeight
+
+}
+  
+  syncTableHighlight()
+  updateHideButton()
+}
+
+/* ================= CLEAR ================= */
+
+function clearSelection() {
+
+  if (selectedPart && selectedPart.material.emissive)
+    selectedPart.material.emissive.set(0x000000)
+
+  selectedPart = null
+
+  document.getElementById("part").innerText = "Click a part"
+  document.getElementById("partDescription").innerText =
+    "Select a part to see details."
+
+  document.querySelectorAll("#partsList tr")
+    .forEach(row => row.classList.remove("active"))
+
+  // 🔥 Safe floating label hide
+  if (floatingLabel) {
+    floatingLabel.classList.remove("show")
+
+    setTimeout(() => {
+      floatingLabel.style.display = "none"
+    }, 200)
+  }
+}
+/* ================= SYNC TABLE ================= */
+
+/* ================= SYNC TABLE (FIXED FOR MERGED PARTS) ================= */
+
+function syncTableHighlight() {
+
+  // 1. நாம் 3D-யில் செலக்ட் செய்த Part-ன் பெயரை format செய்கிறோம் 
+  // (உதாரணம்: "Struct_12" அல்லது "Struct_5" என்பதை "Struct" என்று மாற்றுவது)
+  const selectedGroupName = selectedPart ? formatName(selectedPart.name) : null;
+
+  document.querySelectorAll("#partsList tr").forEach(row => {
+
+    // Header row-ஐத் தவிர்க்கிறோம்
+    if (!row.dataset.name) return;
+
+    // 2. டேபிளில் 2-வது கட்டத்தில் (Column) உள்ள பெயரை எடுக்கிறோம் ("Struct")
+    const rowName = row.cells[1].innerText; 
+
+    // 3. இரண்டும் ஒன்றாக இருந்தால் அந்த வரியை Highlight செய்கிறோம்!
+    if (selectedGroupName && rowName === selectedGroupName) {
+
+      row.classList.add("active");
+
+      // அந்த வரிக்கு ஸ்க்ரோல் (Scroll) செய்வது
+      row.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+    } else {
+      row.classList.remove("active");
+    }
+  });
+}
+
+/* ================= 3D CLICK & DOUBLE CLICK FIX ================= */
+const raycaster = new THREE.Raycaster()
+const mouse = new THREE.Vector2()
+
+window.addEventListener("click", (event) => {
+
+  contextMenu.style.display = "none"
+
+  const sidebar = document.getElementById("ui")
+  if (sidebar && sidebar.contains(event.target)) return
+
+  mouse.x =
+    ((event.clientX - SIDEBAR_WIDTH) /
+      (window.innerWidth - SIDEBAR_WIDTH)) * 2 - 1
+
+  mouse.y =
+    -(event.clientY / window.innerHeight) * 2 + 1
+
+  raycaster.setFromCamera(mouse, camera)
+
+ // 🔥 PROFESSIONAL CAD FIX: Only allow the mouse to hit parts that are currently visible
+  const visibleParts = parts.filter(p => p.visible === true)
+  const intersects = raycaster.intersectObjects(visibleParts, true)
+
+  
+
+  if (intersects.length > 0) {
+
+    selectPart(intersects[0].object)
+
+  } else {
+
+    clearSelection()
+
+  }
+
+})
+
+/* ================= HIDE FUNCTION ================= */
+
+const toggleBtn = document.getElementById("togglePart")
+
+if (toggleBtn) {
+  toggleBtn.onclick = () => {
+
+    if (!selectedPart) return
+
+    selectedPart.visible = !selectedPart.visible
+
+    if (!selectedPart.visible) {
+      if (!hiddenParts.includes(selectedPart.name))
+        hiddenParts.push(selectedPart.name)
+    } else {
+      hiddenParts = hiddenParts.filter(n => n !== selectedPart.name)
+    }
+
+    updateHiddenUI()
+    updateHideButton()
+  }
+}
+
+function updateHideButton() {
+
+  if (!selectedPart) return
+
+  if (!toggleBtn) return   // 🔥 prevents error
+
+  toggleBtn.innerText = selectedPart.visible
+    ? "Hide Selected Part"
+    : "Show Selected Part"
+
+}
+
+function updateHiddenUI() {
+
+  document.getElementById("hiddenCount").innerText = hiddenParts.length
+
+  document.querySelectorAll("#partsList tr").forEach(row => {
+
+    if (!row.dataset.name) return
+
+    if (hiddenParts.includes(row.dataset.name))
+      row.classList.add("hidden-row")
+    else
+      row.classList.remove("hidden-row")
+  })
+}
+
+/* ================= HIDE/SHOW ALL FUNCTION ================= */
+
+const showAllBtn = document.getElementById("showAllBtn")
+
+if (showAllBtn) {
+  showAllBtn.onclick = () => {
+    // 1. Reset logic arrays
+    hiddenParts = []
+    
+    // 2. Restore visibility
+    parts.forEach(p => p.visible = true)
+    
+    // 🔥 THE FIX: Tell the app we are no longer in isolation mode!
+    isIsolated = false 
+    
+    // 3. Update the UI
+    updateHiddenUI()
+    updateHideButton() // 🔥 Added this so the button text refreshes!
+  }
+}
+
+
+/* ================= WIREFRAME MODE ================= */
+
+const wireframeBtn = document.getElementById("wireframeBtn")
+let wireframeMode = false
+
+if (wireframeBtn) {
+
+  wireframeBtn.onclick = () => {
+
+    wireframeMode = !wireframeMode
+
+    parts.forEach(p => {
+      if (!p.material) return
+      p.material = p.material.clone()
+      p.material.wireframe = wireframeMode
+    })
+
+    // toggle glow
+    wireframeBtn.classList.toggle("active")
+
+  }
+
+}
+/* ================= TRANSPARENCY MODE ================= */
+
+const transparentBtn = document.getElementById("transparentBtn")
+let transparencyMode = false
+
+if (transparentBtn) {
+
+  transparentBtn.onclick = () => {
+
+    transparencyMode = !transparencyMode
+
+    parts.forEach(p => {
+
+      if (!p.material) return
+
+      p.material = p.material.clone()
+      p.material.transparent = transparencyMode
+      p.material.opacity = transparencyMode ? 0.25 : 1
+
+    })
+
+    // toggle glow
+    transparentBtn.classList.toggle("active")
+
+  }
+
+}
+
+/* ================= label ================= */
+function updateFloatingLabel() {
+if (!floatingLabel) return
+  if (!selectedPart || floatingLabel.style.display !== "block") return
+
+  const worldPos = new THREE.Vector3()
+  selectedPart.getWorldPosition(worldPos)
+
+  const distance = camera.position.distanceTo(worldPos)
+
+  worldPos.y += distance * 0.08
+
+  const projected = worldPos.clone().project(camera)
+
+  const canvasWidth = window.innerWidth - SIDEBAR_WIDTH
+  const canvasHeight = window.innerHeight
+
+  let x = (projected.x * 0.5 + 0.5) * canvasWidth + SIDEBAR_WIDTH
+  let y = (-projected.y * 0.5 + 0.5) * canvasHeight
+
+  const labelWidth = 260
+  const labelHeight = floatingLabel.offsetHeight
+
+  if (x + labelWidth / 2 > window.innerWidth)
+    x = window.innerWidth - labelWidth / 2 - 20
+
+  if (x - labelWidth / 2 < SIDEBAR_WIDTH)
+    x = SIDEBAR_WIDTH + labelWidth / 2 + 20
+
+  if (y - labelHeight < 0)
+    floatingLabel.style.transform = "translate(-50%, 20px)"
+  else
+    floatingLabel.style.transform = "translate(-50%, -120%)"
+
+  floatingLabel.style.left = x + "px"
+  floatingLabel.style.top = y + "px"
+}
+
+
+/* ================= RESIZE ================= */
+
+window.addEventListener("resize", () => {
+
+  camera.aspect =
+    (window.innerWidth - SIDEBAR_WIDTH) /
+    window.innerHeight
+
+  camera.updateProjectionMatrix()
+
+  renderer.setSize(
+    window.innerWidth - SIDEBAR_WIDTH,
+    window.innerHeight
+  )
+})
+
+/* ================= LOGOUT ================= */
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  const logoutBtn = document.getElementById("logoutBtn")
+
+  if (!logoutBtn) return
+
+  logoutBtn.addEventListener("click", async () => {
+
+    try {
+      await signOut(auth)
+      window.location.href = "./login.html"
+    } catch (error) {
+      console.error("Logout Error:", error)
+    }
+
+  })
+})
+window.addEventListener("DOMContentLoaded", () => {
+
+  const homeBtn = document.getElementById("homeBtn")
+
+  if(homeBtn){
+    homeBtn.addEventListener("click", () => {
+      window.location.href = "/home.html"
+    })
+  }
+
+})
+
+const contextMenu = document.getElementById("contextMenu")
+const hideOption = document.getElementById("hideOption")
+const isolateOption = document.getElementById("isolateOption")
+const showAllOption = document.getElementById("showAllOption")
+let isIsolated = false
+window.addEventListener("contextmenu",(event)=>{
+
+  event.preventDefault()
+
+  if(!selectedPart) return
+
+  contextMenu.style.display = "block"
+  contextMenu.style.left = event.clientX + "px"
+  contextMenu.style.top = event.clientY + "px"
+
+  // MENU STATE CHANGE
+  if(isIsolated){
+    hideOption.style.display = "none"
+    isolateOption.style.display = "none"
+    showAllOption.style.display = "block"
+  }else{
+    hideOption.style.display = "block"
+    isolateOption.style.display = "block"
+    showAllOption.style.display = "none"
+  }
+
+})
+
+hideOption.onclick = () => {
+  if (!selectedPart) return;
+
+  // 1. Change visibility
+  selectedPart.visible = false;
+
+  // 2. Add to the hiddenParts array if not already there
+  if (!hiddenParts.includes(selectedPart.name)) {
+    hiddenParts.push(selectedPart.name);
+  }
+
+  // 3. Trigger the UI updates you already built
+  updateHiddenUI(); 
+  updateHideButton();
+
+  contextMenu.style.display = "none";
+};
+
+isolateOption.onclick = () => {
+
+  if (!selectedPart) return
+
+  hiddenParts = []
+
+  parts.forEach(part => {
+
+    part.visible = (part === selectedPart)
+
+    if (part !== selectedPart) {
+      hiddenParts.push(part.name)
+    }
+
+  })
+
+  isIsolated = true
+
+  
+  updateHiddenUI()
+  updateHideButton()
+
+  contextMenu.style.display = "none"
+
+};
+
+showAllOption.onclick = () => {
+
+  // 1. Reset the logic array
+  hiddenParts = [];
+
+  // 2. Restore 3D visibility
+  parts.forEach(part => {
+    part.visible = true;
+  });
+
+  // 3. Reset isolation state
+  isIsolated = false;
+
+  // 4. Sync the UI Sidebar
+  updateHiddenUI();
+  updateHideButton();
+
+  contextMenu.style.display = "none";
+};
+// CLICK OUTSIDE → CLOSE MENU
+window.addEventListener("click", () => {
+  contextMenu.style.display = "none"
+})
+/* ================= PREMIUM FLOATING UI LOGIC ================= */
+
+const resetCanvasBtn = document.getElementById("resetCanvasBtn")
+const colorCanvasBtn = document.getElementById("colorCanvasBtn")
+const explodeCanvasBtn = document.getElementById("explodeCanvasBtn")
+const explodeMenu = document.getElementById("explodeMenu")
+const btnLinear = document.getElementById("btnLinear")
+const btnRadial = document.getElementById("btnRadial")
+const sliderWrapper = document.getElementById("sliderWrapper")
+const explodeSlider = document.getElementById("explodeSlider")
+const sliderTypeLabel = document.getElementById("sliderTypeLabel")
+
+let currentExplodeType = null
+
+// 1. Color Parts - Toggle Logic (மாற்றப்பட்ட குறியீடு)
+let colorMode = false; // நிறத்திற்கான ஆன்/ஆஃப் நிலையைச் சேமிக்க
+
+colorCanvasBtn.onclick = () => {
+  // 1. நிலையை மாற்றுதல் (Toggle true/false)
+  colorMode = !colorMode; 
+  
+  // 2. பட்டனின் Glow எஃபெக்ட்டை மாற்றுதல் (Toggle active class)
+  colorCanvasBtn.classList.toggle("active");
+
+  // 3. மாடலின் பாகங்களுக்கு நிறத்தைப் பயன்படுத்துதல்
+  parts.forEach(p => {
+    if (!p.material) return;
+    
+    p.material = p.material.clone();
+
+    if (colorMode) {
+      // ஆன் நிலை (ON): புதிய HSL நிறத்தை அமைத்தல்
+      const randomColor = new THREE.Color().setHSL(Math.random(), 0.8, 0.5);
+      p.material.color.set(randomColor);
+    } else {
+      // ஆஃப் நிலை (OFF): அசல் நிறத்திற்கு (Original Color) மாற்றுதல்
+      if (p.userData.originalColor) {
+        p.material.color.copy(p.userData.originalColor);
+      }
+    }
+  });
+}
+
+// 2. Toggle Explode / Assemble Menu
+// 2. Toggle Explode / Assemble Menu
+explodeCanvasBtn.onclick = () => {
+  const isMenuOpen = explodeMenu.style.display === "block"
+
+  if (isMenuOpen) {
+    // === ASSEMBLE MODE (Premium Animation + Camera Reset) ===
+    explodeMenu.style.display = "none"
+    explodeCanvasBtn.innerText = "Explode ▼"
+    sliderWrapper.style.display = "none"
+
+    // Setup Animation Variables
+    const startSliderValue = parseFloat(explodeSlider.value)
+    const animationDuration = 1200 // 1.2 seconds
+    const startTime = performance.now()
+
+    // 🔥 Capture where the camera is right NOW
+    const startCameraPos = camera.position.clone()
+    const startControlsTarget = controls.target.clone()
+
+    // The Animation Loop
+    function animateAssemble(currentTime) {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / animationDuration, 1)
+
+      // "Ease-Out Cubic" Math
+      const easeProgress = 1 - Math.pow(1 - progress, 3)
+      const currentValue = startSliderValue * (1 - easeProgress)
+      
+      explodeSlider.value = currentValue
+
+      // 1. Move the 3D parts
+      parts.forEach(p => {
+        p.position.lerpVectors(p.userData.original, p.userData.target, currentValue)
+      })
+
+      // 2. 🔥 Smoothly fly the camera back to its original framing
+      camera.position.lerpVectors(startCameraPos, defaultCameraPosition, easeProgress)
+      controls.target.lerpVectors(startControlsTarget, defaultControlsTarget, easeProgress)
+      controls.update() // Update OrbitControls to accept the new target
+
+      if (progress < 1) {
+        requestAnimationFrame(animateAssemble)
+      } else {
+        // Animation finished: Clean up
+        explodeSlider.value = 0
+        currentExplodeType = null
+        btnLinear.classList.remove("active")
+        btnRadial.classList.remove("active")
+        
+        // Force exact final positions just in case of math rounding errors
+        parts.forEach(p => p.position.copy(p.userData.original))
+        camera.position.copy(defaultCameraPosition)
+        controls.target.copy(defaultControlsTarget)
+        controls.update()
+      }
+    }
+
+    // Start the animation!
+    requestAnimationFrame(animateAssemble)
+    
+  } else {
+    // === EXPLODE MODE ===
+    explodeMenu.style.display = "block"
+    explodeCanvasBtn.innerText = "Assemble ▲"
+  }
+}
+
+// 3. Prepare Targets for Slider
+// 3. Prepare Targets for Slider (STRICT CAD MATH)
+function prepareExplodeTargets(type) {
+  // 1. Find the true center of the entire vehicle
+  const modelBox = new THREE.Box3().setFromObject(model)
+  const modelCenter = modelBox.getCenter(new THREE.Vector3())
+
+  parts.forEach(p => {
+    // 2. Find the true center of this specific part
+    const partBox = new THREE.Box3().setFromObject(p)
+    const partCenter = partBox.getCenter(new THREE.Vector3())
+
+    // 3. Calculate direction from car center to part center
+    const dir = new THREE.Vector3().subVectors(partCenter, modelCenter)
+    const moveVec = new THREE.Vector3()
+
+    if (type === "linear") {
+      /* === STRICT LINEAR MODE === */
+      const intensity = 6.0 // Adjust ONLY Linear distance here
+
+      const absX = Math.abs(dir.x)
+      const absY = Math.abs(dir.y)
+      const absZ = Math.abs(dir.z)
+
+      // Lock to the single largest axis
+      if (absX >= absY && absX >= absZ) {
+        moveVec.x = dir.x * intensity
+      } else if (absY >= absX && absY >= absZ) {
+        moveVec.y = dir.y * intensity
+      } else {
+        moveVec.z = dir.z * intensity
+      }
+
+    } else if (type === "radial") {
+      /* === PROPORTIONAL RADIAL MODE === */
+      const intensity = 6.0 // Adjust ONLY Radial balloon distance here
+      
+      // Push outward in all 3D directions simultaneously
+      moveVec.copy(dir).multiplyScalar(intensity)
+    }
+
+    // Adjust for global scale to prevent parts flying off to infinity
+    moveVec.divide(model.scale) 
+    p.userData.target = p.userData.original.clone().add(moveVec)
+  })
+}
+
+// 4. Set Linear/Radial Mode
+btnLinear.onclick = () => {
+  currentExplodeType = "linear"
+  btnLinear.classList.add("active")
+  btnRadial.classList.remove("active")
+  sliderWrapper.style.display = "flex"
+  sliderTypeLabel.innerText = "Linear Intensity"
+  // 🔥 NEW: Reset slider to 0 and snap model back before switching
+  explodeSlider.value = 0
+  parts.forEach(p => p.position.copy(p.userData.original))
+  prepareExplodeTargets("linear")
+}
+
+btnRadial.onclick = () => {
+  currentExplodeType = "radial"
+  btnRadial.classList.add("active")
+  btnLinear.classList.remove("active")
+  sliderWrapper.style.display = "flex"
+  sliderTypeLabel.innerText = "Radial Intensity"
+  // 🔥 NEW: Reset slider to 0 and snap model back before switching
+  explodeSlider.value = 0
+  parts.forEach(p => p.position.copy(p.userData.original))
+  prepareExplodeTargets("radial")
+}
+
+// 5. REAL-TIME SLIDER MAGIC
+explodeSlider.addEventListener("input", (e) => {
+  const progress = parseFloat(e.target.value) // 0.0 to 1.0
+  
+  parts.forEach(p => {
+    // Dynamically interpolate position based on slider
+    p.position.lerpVectors(p.userData.original, p.userData.target, progress)
+  })
+})
+
+// 6. Complete Reset
+resetCanvasBtn.onclick = () => {
+  explodeCanvasBtn.innerText = "Explode ▼"
+  explodeSlider.value = 0
+  currentExplodeType = null
+  explodeMenu.style.display = "none"
+  sliderWrapper.style.display = "none"
+  btnLinear.classList.remove("active")
+  btnRadial.classList.remove("active")
+colorCanvasBtn.classList.remove("active")
+if (wireframeBtn) wireframeBtn.classList.remove("active")
+  if (transparentBtn) transparentBtn.classList.remove("active")
+  parts.forEach(p => {
+    p.visible = true
+    p.position.copy(p.userData.original)
+    if (p.userData.originalColor) {
+      p.material = p.material.clone()
+      p.material.color.copy(p.userData.originalColor)
+    }
+    // 🔥 NEW: Reset Wireframe & Transparency on the material
+    if (p.material) {
+      p.material.wireframe = false
+      p.material.transparent = false
+      p.material.opacity = 1
+    }
+    if (p.material.emissive) p.material.emissive.set(0x000000)
+  })
+// 🔥 NEW: Instantly snap camera back to default on global reset
+  camera.position.copy(defaultCameraPosition)
+  controls.target.copy(defaultControlsTarget)
+  controls.update()
+  clearSelection()
+
+}
+/* ================= SYSTEM UI ================= */
+
+const subsystemContainer = document.getElementById("subsystems")
+ 
+
+
+
+/* ================= AUTO SYSTEM TREE ================= */
+
+const systemsPanel = document.getElementById("systemsPanel")
+
+function buildSystemTree(){
+
+  const systems = {}
+
+  Object.values(partDescriptions).forEach(part=>{
+
+    const system = part.category
+    const subsystem = part.position
+
+    if(!systems[system]) systems[system] = {}
+
+    if(!systems[system][subsystem]) systems[system][subsystem] = []
+
+    systems[system][subsystem].push(part.displayName)
+
+  })
+
+  renderSystems(systems)
+
+}
+
+function renderSystems(systems){
+
+  systemsPanel.innerHTML = "<h3>Systems</h3>"
+
+  Object.keys(systems).forEach(system=>{
+
+    const systemDiv = document.createElement("div")
+    systemDiv.className = "system-item"
+
+    systemDiv.innerHTML = `
+      <span class="system-arrow">▶</span>
+      ${system}
+    `
+
+    const subsContainer = document.createElement("div")
+    subsContainer.className = "subsystems"
+
+    Object.keys(systems[system]).forEach(sub=>{
+
+      const subDiv = document.createElement("div")
+      subDiv.className = "subsystem-item"
+      subDiv.innerText = sub
+
+      subDiv.onclick = () => {
+
+  highlightParts(systems[system][sub])
+
+  filterPartsTable(systems[system][sub])
+
+}
+subDiv.onmouseenter = () => {
+
+  previewHighlight(systems[system][sub])
+
+}
+
+subDiv.onmouseleave = () => {
+
+  parts.forEach(p=>{
+    if(p.material.emissive)
+      p.material.emissive.set(0x000000)
+  })
+
+}
+
+      subsContainer.appendChild(subDiv)
+
+    })
+
+    systemDiv.onclick = ()=>{
+
+      const isOpen = subsContainer.classList.contains("open")
+
+      document.querySelectorAll(".subsystems")
+        .forEach(el => el.classList.remove("open"))
+
+      document.querySelectorAll(".system-item")
+        .forEach(el => el.classList.remove("active"))
+
+      if(!isOpen){
+
+        subsContainer.classList.add("open")
+        systemDiv.classList.add("active")
+           
+        const systemParts = []
+
+Object.values(systems[system]).forEach(arr=>{
+  arr.forEach(p=>systemParts.push(p))
+})
+
+highlightParts(systemParts)
+filterPartsTable(systemParts)
+      }
+
+    }
+
+    systemsPanel.appendChild(systemDiv)
+    systemsPanel.appendChild(subsContainer)
+
+  })
+
+}
+
+function highlightParts(partNames){
+
+  parts.forEach(p=>{
+
+    const display = partDescriptions[p.name]?.displayName
+
+    if(partNames.includes(display)){
+
+      if(p.material.emissive){
+        p.material.emissive.set(0x646cff)
+        p.material.emissiveIntensity = 0.7
+      }
+
+    }else{
+
+      if(p.material.emissive){
+        p.material.emissive.set(0x000000)
+      }
+
+    }
+
+  })
+}
+function filterPartsTable(partNames){
+
+  document.querySelectorAll("#partsList tbody tr").forEach(row=>{
+
+    const name = row.dataset.name
+
+    if(!name) return
+
+    if(partNames.includes(name)){
+      row.style.display = ""
+    }else{
+      row.style.display = "none"
+    }
+
+  })
+
+}
+function previewHighlight(partNames){
+
+  parts.forEach(p=>{
+
+      if(p === selectedPart) return
+
+    if(!p.material || !p.material.emissive) return
+
+    if(partNames.includes(p.name)){
+
+      p.material.emissive.set(0x00ffcc)
+      p.material.emissiveIntensity = 0.4
+
+    }else{
+
+      p.material.emissive.set(0x000000)
+
+    }
+
+  })
+
+}
+//search//
+const searchInput = document.getElementById("partSearch")
+if(searchInput){
+searchInput.addEventListener("input",()=>{
+
+  const term = searchInput.value.toLowerCase()
+
+  document.querySelectorAll("#partsList tr").forEach(row=>{
+
+    if(!row.dataset.name) return
+
+    if(row.dataset.name.toLowerCase().includes(term)){
+
+      row.style.display = ""
+
+    }else{
+
+      row.style.display = "none"
+
+    }
+
+  })
+
+})
+}
+/* ================= ANIMATION LOOP ================= */
+
+function animate() {
+  requestAnimationFrame(animate)
+
+  // Update OrbitControls (required if enableDamping is true)
+  if (controls) {
+    controls.update()
+  }
+
+  // Render the scene
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera)
+  }
+
+  // Keep the floating label pinned to the 3D object
+  updateFloatingLabel()
+}
+
+// Start the loop!
+animate()

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: Arial; padding: 40px; background: #eef1f6; }
+    form { background: white; padding: 20px; border-radius: 10px; max-width: 500px; display: flex; flex-direction: column; gap: 15px; }
+    input, select, button { padding: 10px; }
+    button { background: #2f80ed; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <h2>Upload New Vehicle</h2>
+  
+  <form id="adminForm">
+    <input type="text" id="vehicleId" placeholder="Vehicle ID (e.g., bmw_m5)" required>
+    <input type="text" id="vehicleName" placeholder="Display Name (e.g., BMW M5)" required>
+    
+    <select id="region" required>
+      <option value="india">India</option>
+    <option value="europe">Europe</option>
+    <option value="usa">USA</option>
+    <option value="germany">Germany</option>
+    <option value="china">China</option>
+    </select>
+<select id="type" required>
+      <option value="suv">SUV</option>
+      <option value="sedan">Sedan</option>
+      <option value="coupe">Coupe</option>
+    </select>
+
+    <select id="series" required>
+      <option value="m">M Series</option>
+      <option value="x">X Series</option>
+      <option value="i">I Series</option>
+      <option value="r">R Series</option>
+      <option value="z">Z Series</option>
+    </select>
+    <label>Car Image (.png):</label>
+    <input type="file" id="imageFile" accept=".png" required>
+
+    <label>3D Model (.glb):</label>
+    <input type="file" id="modelFile" accept=".glb" required>
+
+    <label>Service Manual (.pdf):</label>
+    <input type="file" id="manualFile" accept=".pdf" required>
+
+    <button type="submit">Upload Vehicle</button>
+  </form>
+
+  <script>
+    document.getElementById('adminForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Gather the data and files
+      const formData = new FormData();
+      formData.append('vehicleId', document.getElementById('vehicleId').value);
+      formData.append('vehicleName', document.getElementById('vehicleName').value);
+      formData.append('region', document.getElementById('region').value);
+      // Add these two lines to your formData before you send the fetch request
+      formData.append('type', document.getElementById('type').value);
+      formData.append('series', document.getElementById('series').value);
+      
+      formData.append('image', document.getElementById('imageFile').files[0]);
+      formData.append('model', document.getElementById('modelFile').files[0]);
+      formData.append('manual', document.getElementById('manualFile').files[0]);
+
+      // Send to your local Node server
+      const response = await fetch('/api/add-vehicle', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      if(result.success) {
+        alert("Vehicle successfully saved to your PC!");
+        document.getElementById('adminForm').reset();
+      }
+    });
+  </script>
+</body>
+</html>

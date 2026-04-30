@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car Details</title>
+<link rel="icon" href="/images/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/src/car-details.css">
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app":  "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js"
+  }
+}
+</script>
+</head>
+
+<body>
+
+<header class="header">
+
+<a href="home.html" class="back-btn">← Back</a>
+
+<h2 id="carName">BMW M3</h2>
+
+</header>
+
+
+<div class="car-container">
+
+<div class="car-image">
+<img id="carImg" src="/images/vehicles/bmw_m3.png" alt="BMW M3">
+</div>
+
+
+<div class="car-info">
+
+<h3>Overview</h3>
+<p id="carDesc">
+The BMW M3 Sedan combines everyday usability with motorsport performance.
+Powered by a high-performance twin-turbo inline-six engine delivering up to
+480 hp with rear-wheel drive and manual transmission.
+</p>
+
+
+<div class="specs">
+
+<div class="spec">
+<span>Engine</span>
+<p>3.0L Twin-Turbo Inline-6</p>
+</div>
+
+<div class="spec">
+<span>Power</span>
+<p>480 HP</p>
+</div>
+
+<div class="spec">
+<span>0-100 km/h</span>
+<p>4.2 sec</p>
+</div>
+
+<div class="spec">
+<span>Transmission</span>
+<p>6-Speed Manual</p>
+</div>
+
+<div class="spec">
+<span>Drive Type</span>
+<p>Rear-Wheel Drive</p>
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button onclick="openManual()">Service Manual</button>
+<button onclick="openParts()">Parts Catalogue</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script  type="module" src="/src/car-details.js"></script>
+
+</body>
+</html>

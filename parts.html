@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Parts Catalogue</title>
+   <link rel="icon" type="image/x-icon" href="/images/icon.svg">
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body class="catalogue-page">
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Vehicle Menu</h2>
+      <ul>
+        <li onclick="goTo('home.html')">Vehicle Selection</li>
+        <li class="active">Parts Catalogue</li>
+        <li onclick="goTo('service.html')">Service Manual</li>
+        <li onclick="goTo('index.html')">3D Viewer</li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+
+      <h1>Parts Catalogue</h1>
+      <p id="vehicleName"></p>
+
+      <!-- Search -->
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="Search part name..."
+      />
+
+      <!-- Category Filter -->
+      <select id="categoryFilter">
+        <option value="all">All Categories</option>
+        <option value="Body">Body</option>
+        <option value="Interior">Interior</option>
+        <option value="Brake">Brake</option>
+        <option value="Wheel">Wheel</option>
+      </select>
+
+      <!-- Parts Table -->
+      <table class="parts-table">
+        <thead>
+          <tr>
+            <th>S.NO</th>
+            <th>Part Name</th>
+            <th>Category</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody id="partsTableBody"></tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+  <script src="/catalogue.js"></script>
+
+</body>
+</html>

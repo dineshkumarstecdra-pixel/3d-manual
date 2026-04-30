@@ -1,0 +1,23 @@
+[
+  {
+    "id": "bmw_x4",
+    "name": "BMW_X4",
+    "region": "india",
+    "type": "suv",
+    "series": "x"
+  },
+  {
+    "id": "bmw_x5",
+    "name": "BMW_X5",
+    "region": "europe",
+    "type": "suv",
+    "series": "x"
+  },
+  {
+    "id": "bmw_x5",
+    "name": "BMW_X5",
+    "region": "europe",
+    "type": "suv",
+    "series": "m"
+  }
+]

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PARTS CATALOGUE</title>
+  <link rel="icon" href="/images/icon.svg" type="image/svg+xml">
+
+  <link rel="stylesheet" href="src\home.css">
+<script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+
+  <header class="header">
+
+   <div class="logo">
+  <a href="home.html">
+    <img src="/images/icons/icon.svg" alt="logo">
+  </a>
+</div>
+
+    <nav class="nav">
+      <a href="partscat.html" style="color:#2f80ed;">Parts Catalogue</a>
+      <a href="serviceman.html">Service Manual</a>
+    </nav>
+<div class="region-selector">
+ <img src="/images/worldwide.png" alt="world" class="world-icon">
+  <select id="regionSelect">
+    <option value="">All</option>
+    <option value="india">India</option>
+    <option value="europe">Europe</option>
+    <option value="usa">USA</option>
+    <option value="germany">Germany</option>
+    <option value="china">China</option>
+  </select>
+
+</div>
+    <div class="profile" id="profileMenu">
+      <span class="icon"><img src="/images/icons/profile.png" alt=""></span>
+      <div class="profile-dropdown" id="profileDropdown">
+    <button id="logoutBtn">Logout</button>
+  </div>
+    </div>
+
+  </header>
+  <div class="container">
+
+    <h1>Select Vehicle</h1>
+
+
+    <div class="selectors">
+      
+
+      <div class="select-box">
+
+        
+
+        <select id="typeSelect">
+          <option value="">Select the Type</option>
+
+          <option value="suv">SUV</option>
+          <option value="sedan">SEDAN</option>
+          <option value="coupe">COUPE</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="select-box">
+
+        
+
+        <select id="modelSelect">
+          <option value="">Select the series</option>
+
+          <option value="m">M</option>
+          <option value="x">X</option>
+          <option value="i">I </option>
+          <option value="r">R </option>
+          <option value="z">Z </option>
+
+        </select>
+
+      </div>
+     <button id="resetFilter">Reset</button>
+    
+
+    </div>
+
+
+    
+
+
+
+
+
+
+    <section class="section">
+
+      <h2>All Vehicles</h2>
+
+      <div class="vehicle-grid">
+
+        <div class="vehicle-card" data-type="coupe" data-series="m">
+          <img src="/images/vehicles/bmw_m3.png">
+          <div class="vehicle-info">
+            <h3>BMW M3</h3>
+            <p>2022 Model</p>
+            <button onclick="openVehicle('bmw_m3')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="sedan" data-series="r">
+          <img src="/images/vehicles/audi_rs7.png">
+          <div class="vehicle-info">
+            <h3>Audi RS7</h3>
+            <p>2021 Model</p>
+            <button onclick="openVehicle('audi_rs7')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="sedan" data-series="r">
+          <img src="/images/vehicles/audi_r8.png">
+          <div class="vehicle-info">
+            <h3>Audi R8</h3>
+            <p>2021 Model</p>
+            <button onclick="openVehicle('audi_r8')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="coupe" data-series="m">
+          <img src="/images/vehicles/bmw_m4.png">
+          <div class="vehicle-info">
+            <h3>BMW M4</h3>
+            <p>2021 Model</p>
+            <button onclick="openVehicle('bmw_m4')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="sedan" data-series="z">
+          <img src="/images/vehicles/bmw_z4.png">
+          <div class="vehicle-info">
+            <h3>BMW Z4 M40I</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_z4')">Open</button>
+          </div>
+        </div>
+        <div class="vehicle-card" data-type="coupe" data-series="m">
+          <img src="/images/vehicles/bmw_ms.png">
+          <div class="vehicle-info">
+            <h3>BMW M SPORT</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_ms')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="coupe" data-series="m">
+          <img src="/images/vehicles/bmw_m8.png">
+          <div class="vehicle-info">
+            <h3>BMW M8</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_m8')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="suv" data-series="i">
+          <img src="/images/vehicles/bmw_ix.png">
+          <div class="vehicle-info">
+            <h3>BMW IX</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_ix')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="suv" data-series="i">
+          <img src="/images/vehicles/bmw_i5.png">
+          <div class="vehicle-info">
+            <h3>BMW I5</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_i5')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="suv" data-series="i">
+          <img src="/images/vehicles/bmw_i7.png">
+          <div class="vehicle-info">
+            <h3>BMW I7</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_i7')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="suv" data-series="x">
+          <img src="/images/vehicles/bmw_x3.png">
+          <div class="vehicle-info">
+            <h3>BMW X3</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_x3')">Open</button>
+          </div>
+        </div>
+
+        <div class="vehicle-card" data-type="suv" data-series="x">
+          <img src="/images/vehicles/bmw_xm.png">
+          <div class="vehicle-info">
+            <h3>BMW XM</h3>
+            <p>2020 Model</p>
+            <button onclick="openVehicle('bmw_xm')">Open</button>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <script  type="module" src="/src/partscat.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Service Manual</title>
+  <link rel="icon" type="image/x-icon" href="/images/icon.svg">
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body class="manual-page">
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>Vehicle Menu</h2>
+      <ul>
+        <li onclick="goTo('home.html')">Vehicle Selection</li>
+        <li onclick="goTo('parts.html')">Parts Catalogue</li>
+        <li class="active">Service Manual</li>
+        <li onclick="goTo('index.html')">3D Viewer</li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+
+      <h1>Service Manual</h1>
+      <p id="vehicleName"></p>
+
+      <!-- System Categories -->
+      <div class="system-grid">
+
+        <div class="system-card" onclick="loadProcedure('Brake')">
+          <h3>Brake System</h3>
+        </div>
+
+        <div class="system-card" onclick="loadProcedure('Engine')">
+          <h3>Engine System</h3>
+        </div>
+
+        <div class="system-card" onclick="loadProcedure('Suspension')">
+          <h3>Suspension</h3>
+        </div>
+
+        <div class="system-card" onclick="loadProcedure('Electrical')">
+          <h3>Electrical</h3>
+        </div>
+
+      </div>
+
+      <!-- Procedure Section -->
+      <div id="procedureSection" class="procedure-section"></div>
+
+    </div>
+
+  </div>
+
+  <script src="/service.js"></script>
+
+</body>
+</html>

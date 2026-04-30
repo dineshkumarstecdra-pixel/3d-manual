@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D MODEL | Authentication</title>
+   <link rel="icon" type="image/x-icon" href="/images/icon.svg">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+
+<body class="login-body">
+
+  <div class="auth-card">
+
+    <h1>3D MODEL</h1>
+    <p class="subtitle">Interactive 3D Manual Platform</p>
+
+    <div class="input-group">
+      <input type="email" id="email" placeholder="Email" />
+    </div>
+
+    <div class="input-group password-wrapper">
+      <input type="password" id="password" placeholder="Password" />
+      <span id="togglePassword" class="eye">👁</span>
+    </div>
+
+    <div class="input-group hidden" id="confirmGroup">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" />
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <button id="actionBtn" class="primary-btn">
+      <span id="btnText">LOGIN</span>
+      <span id="loader" class="loader hidden"></span>
+    </button>
+
+    <p class="toggle-text">
+      <span id="toggleAuth" class="auth-link">
+        Don’t have an account? Sign Up
+      </span>
+    </p>
+
+  </div>
+
+<script type="module">
+import { auth } from "./src/firebase.js"
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "firebase/auth"
+
+const actionBtn = document.getElementById("actionBtn")
+const btnText = document.getElementById("btnText")
+const loader = document.getElementById("loader")
+const toggleAuth = document.getElementById("toggleAuth")
+const errorBox = document.getElementById("errorMessage")
+const confirmGroup = document.getElementById("confirmGroup")
+const togglePassword = document.getElementById("togglePassword")
+
+let isLogin = true
+
+// Toggle Login / Signup
+toggleAuth.addEventListener("click", () => {
+  isLogin = !isLogin
+  errorBox.textContent = ""
+
+  confirmGroup.classList.toggle("hidden")
+
+  if (isLogin) {
+    btnText.textContent = "LOGIN"
+    toggleAuth.textContent = "Don’t have an account? Sign Up"
+  } else {
+    btnText.textContent = "SIGN UP"
+    toggleAuth.textContent = "Already have an account? Login"
+  }
+})
+
+// Show / Hide Password
+togglePassword.addEventListener("click", () => {
+  const passInput = document.getElementById("password")
+  passInput.type = passInput.type === "password" ? "text" : "password"
+})
+
+// Main Action
+actionBtn.addEventListener("click", async () => {
+
+  const email = document.getElementById("email").value.trim()
+  const password = document.getElementById("password").value.trim()
+  const confirmPassword = document.getElementById("confirmPassword").value.trim()
+
+  errorBox.textContent = ""
+
+  if (!email || !password) {
+    showError("Please enter all fields.")
+    return
+  }
+
+  if (!isLogin && password !== confirmPassword) {
+    showError("Passwords do not match.")
+    return
+  }
+
+  startLoading()
+
+  try {
+
+    if (isLogin) {
+      await signInWithEmailAndPassword(auth, email, password)
+    } else {
+      await createUserWithEmailAndPassword(auth, email, password)
+    }
+
+    window.location.href = "/home.html"
+
+  } catch (error) {
+    showError("Authentication failed. Please check your details.")
+    stopLoading()
+  }
+
+})
+
+function showError(message) {
+  errorBox.textContent = message
+  errorBox.classList.add("shake")
+  setTimeout(() => errorBox.classList.remove("shake"), 400)
+}
+
+function startLoading() {
+  loader.classList.remove("hidden")
+  btnText.textContent = ""
+  actionBtn.disabled = true
+}
+
+function stopLoading() {
+  loader.classList.add("hidden")
+  btnText.textContent = isLogin ? "LOGIN" : "SIGN UP"
+  actionBtn.disabled = false
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+
+  <!-- ✅ CSS LINK -->
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+
+<body class="login-body">
+
+  <!-- ✅ CARD CONTAINER -->
+  <div class="auth-card">
+
+    <h1>Admin Panel</h1>
+    <p class="subtitle">Upload New Vehicle</p>
+
+    <form id="uploadForm">
+
+      <div class="input-group">
+        <input type="text" id="name" placeholder="Vehicle Name" required>
+      </div>
+
+      <div class="input-group">
+        <select id="type">
+          <option value="suv">SUV</option>
+          <option value="sedan">SEDAN</option>
+          <option value="coupe">COUPE</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <select id="series">
+          <option value="m">M</option>
+          <option value="x">X</option>
+          <option value="i">I</option>
+          <option value="r">R</option>
+          <option value="z">Z</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <input type="file" id="image" accept="image/*" required>
+      </div>
+
+      <div class="input-group">
+        <input type="file" id="model" accept=".glb" required>
+      </div>
+
+      <button type="submit" class="primary-btn">
+        Upload Vehicle
+      </button>
+
+    </form>
+
+  </div>
+
+  <!-- ✅ JS -->
+  <script type="module" src="./src/admin.js"></script>
+
+</body>
+</html>

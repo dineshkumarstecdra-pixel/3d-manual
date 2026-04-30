@@ -1,0 +1,40 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+}
+
+#sidebar {
+  width: 300px;
+  background: #111;
+  color: white;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#sidebar h2 {
+  margin-top: 0;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  background: #00bcd4;
+  color: black;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0097a7;
+}
+
+#viewer {
+  flex: 1;
+}

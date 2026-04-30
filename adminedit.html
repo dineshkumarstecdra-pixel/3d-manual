@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Edit</title>
+     <script src="/src/admin.js"></script>
+   <link rel="stylesheet" href="/src/admin.css">
+</head>
+<body class="h-screen flex flex-col font-sans bg-gray-50 overflow-hidden">
+
+    <header class="flex items-center justify-between px-4 py-3 bg-white layout-border border-b-0">
+        <div class="flex items-center gap-6 w-full max-w-4xl">
+            <span class="font-bold text-lg">logo</span>
+            <div class="flex items-center gap-4 flex-1">
+                <input type="text" placeholder="Search the vehicle ..." class="w-full p-2 thick-border text-blue-700 outline-none">
+                <span class="font-medium">Search</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <button class="px-10 py-1 border-2 border-blue-600 rounded-full text-blue-600 font-semibold hover:bg-blue-50">Upload</button>
+            <div class="flex items-center gap-2">
+                <span class="text-xl">🌐</span>
+                <select class="bg-black text-white p-1 text-sm outline-none">
+                    <option>All</option>
+                    <option>India</option>
+                    <option>Europe</option>
+                    <option>USA</option>
+                    <option>Germany</option>
+                    <option>China</option>
+                </select>
+            </div>
+            <div class="flex flex-col items-center text-blue-700 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <span class="text-xs font-bold mt-1">Profile</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden layout-border bg-white">
+        
+        <aside class="w-64 border-r-4 border-blue-600 p-6 flex flex-col gap-3">
+            <a href="home.html" class="text-blue-700 hover:underline inline-block w-max">Home</a>
+            <a href="upload.html" class="text-blue-700 hover:underline inline-block w-max">Upload</a>
+            <a href="edit.html" class="bg-black text-white font-bold inline-block px-2 py-0.5 w-max">Edit</a>
+            <a href="#" class="text-blue-700 hover:underline inline-block w-max">Manage the vehicle</a>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto bg-gray-50">
+            <h1 class="text-2xl font-bold mb-4">Select Vehicle</h1>
+            
+            <div class="flex gap-4 mb-8">
+                <select class="border border-gray-300 p-2 rounded w-48 outline-none">
+                    <option>Select the Type</option>
+                </select>
+                <select class="border border-gray-300 p-2 rounded w-48 outline-none">
+                    <option>Select the series</option>
+                </select>
+                <button class="bg-gray-600 text-white px-6 py-2 rounded">Reset</button>
+            </div>
+
+            <h2 class="text-xl font-bold mb-4">All Vehicles</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pb-10">
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-100 flex flex-col">
+                    <img src="https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=300&q=80" alt="BMW" class="w-full h-32 object-contain mb-4">
+                    <h3 class="font-bold text-lg">BMW M3</h3>
+                    <p class="text-gray-500 text-sm mb-4">2022 Model</p>
+                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded w-max mt-auto font-bold hover:bg-blue-600">Edit</button>
+                </div>
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-100 flex flex-col">
+                    <img src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=300&q=80" alt="Audi" class="w-full h-32 object-contain mb-4">
+                    <h3 class="font-bold text-lg">Audi RS7</h3>
+                    <p class="text-gray-500 text-sm mb-4">2021 Model</p>
+                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded w-max mt-auto font-bold hover:bg-blue-600">Edit</button>
+                </div>
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-100 flex flex-col">
+                    <img src="https://images.unsplash.com/photo-1614200187524-dc4b892acf16?auto=format&fit=crop&w=300&q=80" alt="Audi R8" class="w-full h-32 object-contain mb-4">
+                    <h3 class="font-bold text-lg">Audi R8</h3>
+                    <p class="text-gray-500 text-sm mb-4">2021 Model</p>
+                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded w-max mt-auto font-bold hover:bg-blue-600">Edit</button>
+                </div>
+                <div class="bg-white rounded-xl shadow p-4 border border-gray-100 flex flex-col">
+                    <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=300&q=80" alt="BMW M4" class="w-full h-32 object-contain mb-4">
+                    <h3 class="font-bold text-lg">BMW M4</h3>
+                    <p class="text-gray-500 text-sm mb-4">2021 Model</p>
+                    <button class="bg-blue-500 text-white px-4 py-1.5 rounded w-max mt-auto font-bold hover:bg-blue-600">Edit</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

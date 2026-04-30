@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VEHICLE STP</title>
+  <link rel="icon" href="/images/icon.svg" type="image/svg+xml">
+
+  <link rel="stylesheet" href="src\home.css">
+
+</head>
+
+<body>
+
+  <header class="header">
+
+   <div class="logo">
+  <a href="home.html">
+    <img src="/images/icons/icon.svg" alt="logo">
+  </a>
+</div>
+
+    <nav class="nav">
+      <a href="partscat.html">Parts Catalogue</a>
+      <a href="serviceman.html">Service Manual</a>
+    </nav>
+    <div class="region-selector">
+ <img src="/images/worldwide.png" alt="world" class="world-icon">
+  <select id="regionSelect">
+    <option value="">All</option>
+    <option value="india">India</option>
+    <option value="europe">Europe</option>
+    <option value="usa">USA</option>
+    <option value="germany">Germany</option>
+    <option value="china">China</option>
+  </select>
+
+</div>
+    <div class="profile" id="profileMenu">
+      <span class="icon"><img src="/images/icons/profile.png" alt=""></span>
+      <div class="profile-dropdown" id="profileDropdown">
+    <button id="logoutBtn">Logout</button>
+  </div>
+    </div>
+
+  </header>
+  <div class="container">
+
+    <h1>Select Vehicle</h1>
+
+
+    <div class="selectors">
+      
+
+      <div class="select-box">
+
+        
+
+        <select id="typeSelect">
+          <option value="">Select the Type</option>
+
+          <option value="suv">SUV</option>
+          <option value="sedan">SEDAN</option>
+          <option value="coupe">COUPE</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="select-box">
+
+        
+
+        <select id="modelSelect">
+          <option value="">Select the series</option>
+
+          <option value="m">M</option>
+          <option value="x">X</option>
+          <option value="i">I </option>
+          <option value="r">R </option>
+          <option value="z">Z </option>
+
+        </select>
+
+      </div>
+     <button id="resetFilter">Reset</button>
+    
+
+    </div>
+
+
+    
+
+
+
+
+
+
+    <section class="section">
+
+      <h2>All Vehicles</h2>
+
+      
+<div class="vehicle-grid" id="vehicleGrid"></div>
+     
+
+    </section>
+
+    <script  type="module" src="/src/home.js"></script>
+
+</body>
+
+</html>

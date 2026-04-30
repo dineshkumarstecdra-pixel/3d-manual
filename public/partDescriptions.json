@@ -1,0 +1,1114 @@
+{
+  "WHEEL_RR_RT_Battistrada_0": {
+    "sno": 1,
+    "displayName": "WHEEL_RR_RT_Battistrada_0",
+    "category": "Wheel",
+    "position": "Rear Right",
+    "qty": 1,
+    "description": "Component: WHEEL_RR_RT_Battistrada_0 of the vehicle."
+  },
+  "WHEEL_RR_RT_rim_0": {
+    "sno": 2,
+    "displayName": "WHEEL_RR_RT_rim_0",
+    "category": "Wheel",
+    "position": "Rear Right",
+    "qty": 1,
+    "description": "Component: WHEEL_RR_RT_rim_0 of the vehicle."
+  },
+  "WHEEL_RR_LOGHI_RIM_0": {
+    "sno": 3,
+    "displayName": "WHEEL_RR_LOGHI_RIM_0",
+    "category": "Wheel",
+    "position": "Rear Right",
+    "qty": 1,
+    "description": "Component: WHEEL_RR_LOGHI_RIM_0 of the vehicle."
+  },
+  "WHEEL_RF_RT_Battistrada_0": {
+    "sno": 4,
+    "displayName": "WHEEL_RF_RT_Battistrada_0",
+    "category": "Wheel",
+    "position": "Front Right",
+    "qty": 1,
+    "description": "Component: WHEEL_RF_RT_Battistrada_0 of the vehicle."
+  },
+  "WHEEL_RF_RT_rim_0": {
+    "sno": 5,
+    "displayName": "WHEEL_RF_RT_rim_0",
+    "category": "Wheel",
+    "position": "Front Right",
+    "qty": 1,
+    "description": "Component: WHEEL_RF_RT_rim_0 of the vehicle."
+  },
+  "WHEEL_RF_LOGHI_RIM_0": {
+    "sno": 6,
+    "displayName": "WHEEL_RF_LOGHI_RIM_0",
+    "category": "Wheel",
+    "position": "Front Right",
+    "qty": 1,
+    "description": "Component: WHEEL_RF_LOGHI_RIM_0 of the vehicle."
+  },
+  "WHEEL_LR_RT_Battistrada_0": {
+    "sno": 7,
+    "displayName": "WHEEL_LR_RT_Battistrada_0",
+    "category": "Wheel",
+    "position": "Rear Left",
+    "qty": 1,
+    "description": "Component: WHEEL_LR_RT_Battistrada_0 of the vehicle."
+  },
+  "WHEEL_LR_RT_rim_0": {
+    "sno": 8,
+    "displayName": "WHEEL_LR_RT_rim_0",
+    "category": "Wheel",
+    "position": "Rear Left",
+    "qty": 1,
+    "description": "Component: WHEEL_LR_RT_rim_0 of the vehicle."
+  },
+  "WHEEL_LR_LOGHI_RIM_0": {
+    "sno": 9,
+    "displayName": "WHEEL_LR_LOGHI_RIM_0",
+    "category": "Wheel",
+    "position": "Rear Left",
+    "qty": 1,
+    "description": "Component: WHEEL_LR_LOGHI_RIM_0 of the vehicle."
+  },
+  "WHEEL_LF_RT_Battistrada_0": {
+    "sno": 10,
+    "displayName": "WHEEL_LF_RT_Battistrada_0",
+    "category": "Wheel",
+    "position": "Front Left",
+    "qty": 1,
+    "description": "Component: WHEEL_LF_RT_Battistrada_0 of the vehicle."
+  },
+  "WHEEL_LF_RT_rim_0": {
+    "sno": 11,
+    "displayName": "WHEEL_LF_RT_rim_0",
+    "category": "Wheel",
+    "position": "Front Left",
+    "qty": 1,
+    "description": "Component: WHEEL_LF_RT_rim_0 of the vehicle."
+  },
+  "WHEEL_LF_LOGHI_RIM_0": {
+    "sno": 12,
+    "displayName": "WHEEL_LF_LOGHI_RIM_0",
+    "category": "Wheel",
+    "position": "Front Left",
+    "qty": 1,
+    "description": "Component: WHEEL_LF_LOGHI_RIM_0 of the vehicle."
+  },
+  "polymsh266_SUB6_INT_Cromato_0": {
+    "sno": 13,
+    "displayName": "polymsh266_SUB6_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB6_INT_Cromato_0 of the vehicle."
+  },
+  "polymsh266_SUB3_INT_Plaastica_NERA_0": {
+    "sno": 14,
+    "displayName": "polymsh266_SUB3_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB3_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "polymsh266_SUB1_INT_Skin_0": {
+    "sno": 15,
+    "displayName": "polymsh266_SUB1_INT_Skin_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB1_INT_Skin_0 of the vehicle."
+  },
+  "polymsh266_SUB2_INT_Velluto_0": {
+    "sno": 16,
+    "displayName": "polymsh266_SUB2_INT_Velluto_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB2_INT_Velluto_0 of the vehicle."
+  },
+  "polymsh266_SUB4_LIVREA_0": {
+    "sno": 17,
+    "displayName": "polymsh266_SUB4_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB4_LIVREA_0 of the vehicle."
+  },
+  "polymsh266_SUB7_INT_Gomma_0": {
+    "sno": 18,
+    "displayName": "polymsh266_SUB7_INT_Gomma_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB7_INT_Gomma_0 of the vehicle."
+  },
+  "polymsh266_SUB9_INT_Speakers_0": {
+    "sno": 19,
+    "displayName": "polymsh266_SUB9_INT_Speakers_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB9_INT_Speakers_0 of the vehicle."
+  },
+  "polymsh266_SUB8_INT_Plaastica_Opaca_0": {
+    "sno": 20,
+    "displayName": "polymsh266_SUB8_INT_Plaastica_Opaca_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB8_INT_Plaastica_Opaca_0 of the vehicle."
+  },
+  "polymsh266_SUB5_INT_Door_Grid_0": {
+    "sno": 21,
+    "displayName": "polymsh266_SUB5_INT_Door_Grid_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB5_INT_Door_Grid_0 of the vehicle."
+  },
+  "polymsh266_SUB0_INT_Cuciture_skinned_0": {
+    "sno": 22,
+    "displayName": "polymsh266_SUB0_INT_Cuciture_skinned_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh266_SUB0_INT_Cuciture_skinned_0 of the vehicle."
+  },
+  "polymsh_detached29_SUB2_MIRROR_0": {
+    "sno": 23,
+    "displayName": "polymsh_detached29_SUB2_MIRROR_0",
+    "category": "Mirror",
+    "position": "Rear Right",
+    "qty": 1,
+    "description": "Component: polymsh_detached29_SUB2_MIRROR_0 of the vehicle."
+  },
+  "polymsh_detached29_SUB3_VETRI_Fanali_0": {
+    "sno": 24,
+    "displayName": "polymsh_detached29_SUB3_VETRI_Fanali_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached29_SUB3_VETRI_Fanali_0 of the vehicle."
+  },
+  "polymsh_detached29_SUB0_PLASTICA_Nera_lucida_0": {
+    "sno": 25,
+    "displayName": "polymsh_detached29_SUB0_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached29_SUB0_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh_detached29_SUB1_LIVREA_0": {
+    "sno": 26,
+    "displayName": "polymsh_detached29_SUB1_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached29_SUB1_LIVREA_0 of the vehicle."
+  },
+  "polymsh267_SUB6_INT_Cromato_0": {
+    "sno": 27,
+    "displayName": "polymsh267_SUB6_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB6_INT_Cromato_0 of the vehicle."
+  },
+  "polymsh267_SUB3_INT_Plaastica_NERA_0": {
+    "sno": 28,
+    "displayName": "polymsh267_SUB3_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB3_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "polymsh267_SUB1_INT_Skin_0": {
+    "sno": 29,
+    "displayName": "polymsh267_SUB1_INT_Skin_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB1_INT_Skin_0 of the vehicle."
+  },
+  "polymsh267_SUB2_INT_Velluto_0": {
+    "sno": 30,
+    "displayName": "polymsh267_SUB2_INT_Velluto_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB2_INT_Velluto_0 of the vehicle."
+  },
+  "polymsh267_SUB4_LIVREA_0": {
+    "sno": 31,
+    "displayName": "polymsh267_SUB4_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB4_LIVREA_0 of the vehicle."
+  },
+  "polymsh267_SUB7_INT_Gomma_0": {
+    "sno": 32,
+    "displayName": "polymsh267_SUB7_INT_Gomma_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB7_INT_Gomma_0 of the vehicle."
+  },
+  "polymsh267_SUB9_INT_Speakers_0": {
+    "sno": 33,
+    "displayName": "polymsh267_SUB9_INT_Speakers_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB9_INT_Speakers_0 of the vehicle."
+  },
+  "polymsh267_SUB8_INT_Plaastica_Opaca_0": {
+    "sno": 34,
+    "displayName": "polymsh267_SUB8_INT_Plaastica_Opaca_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB8_INT_Plaastica_Opaca_0 of the vehicle."
+  },
+  "polymsh267_SUB5_INT_Door_Grid_0": {
+    "sno": 35,
+    "displayName": "polymsh267_SUB5_INT_Door_Grid_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB5_INT_Door_Grid_0 of the vehicle."
+  },
+  "polymsh267_SUB0_INT_Cuciture_skinned_0": {
+    "sno": 36,
+    "displayName": "polymsh267_SUB0_INT_Cuciture_skinned_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh267_SUB0_INT_Cuciture_skinned_0 of the vehicle."
+  },
+  "polymsh62_SUB3_MIRROR_0": {
+    "sno": 37,
+    "displayName": "polymsh62_SUB3_MIRROR_0",
+    "category": "Mirror",
+    "position": "Rear Right",
+    "qty": 1,
+    "description": "Component: polymsh62_SUB3_MIRROR_0 of the vehicle."
+  },
+  "polymsh62_SUB0_VETRI_Fanali_0": {
+    "sno": 38,
+    "displayName": "polymsh62_SUB0_VETRI_Fanali_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh62_SUB0_VETRI_Fanali_0 of the vehicle."
+  },
+  "polymsh62_SUB2_PLASTICA_Nera_lucida_0": {
+    "sno": 39,
+    "displayName": "polymsh62_SUB2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh62_SUB2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh62_SUB1_LIVREA_0": {
+    "sno": 40,
+    "displayName": "polymsh62_SUB1_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh62_SUB1_LIVREA_0 of the vehicle."
+  },
+  "polymsh73_SUB0_CAR_PinzaFreni_0": {
+    "sno": 41,
+    "displayName": "polymsh73_SUB0_CAR_PinzaFreni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh73_SUB0_CAR_PinzaFreni_0 of the vehicle."
+  },
+  "polymsh73_SUB1_Chassis_0": {
+    "sno": 42,
+    "displayName": "polymsh73_SUB1_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh73_SUB1_Chassis_0 of the vehicle."
+  },
+  "polymsh71_SUB1_CAR_PinzaFreni_0": {
+    "sno": 43,
+    "displayName": "polymsh71_SUB1_CAR_PinzaFreni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh71_SUB1_CAR_PinzaFreni_0 of the vehicle."
+  },
+  "polymsh71_SUB0_Chassis_0": {
+    "sno": 44,
+    "displayName": "polymsh71_SUB0_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh71_SUB0_Chassis_0 of the vehicle."
+  },
+  "polymsh69_SUB0_CAR_PinzaFreni_0": {
+    "sno": 45,
+    "displayName": "polymsh69_SUB0_CAR_PinzaFreni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh69_SUB0_CAR_PinzaFreni_0 of the vehicle."
+  },
+  "polymsh69_SUB1_Chassis_0": {
+    "sno": 46,
+    "displayName": "polymsh69_SUB1_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh69_SUB1_Chassis_0 of the vehicle."
+  },
+  "polymsh72_SUB1_CAR_PinzaFreni_0": {
+    "sno": 47,
+    "displayName": "polymsh72_SUB1_CAR_PinzaFreni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh72_SUB1_CAR_PinzaFreni_0 of the vehicle."
+  },
+  "polymsh72_SUB0_Chassis_0": {
+    "sno": 48,
+    "displayName": "polymsh72_SUB0_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh72_SUB0_Chassis_0 of the vehicle."
+  },
+  "Sospensione__Frontale_2_Chassis_0": {
+    "sno": 49,
+    "displayName": "Sospensione__Frontale_2_Chassis_0",
+    "category": "Chassis",
+    "position": "Front",
+    "qty": 1,
+    "description": "Component: Sospensione__Frontale_2_Chassis_0 of the vehicle."
+  },
+  "brake_light_2_2_Fanali_POSTERIORI_TS_0": {
+    "sno": 50,
+    "displayName": "brake_light_2_2_Fanali_POSTERIORI_TS_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: brake_light_2_2_Fanali_POSTERIORI_TS_0 of the vehicle."
+  },
+  "GEO_needle1_2_INT_Plaastica_NERA_0": {
+    "sno": 51,
+    "displayName": "GEO_needle1_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_needle1_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "GEO_RED_Needle_B_2_INT_Plaastica_NERA_0": {
+    "sno": 52,
+    "displayName": "GEO_RED_Needle_B_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_RED_Needle_B_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "plastic_sp8_2_INT_Plaastica_NERA_0": {
+    "sno": 53,
+    "displayName": "plastic_sp8_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: plastic_sp8_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "GEO_RED_Needle_D_2_INT_Plaastica_NERA_0": {
+    "sno": 54,
+    "displayName": "GEO_RED_Needle_D_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_RED_Needle_D_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "plastic_sp7_2_INT_Plaastica_NERA_0": {
+    "sno": 55,
+    "displayName": "plastic_sp7_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: plastic_sp7_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "GEO_RED_Needle_C_2_INT_Plaastica_NERA_0": {
+    "sno": 56,
+    "displayName": "GEO_RED_Needle_C_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_RED_Needle_C_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "GEO_needle_2_INT_Plaastica_NERA_0": {
+    "sno": 57,
+    "displayName": "GEO_needle_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_needle_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "GEO_RED_Needle_A_2_INT_Plaastica_NERA_0": {
+    "sno": 58,
+    "displayName": "GEO_RED_Needle_A_2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_RED_Needle_A_2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "polymsh258_SUB2_LOGHI_normal_MAP_0": {
+    "sno": 59,
+    "displayName": "polymsh258_SUB2_LOGHI_normal_MAP_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh258_SUB2_LOGHI_normal_MAP_0 of the vehicle."
+  },
+  "polymsh258_SUB4_INT_Cromato_0": {
+    "sno": 60,
+    "displayName": "polymsh258_SUB4_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh258_SUB4_INT_Cromato_0 of the vehicle."
+  },
+  "polymsh258_SUB1_INT_Plaastica_NERA_0": {
+    "sno": 61,
+    "displayName": "polymsh258_SUB1_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh258_SUB1_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "polymsh258_SUB0_INT_Skin_0": {
+    "sno": 62,
+    "displayName": "polymsh258_SUB0_INT_Skin_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh258_SUB0_INT_Skin_0 of the vehicle."
+  },
+  "polymsh258_SUB3_INT_Cuciture_skinned_0": {
+    "sno": 63,
+    "displayName": "polymsh258_SUB3_INT_Cuciture_skinned_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh258_SUB3_INT_Cuciture_skinned_0 of the vehicle."
+  },
+  "CINTURE_OFF_SUB1_INT_Cromato_0": {
+    "sno": 64,
+    "displayName": "CINTURE_OFF_SUB1_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: CINTURE_OFF_SUB1_INT_Cromato_0 of the vehicle."
+  },
+  "CINTURE_OFF_SUB2_INT_Plaastica_NERA_0": {
+    "sno": 65,
+    "displayName": "CINTURE_OFF_SUB2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: CINTURE_OFF_SUB2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "CINTURE_OFF_SUB0_INT_CintureSicurezza_0": {
+    "sno": 66,
+    "displayName": "CINTURE_OFF_SUB0_INT_CintureSicurezza_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: CINTURE_OFF_SUB0_INT_CintureSicurezza_0 of the vehicle."
+  },
+  "GEO_Cambio_SUB0_INT_Display_0": {
+    "sno": 67,
+    "displayName": "GEO_Cambio_SUB0_INT_Display_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_Cambio_SUB0_INT_Display_0 of the vehicle."
+  },
+  "GEO_Cambio_SUB2_INT_Cromato_0": {
+    "sno": 68,
+    "displayName": "GEO_Cambio_SUB2_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_Cambio_SUB2_INT_Cromato_0 of the vehicle."
+  },
+  "GEO_Cambio_SUB1_INT_Plaastica_NERA_0": {
+    "sno": 69,
+    "displayName": "GEO_Cambio_SUB1_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_Cambio_SUB1_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "polymsh259_SUB12_INT_Display_0": {
+    "sno": 70,
+    "displayName": "polymsh259_SUB12_INT_Display_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB12_INT_Display_0 of the vehicle."
+  },
+  "polymsh259_SUB14_INT_VetroDisplay_0": {
+    "sno": 71,
+    "displayName": "polymsh259_SUB14_INT_VetroDisplay_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB14_INT_VetroDisplay_0 of the vehicle."
+  },
+  "polymsh259_SUB18_INT_Lucina_Specchietto_0": {
+    "sno": 72,
+    "displayName": "polymsh259_SUB18_INT_Lucina_Specchietto_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB18_INT_Lucina_Specchietto_0 of the vehicle."
+  },
+  "polymsh259_SUB6_INT_Display_0": {
+    "sno": 73,
+    "displayName": "polymsh259_SUB6_INT_Display_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB6_INT_Display_0 of the vehicle."
+  },
+  "polymsh259_SUB5_INT_Metallo_Nero_Rosso_0": {
+    "sno": 74,
+    "displayName": "polymsh259_SUB5_INT_Metallo_Nero_Rosso_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB5_INT_Metallo_Nero_Rosso_0 of the vehicle."
+  },
+  "polymsh259_SUB17_INT_Display_0": {
+    "sno": 75,
+    "displayName": "polymsh259_SUB17_INT_Display_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB17_INT_Display_0 of the vehicle."
+  },
+  "polymsh259_SUB7_INT_Cromato_0": {
+    "sno": 76,
+    "displayName": "polymsh259_SUB7_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB7_INT_Cromato_0 of the vehicle."
+  },
+  "polymsh259_SUB4_INT_Plaastica_NERA_0": {
+    "sno": 77,
+    "displayName": "polymsh259_SUB4_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB4_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "polymsh259_SUB16_PLASTICA_Nera_lucida_0": {
+    "sno": 78,
+    "displayName": "polymsh259_SUB16_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB16_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh259_SUB3_INT_Skin_0": {
+    "sno": 79,
+    "displayName": "polymsh259_SUB3_INT_Skin_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB3_INT_Skin_0 of the vehicle."
+  },
+  "polymsh259_SUB0_INT_Velluto_0": {
+    "sno": 80,
+    "displayName": "polymsh259_SUB0_INT_Velluto_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB0_INT_Velluto_0 of the vehicle."
+  },
+  "polymsh259_SUB2_INT_Pedana_0": {
+    "sno": 81,
+    "displayName": "polymsh259_SUB2_INT_Pedana_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB2_INT_Pedana_0 of the vehicle."
+  },
+  "polymsh259_SUB9_INT_Pedali_0": {
+    "sno": 82,
+    "displayName": "polymsh259_SUB9_INT_Pedali_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB9_INT_Pedali_0 of the vehicle."
+  },
+  "polymsh259_SUB19_INT_Rotelline_0": {
+    "sno": 83,
+    "displayName": "polymsh259_SUB19_INT_Rotelline_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB19_INT_Rotelline_0 of the vehicle."
+  },
+  "polymsh259_SUB10_INT_CintureSicurezza_0": {
+    "sno": 84,
+    "displayName": "polymsh259_SUB10_INT_CintureSicurezza_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB10_INT_CintureSicurezza_0 of the vehicle."
+  },
+  "polymsh259_SUB8_LIVREA_0": {
+    "sno": 85,
+    "displayName": "polymsh259_SUB8_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB8_LIVREA_0 of the vehicle."
+  },
+  "polymsh259_SUB1_INT_Stoffa_0": {
+    "sno": 86,
+    "displayName": "polymsh259_SUB1_INT_Stoffa_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB1_INT_Stoffa_0 of the vehicle."
+  },
+  "polymsh259_SUB20_INT_Gomma_0": {
+    "sno": 87,
+    "displayName": "polymsh259_SUB20_INT_Gomma_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB20_INT_Gomma_0 of the vehicle."
+  },
+  "polymsh259_SUB11_INT_Plaastica_Opaca_0": {
+    "sno": 88,
+    "displayName": "polymsh259_SUB11_INT_Plaastica_Opaca_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB11_INT_Plaastica_Opaca_0 of the vehicle."
+  },
+  "polymsh259_SUB15_INT_Cuciture_skinned_0": {
+    "sno": 89,
+    "displayName": "polymsh259_SUB15_INT_Cuciture_skinned_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: polymsh259_SUB15_INT_Cuciture_skinned_0 of the vehicle."
+  },
+  "GEO_Guaina_Cambio_SUB0_INT_Velluto_RIG_0": {
+    "sno": 90,
+    "displayName": "GEO_Guaina_Cambio_SUB0_INT_Velluto_RIG_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_Guaina_Cambio_SUB0_INT_Velluto_RIG_0 of the vehicle."
+  },
+  "GEO_Guaina_Cambio_SUB1_INT_Cuciture_skinned_0": {
+    "sno": 91,
+    "displayName": "GEO_Guaina_Cambio_SUB1_INT_Cuciture_skinned_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_Guaina_Cambio_SUB1_INT_Cuciture_skinned_0 of the vehicle."
+  },
+  "IN_rear_Glass_2_VETRI_defrost_interno_0": {
+    "sno": 92,
+    "displayName": "IN_rear_Glass_2_VETRI_defrost_interno_0",
+    "category": "Glass",
+    "position": "Rear",
+    "qty": 1,
+    "description": "Component: IN_rear_Glass_2_VETRI_defrost_interno_0 of the vehicle."
+  },
+  "GEO_INT_LCD_2_INT_Display_0": {
+    "sno": 93,
+    "displayName": "GEO_INT_LCD_2_INT_Display_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_INT_LCD_2_INT_Display_0 of the vehicle."
+  },
+  "GEO_INT_Dials_2_INT_Display_0": {
+    "sno": 94,
+    "displayName": "GEO_INT_Dials_2_INT_Display_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: GEO_INT_Dials_2_INT_Display_0 of the vehicle."
+  },
+  "polymsh_detached105_2_VETRI_Fanali_0": {
+    "sno": 95,
+    "displayName": "polymsh_detached105_2_VETRI_Fanali_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached105_2_VETRI_Fanali_0 of the vehicle."
+  },
+  "polymsh18_2_PLASTICA_Nera_lucida_0": {
+    "sno": 96,
+    "displayName": "polymsh18_2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh18_2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh_detached_2_PLASTICA_Nera_lucida_0": {
+    "sno": 97,
+    "displayName": "polymsh_detached_2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached_2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh19_2_PLASTICA_Nera_lucida_0": {
+    "sno": 98,
+    "displayName": "polymsh19_2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh19_2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh_detached113_2_PLASTICA_Nera_lucida_0": {
+    "sno": 99,
+    "displayName": "polymsh_detached113_2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached113_2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "front_light_1_2_Dettaglio_Faro_0": {
+    "sno": 100,
+    "displayName": "front_light_1_2_Dettaglio_Faro_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: front_light_1_2_Dettaglio_Faro_0 of the vehicle."
+  },
+  "polymsh262_SUB2_FANALI_Anteriori_0": {
+    "sno": 101,
+    "displayName": "polymsh262_SUB2_FANALI_Anteriori_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh262_SUB2_FANALI_Anteriori_0 of the vehicle."
+  },
+  "polymsh262_SUB1_Dettaglio_Faro_0": {
+    "sno": 102,
+    "displayName": "polymsh262_SUB1_Dettaglio_Faro_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh262_SUB1_Dettaglio_Faro_0 of the vehicle."
+  },
+  "polymsh262_SUB0_FANALI_Anteriori_0": {
+    "sno": 103,
+    "displayName": "polymsh262_SUB0_FANALI_Anteriori_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh262_SUB0_FANALI_Anteriori_0 of the vehicle."
+  },
+  "front_light_2_2_FANALI_Anteriori_0": {
+    "sno": 104,
+    "displayName": "front_light_2_2_FANALI_Anteriori_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: front_light_2_2_FANALI_Anteriori_0 of the vehicle."
+  },
+  "rear_light_2_2_Fanali_POSTERIORI_OS_0": {
+    "sno": 105,
+    "displayName": "rear_light_2_2_Fanali_POSTERIORI_OS_0",
+    "category": "Lighting",
+    "position": "Rear",
+    "qty": 1,
+    "description": "Component: rear_light_2_2_Fanali_POSTERIORI_OS_0 of the vehicle."
+  },
+  "front_light_3_2_Dettaglio_Faro_0": {
+    "sno": 106,
+    "displayName": "front_light_3_2_Dettaglio_Faro_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: front_light_3_2_Dettaglio_Faro_0 of the vehicle."
+  },
+  "retro_light_1_2_Fanali_POSTERIORI_OS_0": {
+    "sno": 107,
+    "displayName": "retro_light_1_2_Fanali_POSTERIORI_OS_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: retro_light_1_2_Fanali_POSTERIORI_OS_0 of the vehicle."
+  },
+  "polymsh263_SUB2_FARI_Poseriori_EXTRA2_0": {
+    "sno": 108,
+    "displayName": "polymsh263_SUB2_FARI_Poseriori_EXTRA2_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh263_SUB2_FARI_Poseriori_EXTRA2_0 of the vehicle."
+  },
+  "polymsh263_SUB0_Fanali_POSTERIORI_OS_0": {
+    "sno": 109,
+    "displayName": "polymsh263_SUB0_Fanali_POSTERIORI_OS_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh263_SUB0_Fanali_POSTERIORI_OS_0 of the vehicle."
+  },
+  "polymsh263_SUB1_FARI_Poseriori_EXTRA2_0": {
+    "sno": 110,
+    "displayName": "polymsh263_SUB1_FARI_Poseriori_EXTRA2_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh263_SUB1_FARI_Poseriori_EXTRA2_0 of the vehicle."
+  },
+  "rear_light_1_2_Fanali_POSTERIORI_OS_0": {
+    "sno": 111,
+    "displayName": "rear_light_1_2_Fanali_POSTERIORI_OS_0",
+    "category": "Lighting",
+    "position": "Rear",
+    "qty": 1,
+    "description": "Component: rear_light_1_2_Fanali_POSTERIORI_OS_0 of the vehicle."
+  },
+  "polymsh_detached112_2_VETRI_Fanali_0": {
+    "sno": 112,
+    "displayName": "polymsh_detached112_2_VETRI_Fanali_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached112_2_VETRI_Fanali_0 of the vehicle."
+  },
+  "brake_light_1_2_Fanali_POSTERIORI_TS_0": {
+    "sno": 113,
+    "displayName": "brake_light_1_2_Fanali_POSTERIORI_TS_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: brake_light_1_2_Fanali_POSTERIORI_TS_0 of the vehicle."
+  },
+  "CINTURE_ON_SUB1_INT_Cromato_0": {
+    "sno": 114,
+    "displayName": "CINTURE_ON_SUB1_INT_Cromato_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: CINTURE_ON_SUB1_INT_Cromato_0 of the vehicle."
+  },
+  "CINTURE_ON_SUB2_INT_Plaastica_NERA_0": {
+    "sno": 115,
+    "displayName": "CINTURE_ON_SUB2_INT_Plaastica_NERA_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: CINTURE_ON_SUB2_INT_Plaastica_NERA_0 of the vehicle."
+  },
+  "CINTURE_ON_SUB0_INT_CintureSicurezza_0": {
+    "sno": 116,
+    "displayName": "CINTURE_ON_SUB0_INT_CintureSicurezza_0",
+    "category": "Interior",
+    "position": "Interior",
+    "qty": 1,
+    "description": "Component: CINTURE_ON_SUB0_INT_CintureSicurezza_0 of the vehicle."
+  },
+  "polymsh66_SUB2_PLASTICA_Nera_lucida_0": {
+    "sno": 117,
+    "displayName": "polymsh66_SUB2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh66_SUB2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh66_SUB1_LIVREA_0": {
+    "sno": 118,
+    "displayName": "polymsh66_SUB1_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh66_SUB1_LIVREA_0 of the vehicle."
+  },
+  "polymsh66_SUB0_Chassis_0": {
+    "sno": 119,
+    "displayName": "polymsh66_SUB0_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh66_SUB0_Chassis_0 of the vehicle."
+  },
+  "polymsh66_SUB3_GRIGLIA_NM_0": {
+    "sno": 120,
+    "displayName": "polymsh66_SUB3_GRIGLIA_NM_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh66_SUB3_GRIGLIA_NM_0 of the vehicle."
+  },
+  "polymsh66_SUB4_GAS_CAP_NM_0": {
+    "sno": 121,
+    "displayName": "polymsh66_SUB4_GAS_CAP_NM_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh66_SUB4_GAS_CAP_NM_0 of the vehicle."
+  },
+  "polymsh33_SUB2_PLASTICA_Nera_lucida_0": {
+    "sno": 122,
+    "displayName": "polymsh33_SUB2_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh33_SUB2_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh33_SUB0_LIVREA_0": {
+    "sno": 123,
+    "displayName": "polymsh33_SUB0_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh33_SUB0_LIVREA_0 of the vehicle."
+  },
+  "polymsh33_SUB1_Chassis_0": {
+    "sno": 124,
+    "displayName": "polymsh33_SUB1_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh33_SUB1_Chassis_0 of the vehicle."
+  },
+  "polymsh_detached116_2_MIRROR_0": {
+    "sno": 125,
+    "displayName": "polymsh_detached116_2_MIRROR_0",
+    "category": "Mirror",
+    "position": "Rear Right",
+    "qty": 1,
+    "description": "Component: polymsh_detached116_2_MIRROR_0 of the vehicle."
+  },
+  "polymsh_detached114_SUB0_LOGHI_normal_MAP_0": {
+    "sno": 126,
+    "displayName": "polymsh_detached114_SUB0_LOGHI_normal_MAP_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached114_SUB0_LOGHI_normal_MAP_0 of the vehicle."
+  },
+  "polymsh_detached114_SUB1_LIVREA_0": {
+    "sno": 127,
+    "displayName": "polymsh_detached114_SUB1_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh_detached114_SUB1_LIVREA_0 of the vehicle."
+  },
+  "Geometry112_2_Dischi_Freni_0": {
+    "sno": 128,
+    "displayName": "Geometry112_2_Dischi_Freni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: Geometry112_2_Dischi_Freni_0 of the vehicle."
+  },
+  "Geometry93_2_Dischi_Freni_0": {
+    "sno": 129,
+    "displayName": "Geometry93_2_Dischi_Freni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: Geometry93_2_Dischi_Freni_0 of the vehicle."
+  },
+  "Geometry110_2_Dischi_Freni_0": {
+    "sno": 130,
+    "displayName": "Geometry110_2_Dischi_Freni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: Geometry110_2_Dischi_Freni_0 of the vehicle."
+  },
+  "Geometry114_2_Dischi_Freni_0": {
+    "sno": 131,
+    "displayName": "Geometry114_2_Dischi_Freni_0",
+    "category": "Braking System",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: Geometry114_2_Dischi_Freni_0 of the vehicle."
+  },
+  "polymsh65_SUB0_VETRI_Nero_0": {
+    "sno": 132,
+    "displayName": "polymsh65_SUB0_VETRI_Nero_0",
+    "category": "Glass",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB0_VETRI_Nero_0 of the vehicle."
+  },
+  "polymsh65_SUB6_Chassis_METAL_0": {
+    "sno": 133,
+    "displayName": "polymsh65_SUB6_Chassis_METAL_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB6_Chassis_METAL_0 of the vehicle."
+  },
+  "polymsh65_SUB4_LOGHI_normal_MAP_0": {
+    "sno": 134,
+    "displayName": "polymsh65_SUB4_LOGHI_normal_MAP_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB4_LOGHI_normal_MAP_0 of the vehicle."
+  },
+  "polymsh65_SUB1_VETRI_Fanali_0": {
+    "sno": 135,
+    "displayName": "polymsh65_SUB1_VETRI_Fanali_0",
+    "category": "Lighting",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB1_VETRI_Fanali_0 of the vehicle."
+  },
+  "polymsh65_SUB7_PLASTICA_Nera_lucida_0": {
+    "sno": 136,
+    "displayName": "polymsh65_SUB7_PLASTICA_Nera_lucida_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB7_PLASTICA_Nera_lucida_0 of the vehicle."
+  },
+  "polymsh65_SUB3_LIVREA_0": {
+    "sno": 137,
+    "displayName": "polymsh65_SUB3_LIVREA_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB3_LIVREA_0 of the vehicle."
+  },
+  "polymsh65_SUB2_Chassis_0": {
+    "sno": 138,
+    "displayName": "polymsh65_SUB2_Chassis_0",
+    "category": "Chassis",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB2_Chassis_0 of the vehicle."
+  },
+  "polymsh65_SUB5_GAS_CAP_NM_0": {
+    "sno": 139,
+    "displayName": "polymsh65_SUB5_GAS_CAP_NM_0",
+    "category": "Body",
+    "position": "General",
+    "qty": 1,
+    "description": "Component: polymsh65_SUB5_GAS_CAP_NM_0 of the vehicle."
+  }
+}

@@ -1,0 +1,89 @@
+/* src/admin.css */
+
+body {
+  font-family: 'Poppins', Arial, sans-serif;
+  background-color: #eef1f6;
+  margin: 0;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 25px;
+  font-size: 28px;
+}
+
+/* The Form Container */
+#adminForm {
+  background: white;
+  padding: 35px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Labels */
+#adminForm label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: -8px;
+}
+
+/* Inputs and Dropdowns */
+#adminForm input[type="text"],
+#adminForm select,
+#adminForm input[type="file"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  background: #f9fbfd;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+/* Hover & Focus states for inputs */
+#adminForm input[type="text"]:focus,
+#adminForm select:focus {
+  border-color: #2f80ed;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.15);
+}
+
+/* Custom styling for file inputs */
+#adminForm input[type="file"] {
+  padding: 10px;
+  background: white;
+  cursor: pointer;
+}
+
+/* The Submit Button */
+#adminForm button {
+  background: #2f80ed;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+}
+
+#adminForm button:hover {
+  background: #1366d6;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(47, 128, 237, 0.3);
+}
