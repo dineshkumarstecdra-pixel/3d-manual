@@ -3,7 +3,7 @@ import { auth } from "./firebase.js";
 const CART_KEY = "partsCart";
 const ORDERS_KEY = "partsOrders";
 const CART_CHANGED_EVENT = "parts-cart-changed";
-
+const API_BASE_URL = "https://threed-manual.onrender.com";
 function normalize(value) {
   return String(value || "")
     .trim()
@@ -134,7 +134,7 @@ export async function placeOrder(customer = {}) {
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch("/api/orders", {
+ const response = await fetch(`${API_BASE_URL}/api/orders`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -150,7 +150,7 @@ export async function placeOrder(customer = {}) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "Order submit failed. Start npm run upload-server and try again.");
+    throw new Error(data.error || "Order submit failed. Please try again.");
   }
 
   const orders = safeJsonParse(localStorage.getItem(ORDERS_KEY), []);
@@ -203,7 +203,7 @@ async function fetchMyOrders() {
   const token = await user?.getIdToken?.().catch(() => "");
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const response = await fetch(`/api/orders/mine?_=${Date.now()}`, { headers });
+  const response = await fetch(`${API_BASE_URL}/api/orders/mine?_=${Date.now()}`, { headers });
   const data = await response.json().catch(() => []);
 
   if (!response.ok) {
@@ -331,7 +331,7 @@ function renderCartDrawer() {
     body.innerHTML = `
       <div class="parts-cart-empty">
         <div class="parts-cart-empty-icon">🛍️</div>
-        <h3>Your parts bag is empty</h3>
+        <h3>Your parts cart is empty</h3>
         <p>Add parts from the 3D viewer by pressing the + button near each part.</p>
       </div>
     `;
@@ -385,7 +385,7 @@ async function renderMyOrdersDrawer() {
         <div class="parts-cart-empty">
           <div class="parts-cart-empty-icon">📦</div>
           <h3>No orders yet</h3>
-          <p>Place an order from Parts Bag. Your pending, approved, rejected and completed status will appear here.</p>
+          <p>Place an order from Parts Cart. Your pending, approved, rejected and completed status will appear here.</p>
         </div>
       `;
       return;
