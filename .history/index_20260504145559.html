@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Manual</title>
+  <link rel="icon" type="image/x-icon" href="/images/icon.svg">
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+
+<body>
+  <!-- 3D Viewer Top-Left Overlay -->
+<div id="viewerOverlay">
+  <div class="overlay-header">
+    <h2>3D Manual</h2>
+    <button id="homeBtn"><img src="/images/home.svg" alt="Home"></button>
+  </div>
+  <div id="systemsPanel"></div>
+</div>
+ <div id="viewerTools">
+
+  <button id="wireframeBtn" class="tool-btn" title="Wireframe">
+    🧊
+  </button>
+
+  <button id="transparentBtn" class="tool-btn" title="Transparency">
+    👁
+  </button>
+<button id="colorCanvasBtn" class="tool-btn" title="Color Parts">🎨</button>
+  <button id="resetCanvasBtn" class="tool-btn" title="Reset">🔄</button>
+</div>
+
+        <div id="ui">
+
+          <div id="partsPanel">
+           <h4>Parts</h4>
+           <input type="text" id="partSearch" placeholder="Search parts..." />
+
+            <div id="hiddenHeader">
+             <div>
+             Hidden Parts:
+             <span id="hiddenCount">0</span>
+             </div>
+             <button id="showAllBtn">Show All</button>
+             </div>
+
+           <div id="partsList"></div>
+         </div>
+
+  <div id="contextMenu" class="context-menu">
+  <button id="hideOption">👁 Hide Selected Part</button>
+  <button id="isolateOption">📦 Isolate Part</button>
+   <button id="showAllOption" style="display:none;">Show All Parts</button>
+</div>
+<div id="floatingLabel"></div>
+    
+<div id="canvasBottomUI">
+  
+
+  <div class="explode-wrapper">
+    <button id="explodeCanvasBtn" class="glass-btn">Explode ▼</button>
+    <div id="explodeMenu" class="glass-menu" style="display: none;">
+      <div class="explode-types">
+        <button id="btnLinear" class="glass-sub">Linear</button>
+        <button id="btnRadial" class="glass-sub">Radial</button>
+      </div>
+      <div id="sliderWrapper" style="display: none;">
+        <span id="sliderTypeLabel">Intensity</span>
+        <input type="range" id="explodeSlider" min="0" max="1" step="0.01" value="0">
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script type="module" src="./src/index.js"></script>
+
+</body>
+</html>

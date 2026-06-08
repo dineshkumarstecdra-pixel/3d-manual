@@ -1,0 +1,544 @@
+[
+  {
+    "id": "REV-20260526122720-KF4Q",
+    "groups": [
+      {
+        "groupId": "audi_r9_r_series_base_2021_2026-02-28_2026-03-31",
+        "vehicleId": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28",
+        "vehicleName": "Audi R9",
+        "model": "R9",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2026-02-28",
+        "validDate": "2026-03-31",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program full BOM replacement imported from admin dashboard.",
+    "revisionMode": "full",
+    "sheet": {
+      "name": "Book 8 (1).xlsx",
+      "storedName": "REV-20260526122720-KF4Q.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526122720-KF4Q.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526122720-KF4Q.xlsx",
+      "size": 10726,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T12:27:20.792Z",
+    "updatedAt": "2026-05-26T12:27:20.792Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526122633-R7NY",
+    "groups": [
+      {
+        "groupId": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28",
+        "vehicleId": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28",
+        "vehicleName": "Audi R9",
+        "model": "R9",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2026-01-01",
+        "validDate": "2026-02-28",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program full BOM replacement imported from admin dashboard.",
+    "revisionMode": "full",
+    "sheet": {
+      "name": "Book 8.xlsx",
+      "storedName": "REV-20260526122633-R7NY.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526122633-R7NY.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526122633-R7NY.xlsx",
+      "size": 10705,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T12:26:33.474Z",
+    "updatedAt": "2026-05-26T12:26:33.474Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526093557-8DPE",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2026-03-01_2026-04-30",
+        "vehicleId": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2026-03-01",
+        "validDate": "2026-04-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6 (2) 1 (1).xlsx",
+      "storedName": "REV-20260526093557-8DPE.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526093557-8DPE.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526093557-8DPE.xlsx",
+      "size": 10743,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:35:57.825Z",
+    "updatedAt": "2026-05-26T09:35:57.825Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526092805-TXQJ",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2026-03-01_2026-04-30",
+        "vehicleId": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2026-03-01",
+        "validDate": "2026-04-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6 (2) 1.xlsx",
+      "storedName": "REV-20260526092805-TXQJ.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526092805-TXQJ.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526092805-TXQJ.xlsx",
+      "size": 10728,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:28:05.483Z",
+    "updatedAt": "2026-05-26T09:28:05.483Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526092114-XU45",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2027-03-01_2027-04-30",
+        "vehicleId": "audi_r8_r_series_base_2021_2027-01-01_2027-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2027-03-01",
+        "validDate": "2027-04-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6 (2).xlsx",
+      "storedName": "REV-20260526092114-XU45.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526092114-XU45.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526092114-XU45.xlsx",
+      "size": 10739,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:21:14.753Z",
+    "updatedAt": "2026-05-26T09:21:14.753Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526091100-8WCD",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2027-03-01_2027-04-30",
+        "vehicleId": "audi_r8_r_series_base_2021_2027-01-01_2027-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2027-03-01",
+        "validDate": "2027-04-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6 (2).xlsx",
+      "storedName": "REV-20260526091100-8WCD.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526091100-8WCD.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526091100-8WCD.xlsx",
+      "size": 10739,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:11:00.517Z",
+    "updatedAt": "2026-05-26T09:11:00.517Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526091008-WGO1",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2027-03-01_2027-04-30",
+        "vehicleId": "audi_r8_r_series_base_2021_2027-01-01_2027-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2027-03-01",
+        "validDate": "2027-04-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6 (1).xlsx",
+      "storedName": "REV-20260526091008-WGO1.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526091008-WGO1.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526091008-WGO1.xlsx",
+      "size": 10735,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:10:08.859Z",
+    "updatedAt": "2026-05-26T09:10:08.859Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526090715-3NOK",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2027-03-01_2027-04-30",
+        "vehicleId": "audi_r8_r_series_base_2021_2027-01-01_2027-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2027-03-01",
+        "validDate": "2027-04-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6 (1).xlsx",
+      "storedName": "REV-20260526090715-3NOK.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526090715-3NOK.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526090715-3NOK.xlsx",
+      "size": 10735,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:07:15.117Z",
+    "updatedAt": "2026-05-26T09:07:15.117Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526090549-8SK5",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2027-01-01_2027-02-28",
+        "vehicleId": "audi_r8_r_series_base_2021_2027-01-01_2027-02-28",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2027-01-01",
+        "validDate": "2027-02-28",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 6.xlsx",
+      "storedName": "REV-20260526090549-8SK5.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526090549-8SK5.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526090549-8SK5.xlsx",
+      "size": 10723,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T09:05:49.589Z",
+    "updatedAt": "2026-05-26T09:05:49.589Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526062129-EJBN",
+    "groups": [
+      {
+        "groupId": "bmw_i5_i_series_base_2020_2026-02-28_2026-03-30",
+        "vehicleId": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27",
+        "vehicleName": "BMW I5",
+        "model": "I5",
+        "series": "i_series",
+        "seriesLabel": "i Series",
+        "variant": "base",
+        "year": "2020",
+        "region": "europe",
+        "type": "electric_sedan",
+        "effectiveDate": "2026-02-28",
+        "validDate": "2026-03-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 7 (1).xlsx",
+      "storedName": "REV-20260526062129-EJBN.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526062129-EJBN.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526062129-EJBN.xlsx",
+      "size": 10623,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T06:21:29.755Z",
+    "updatedAt": "2026-05-26T06:21:29.755Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526061949-LEZZ",
+    "groups": [
+      {
+        "groupId": "bmw_i5_i_series_base_2020_2026-02-28_2026-03-30",
+        "vehicleId": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27",
+        "vehicleName": "BMW I5",
+        "model": "I5",
+        "series": "i_series",
+        "seriesLabel": "i Series",
+        "variant": "base",
+        "year": "2020",
+        "region": "europe",
+        "type": "electric_sedan",
+        "effectiveDate": "2026-02-28",
+        "validDate": "2026-03-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "Book 7.xlsx",
+      "storedName": "REV-20260526061949-LEZZ.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526061949-LEZZ.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526061949-LEZZ.xlsx",
+      "size": 10612,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T06:19:49.317Z",
+    "updatedAt": "2026-05-26T06:19:49.317Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526061851-11A4",
+    "groups": [
+      {
+        "groupId": "bmw_i5_i_series_base_2020_2026-02-28_2026-03-30",
+        "vehicleId": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27",
+        "vehicleName": "BMW I5",
+        "model": "I5",
+        "series": "i_series",
+        "seriesLabel": "i Series",
+        "variant": "base",
+        "year": "2020",
+        "region": "europe",
+        "type": "electric_sedan",
+        "effectiveDate": "2026-02-28",
+        "validDate": "2026-03-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "bom 2.xlsx",
+      "storedName": "REV-20260526061851-11A4.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526061851-11A4.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526061851-11A4.xlsx",
+      "size": 10614,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T06:18:51.676Z",
+    "updatedAt": "2026-05-26T06:18:51.676Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526061046-OHKK",
+    "groups": [
+      {
+        "groupId": "bmw_i5_i_series_base_2020_2026-02-28_2026-03-30",
+        "vehicleId": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27",
+        "vehicleName": "BMW I5",
+        "model": "I5",
+        "series": "i_series",
+        "seriesLabel": "i Series",
+        "variant": "base",
+        "year": "2020",
+        "region": "europe",
+        "type": "electric_sedan",
+        "effectiveDate": "2026-02-28",
+        "validDate": "2026-03-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "bom 2.xlsx",
+      "storedName": "REV-20260526061046-OHKK.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526061046-OHKK.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526061046-OHKK.xlsx",
+      "size": 10614,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T06:10:46.632Z",
+    "updatedAt": "2026-05-26T06:10:46.632Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260526055110-1GA9",
+    "groups": [
+      {
+        "groupId": "bmw_i5_i_series_base_2020_2026-02-28_2026-03-30",
+        "vehicleId": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27",
+        "vehicleName": "BMW I5",
+        "model": "I5",
+        "series": "i_series",
+        "seriesLabel": "i Series",
+        "variant": "base",
+        "year": "2020",
+        "region": "europe",
+        "type": "electric_sedan",
+        "effectiveDate": "2026-02-28",
+        "validDate": "2026-03-30",
+        "rowCount": 1,
+        "matched": true
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "BOM new.xlsx",
+      "storedName": "REV-20260526055110-1GA9.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260526055110-1GA9.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260526055110-1GA9.xlsx",
+      "size": 9499,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-26T05:51:10.812Z",
+    "updatedAt": "2026-05-26T05:51:10.812Z",
+    "status": "saved"
+  },
+  {
+    "id": "REV-20260522112925-CYO2",
+    "groups": [
+      {
+        "groupId": "audi_r8_r_series_base_2021_2027-01-31_2028-01-31",
+        "vehicleId": "",
+        "vehicleName": "Audi R8",
+        "model": "R8",
+        "series": "r_series",
+        "seriesLabel": "R Series",
+        "variant": "base",
+        "year": "2021",
+        "region": "india",
+        "type": "coupe",
+        "effectiveDate": "2027-01-31",
+        "validDate": "2028-01-31",
+        "rowCount": 1,
+        "matched": false
+      }
+    ],
+    "sourceUrl": "",
+    "note": "Existing program BOM update imported from admin dashboard.",
+    "sheet": {
+      "name": "BOM 22.05.2026.xlsx",
+      "storedName": "REV-20260522112925-CYO2.xlsx",
+      "localPath": "Parts Details/BOM Revisions/REV-20260522112925-CYO2.xlsx",
+      "url": "/Parts%20Details/BOM%20Revisions/REV-20260522112925-CYO2.xlsx",
+      "size": 9339,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "createdBy": "admin@gmail.com",
+    "createdAt": "2026-05-22T11:29:25.737Z",
+    "updatedAt": "2026-05-22T11:29:25.737Z",
+    "status": "saved"
+  }
+]

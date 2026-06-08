@@ -1,6 +1,11 @@
 import { defineConfig } from "vite"
 
 export default defineConfig({
+  server: {
+    proxy: {
+      "/api": "http://localhost:3001"
+    }
+  },
   build: {
     rollupOptions: {
       input: {
@@ -9,7 +14,8 @@ export default defineConfig({
         home: "home.html",
         partscat: "partscat.html",
         serviceman: "serviceman.html",
-        carDetails: "car-details.html"
+        carDetails: "car-details.html",
+        admin: "admin.html"
       }
     }
   }

@@ -64,12 +64,7 @@
 @keyframes spin { 
   to { transform: rotate(360deg); } 
 }
-.sidebar-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:15px;
-}
+
 
 #homeBtn{
   border:none;
@@ -261,9 +256,13 @@
 }
 
 body{
-  overflow:hidden;
-   display: flex;
-   font-size: clamp(12px, 1.2vw, 14px);
+  overflow: hidden;
+  display: flex;
+  font-size: clamp(12px, 1.2vw, 14px);
+  
+  /* 🔥 புதிதாக சேர்க்க வேண்டியவை: மொத்த விண்டோவையும் லாக் செய்ய */
+  height: 100vh;  
+  width: 100vw;
 }
 
 /* SIDEBAR PANEL */
@@ -280,8 +279,10 @@ body{
   flex-direction:column;
   gap:12px;
   box-shadow:4px 0 20px rgba(0,0,0,0.4);
-  
+  max-height: 100vh;
+  overflow: hidden;
 }
+/* ===== 3D VIEWER OVERLAY (top-left corner) ===== */
 
 /* TITLE */
 #ui h3{
@@ -341,10 +342,10 @@ canvas{
 /* PARTS PANEL */
 #partsPanel{
   margin-top:0px;
-  border-top:1px solid #333;
+  border-top: 1px solid #333;
   padding-top:5px;
   padding-bottom:5px;
-  flex:1;
+  flex:0 0 auto;;
   min-height: 0;
   overflow:hidden;
   
@@ -365,54 +366,16 @@ canvas{
   overflow: visible;  /* Make overflow visible */
   text-overflow: clip; /* Stop the ellipsis */
 }
-#partsList {
-  overflow-y: auto;
-  
-  /* 🔥 THE FIX 2: Let flexbox calculate the exact remaining height automatically */
-  flex: 1; 
-  height: auto; 
-  
-  /* 🔥 THE FIX 3: Add some padding at the bottom so the last item isn't completely flush with the edge */
-  padding-bottom: 0px; 
-}
+
 
 /* TABLE */
-#partsList table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:12px;
-}
+
 #part {
   display: none;
 }
-#partsList th,
-#partsList td{
-  padding:6px;
-  border-bottom:1px solid #333;
-  text-align:left;
-}
 
-/* Sticky Header */
-#partsList thead th{
-  position:sticky;
-  top:0;
-  background: #1f1f2e;
-  z-index:10;
-}
 
-/* Hover */
-#partsList tr:hover{
-  background:rgba(255,255,255,0.08);
-  cursor:pointer;
-}
 
-/* ================= CLEAN PREMIUM ACTIVE ROW ================= */
-
-#partsList tr.active{
-  background:rgba(100,108,255,0.15);
-  box-shadow: inset 4px 0 0 #646cff;
-  transition:background 0.3s ease;
-}
 
 
 
@@ -550,20 +513,7 @@ html{
   from { opacity:0; transform: translateY(-5px); }
   to { opacity:1; transform: translateY(0); }
 }
-#partDetails {
-  margin-top: 5px;
-  margin-bottom: 5px;
-  padding: 5px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 8px;
-  font-size: 13px;
-   flex: 0 0 auto;
-}
 
-#partDetails h4 {
-  margin-bottom: 6px;
-  font-size: 14px;
-}
 #floatingLabel {
   position: absolute;
   width: 260px;
@@ -629,7 +579,12 @@ html{
   flex-direction:column;
   height:100vh;
 }
-
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
 .sidebar ul{
   list-style:none;
   padding:0;
@@ -682,6 +637,32 @@ html{
   background: #f4f6f8;
 }
 
+/* Part Details - floating overlay on 3D viewer */
+#partDetails {
+  position: absolute;
+  top: 20px;
+  left: 520px;
+  z-index: 500;
+  width: 280px;
+  background: rgba(20, 20, 32, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: white;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  
+  /* 🔥 புதிதாக சேர்க்க வேண்டியது: ஆரம்பத்தில் மறைத்து வைக்க */
+  display: none; 
+  
+  flex-direction: column;
+  gap: 6px;
+}
+#partDetails h4 {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
 .parts-table {
   width: 100%;
   border-collapse: collapse;
@@ -1057,15 +1038,99 @@ cursor:pointer;
 opacity:0.8;
 }
 /* ================= SYSTEM TREE ================= */
-
-/* Clean Systems Panel inside Sidebar */
-#systemsPanel {
-  background: rgba(255, 255, 255, 0.05);
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-   flex: 0 0 auto;
+/* ===== 3D VIEWER OVERLAY (top-left corner) ===== */
+#viewerOverlay {
+  position: absolute;
+  top: 20px;
+  left: 520px;
+  z-index: 500;
+  width: 300px;
+  background: rgba(20, 20, 32, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: white;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.overlay-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Part Details inside overlay */
+
+
+#partDetails h4 {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: white;
+}
+
+#partDescription {
+  font-size: 12px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+/* Part Details - floating overlay on 3D viewer */
+#partDetails {
+  position: absolute;
+  top: 20px;
+  left: 520px;
+  z-index: 500;
+  width: 280px;
+  background: rgba(20, 20, 32, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: white;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#partDetails h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+}
+
+#partDescription {
+  font-size: 12px;
+  opacity: 0.75;
+  line-height: 1.6;
+}
+.search-hit{
+  background: rgba(100,108,255,0.2);
+  border-left: 3px solid #646cff;
+  padding-left: 6px;
+}
+.active-tree{
+  background: rgba(100,108,255,0.25);
+  border-left: 3px solid #646cff;
+  padding-left: 6px;
+  color: #fff;
+}
+/* Clean Systems Panel inside Sidebar */
+
 
 #systemsPanel h3 { font-size: 16px; margin-bottom: 8px; }
 .system-item { font-weight: 600; margin-top: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
@@ -1264,11 +1329,7 @@ color:#aaa;
 #systemsPanel h3{
   margin-bottom: 10px;
 }
-#systemsPanel{
-  font-size:16px;
-  margin-bottom:0%;
-  padding: 10px ;
-}
+
 .system-card{
   width: 100%;             /* 🔥 full grid width */
   height: 50px;
@@ -1304,7 +1365,310 @@ padding: 10px;
   gap: 10px;
   justify-items: center;   /* 🔥 center each button */
 }
-#systemsPanel{
-  display: flex;
-  flex-direction: column;
+#systemsPanel {
+  flex: 1;
+  
+  /* 🔥 இதுதான் ரகசியம்! Height 0 என்று வைத்தால் மட்டுமே Flexbox 
+     தன்னுடைய எல்லையைத் தாண்டி விரியாமல் உள்ளேயே Scroll ஆகும் */
+  height: 0;              
+  
+  overflow-y: auto;       /* ஸ்க்ரோல்பார் உள்ளே வர */
+  padding-right: 8px;     /* ஸ்க்ரோல்பாருக்கு இடைவெளி */
+  margin: 0;
+  border: none;
+}
+
+/* ================= PARTS CART INLINE ADDER - FIXED NO OVERLAP ================= */
+.tree-leaf{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  min-height:34px;
+  padding-right:8px;
+  position:relative;
+  flex-wrap:wrap;
+}
+
+.tree-leaf-main{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+  flex:1 1 auto;
+  padding-top:3px;
+  order:1;
+}
+
+.tree-leaf-part-id{
+  flex:0 0 auto;
+  max-width:76px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#aeb7ff;
+  font-size:11px;
+  opacity:.9;
+}
+
+.tree-leaf-part-name{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#f5f7ff;
+}
+
+.tree-leaf-qty{
+  flex:0 0 auto;
+  font-size:11px;
+  color:#b8bdd6;
+  background:rgba(255,255,255,.06);
+  border-radius:999px;
+  padding:2px 7px;
+}
+
+.part-inline-cart{
+  position:relative;
+  flex:0 0 auto;
+  z-index:8;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  order:2;
+}
+
+.part-inline-plus{
+  width:26px;
+  height:26px;
+  min-width:26px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#3d8bff;
+  color:#fff;
+  font-size:18px;
+  font-weight:700;
+  line-height:1;
+  box-shadow:0 8px 20px rgba(61,139,255,.28);
+}
+
+.part-inline-plus:hover{
+  background:#256ee6;
+  transform:translateY(-1px) scale(1.03);
+}
+
+.part-inline-panel{
+  display:none;
+  align-items:center;
+  justify-content:flex-start;
+  gap:6px;
+  width:100%;
+  max-width:100%;
+  margin-top:8px;
+  padding:6px;
+  border-radius:12px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 10px 24px rgba(0,0,0,.28);
+  order:3;
+}
+
+/* Open state: keep the close button on the same line as the part name,
+   and expand Qty/Add to Bag as a full-width row underneath. */
+.part-inline-cart.open{
+  display:contents;
+}
+
+.part-inline-cart.open .part-inline-plus{
+  display:flex;
+  order:2;
+  flex:0 0 auto;
+  background:#ef4444;
+  color:#fff;
+  font-size:20px;
+  box-shadow:0 8px 20px rgba(239,68,68,.24);
+}
+
+.part-inline-cart.open .part-inline-plus:hover{
+  background:#dc2626;
+  transform:translateY(-1px) scale(1.03);
+}
+
+.part-inline-cart.open .part-inline-panel{
+  display:flex;
+  flex:1 1 100%;
+  margin-left:18px;
+}
+
+.part-inline-qty-label{
+  font-size:11px;
+  color:#aab2ce;
+  white-space:nowrap;
+}
+
+.part-inline-step{
+  width:24px;
+  height:24px;
+  min-width:24px;
+  border-radius:8px;
+  background:#24304a;
+  color:#fff;
+}
+
+.part-inline-qty{
+  width:44px;
+  height:28px;
+  border:1px solid rgba(255,255,255,.14);
+  background:#0b1220;
+  color:#fff;
+  border-radius:8px;
+  text-align:center;
+  outline:none;
+}
+
+.part-inline-add{
+  height:28px;
+  padding:0 12px;
+  border-radius:9px;
+  background:#22c55e;
+  color:#07120b;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.part-inline-add:hover{
+  background:#16a34a;
+  color:#fff;
+}
+
+@media (max-width: 720px){
+  .part-inline-cart.open .part-inline-panel{
+    margin-left:8px;
+    width:100%;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+  }
+}
+
+.viewer-cart-toast{
+  position:fixed;
+  right:24px;
+  bottom:90px;
+  z-index:12000;
+  transform:translateY(20px);
+  opacity:0;
+  pointer-events:none;
+  padding:12px 16px;
+  border-radius:14px;
+  background:rgba(17,24,39,.95);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 20px 45px rgba(0,0,0,.35);
+  transition:all .22s ease;
+  font-size:13px;
+}
+
+.viewer-cart-toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ================= BOM REVISION / DATE-BASED PARTS DATA ================= */
+.bom-revision-panel{
+  flex:0 0 auto;
+  margin:8px 0 10px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+}
+
+.bom-revision-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.bom-revision-head strong{
+  display:block;
+  font-size:13px;
+  line-height:1.2;
+}
+
+.bom-kicker{
+  display:block;
+  color:#aeb4d8;
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:2px;
+}
+
+#bomRevisionDateInput{
+  width:132px;
+  min-width:132px;
+  height:34px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  background:#121827;
+  color:white;
+  padding:0 8px;
+  font-size:12px;
+}
+
+.bom-revision-body{
+  margin-top:10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:11px;
+  color:#c7cce6;
+}
+
+.bom-revision-line b{
+  color:#fff;
+}
+
+.bom-diff-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:4px;
+}
+
+.bom-diff-chips span{
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(100,108,255,.16);
+  color:#dfe2ff;
+  font-size:10px;
+  font-weight:700;
+}
+
+.bom-revision-panel.loading{
+  opacity:.72;
+  pointer-events:none;
+}
+
+@media (max-width: 720px){
+  .bom-revision-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  #bomRevisionDateInput{
+    width:100%;
+  }
+}
+
+/* BOM revision mode chips */
+.bom-diff-chips span:first-child {
+  background: rgba(34,197,94,0.16);
+}
+.bom-revision-line b {
+  word-break: break-word;
 }

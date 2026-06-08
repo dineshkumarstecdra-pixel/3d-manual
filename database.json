@@ -1,23 +1,885 @@
 [
   {
-    "id": "bmw_x4",
-    "name": "BMW_X4",
+    "id": "audi_r8",
+    "name": "Audi R8",
+    "vinNumber": "hhdrdrdyfuy",
+    "variant": "base",
+    "year": 2021,
+    "region": "europe",
+    "type": "sedan",
+    "series": "r",
+    "seriesLabel": "R Series",
+    "imageUrl": "/images/vehicles/audi_r8.png",
+    "modelUrl": "/models/audi_r8.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/audi_r8.pdf",
+    "image": {
+      "url": "/images/vehicles/audi_r8.png",
+      "storedName": "audi_r8.png",
+      "extension": "png",
+      "name": "audi_r8.png"
+    },
+    "model": {
+      "url": "/models/audi_r8.glb",
+      "storedName": "audi_r8.glb",
+      "extension": "glb",
+      "name": "audi_r8.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/audi_r8.pdf",
+      "storedName": "audi_r8.pdf",
+      "extension": "pdf",
+      "name": "audi_r8.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:29:27.901Z",
+    "updatedAt": "2026-05-22T07:27:36.688Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "audi_rs7",
+    "name": "Audi RS7",
+    "vinNumber": "rtherthetb",
+    "variant": "base",
+    "year": 2021,
+    "region": "india",
+    "type": "sedan",
+    "series": "r",
+    "seriesLabel": "R Series",
+    "imageUrl": "/images/vehicles/audi_rs7.png",
+    "modelUrl": "/models/audi_rs7.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/audi_rs7.pdf",
+    "image": {
+      "url": "/images/vehicles/audi_rs7.png",
+      "storedName": "audi_rs7.png",
+      "extension": "png",
+      "name": "audi_rs7.png"
+    },
+    "model": {
+      "url": "/models/audi_rs7.glb",
+      "storedName": "audi_rs7.glb",
+      "extension": "glb",
+      "name": "audi_rs7.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/audi_rs7.pdf",
+      "storedName": "audi_rs7.pdf",
+      "extension": "pdf",
+      "name": "audi_rs7.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:29:53.895Z",
+    "updatedAt": "2026-05-22T08:37:22.164Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_i5",
+    "name": "BMW I5",
+    "vinNumber": "dfbedrtgber",
+    "variant": "base",
+    "year": 2020,
+    "region": "europe",
+    "type": "suv",
+    "series": "i",
+    "seriesLabel": "I Series",
+    "imageUrl": "/images/vehicles/bmw_i5.png",
+    "modelUrl": "/models/bmw_i5.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_i5.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_i5.png",
+      "storedName": "bmw_i5.png",
+      "extension": "png",
+      "name": "bmw_i5.png"
+    },
+    "model": {
+      "url": "/models/bmw_i5.glb",
+      "storedName": "bmw_i5.glb",
+      "extension": "glb",
+      "name": "bmw_i5.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_i5.pdf",
+      "storedName": "bmw_i5.pdf",
+      "extension": "pdf",
+      "name": "bmw_i5.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:29:59.668Z",
+    "updatedAt": "2026-05-22T08:39:46.508Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_i7",
+    "name": "BMW I7",
+    "vinNumber": "dfvberge",
+    "variant": "base",
+    "year": 2020,
     "region": "india",
     "type": "suv",
-    "series": "x"
+    "series": "i",
+    "seriesLabel": "I Series",
+    "imageUrl": "/images/vehicles/bmw_i7.png",
+    "modelUrl": "/models/bmw_i7.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_i7.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_i7.png",
+      "storedName": "bmw_i7.png",
+      "extension": "png",
+      "name": "bmw_i7.png"
+    },
+    "model": {
+      "url": "/models/bmw_i7.glb",
+      "storedName": "bmw_i7.glb",
+      "extension": "glb",
+      "name": "bmw_i7.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_i7.pdf",
+      "storedName": "bmw_i7.pdf",
+      "extension": "pdf",
+      "name": "bmw_i7.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:04.860Z",
+    "updatedAt": "2026-05-22T08:39:52.629Z",
+    "source": "converted-from-existing-card"
   },
   {
-    "id": "bmw_x5",
-    "name": "BMW_X5",
+    "id": "bmw_ix",
+    "name": "BMW IX",
+    "vinNumber": "dfvdrgwer",
+    "variant": "base",
+    "year": 2020,
     "region": "europe",
     "type": "suv",
-    "series": "x"
+    "series": "i",
+    "seriesLabel": "I Series",
+    "imageUrl": "/images/vehicles/bmw_ix.png",
+    "modelUrl": "/models/bmw_ix.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_ix.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_ix.png",
+      "storedName": "bmw_ix.png",
+      "extension": "png",
+      "name": "bmw_ix.png"
+    },
+    "model": {
+      "url": "/models/bmw_ix.glb",
+      "storedName": "bmw_ix.glb",
+      "extension": "glb",
+      "name": "bmw_ix.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_ix.pdf",
+      "storedName": "bmw_ix.pdf",
+      "extension": "pdf",
+      "name": "bmw_ix.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:09.208Z",
+    "updatedAt": "2026-05-22T08:40:02.734Z",
+    "source": "converted-from-existing-card"
   },
   {
-    "id": "bmw_x5",
-    "name": "BMW_X5",
-    "region": "europe",
+    "id": "bmw_ms",
+    "name": "BMW M SPORT",
+    "vinNumber": "dfvwef",
+    "variant": "base",
+    "year": 2020,
+    "region": "china",
+    "type": "coupe",
+    "series": "m",
+    "seriesLabel": "M Series",
+    "imageUrl": "/images/vehicles/bmw_ms.png",
+    "modelUrl": "/models/bmw_ms.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_ms.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_ms.png",
+      "storedName": "bmw_ms.png",
+      "extension": "png",
+      "name": "bmw_ms.png"
+    },
+    "model": {
+      "url": "/models/bmw_ms.glb",
+      "storedName": "bmw_ms.glb",
+      "extension": "glb",
+      "name": "bmw_ms.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_ms.pdf",
+      "storedName": "bmw_ms.pdf",
+      "extension": "pdf",
+      "name": "bmw_ms.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:13.646Z",
+    "updatedAt": "2026-05-22T08:40:11.943Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_m3",
+    "name": "BMW M3",
+    "vinNumber": "sdvcwerfgwe",
+    "variant": "base",
+    "year": 2022,
+    "region": "germany",
+    "type": "coupe",
+    "series": "m",
+    "seriesLabel": "M Series",
+    "imageUrl": "/images/vehicles/bmw_m3.png",
+    "modelUrl": "/models/bmw_m3.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_m3.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_m3.png",
+      "storedName": "bmw_m3.png",
+      "extension": "png",
+      "name": "bmw_m3.png"
+    },
+    "model": {
+      "url": "/models/bmw_m3.glb",
+      "storedName": "bmw_m3.glb",
+      "extension": "glb",
+      "name": "bmw_m3.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_m3.pdf",
+      "storedName": "bmw_m3.pdf",
+      "extension": "pdf",
+      "name": "bmw_m3.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:18.872Z",
+    "updatedAt": "2026-05-22T08:40:37.169Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_m4",
+    "name": "BMW M4",
+    "vinNumber": "sdvweg",
+    "variant": "base",
+    "year": 2021,
+    "region": "china",
+    "type": "coupe",
+    "series": "m",
+    "seriesLabel": "M Series",
+    "imageUrl": "/images/vehicles/bmw_m4.png",
+    "modelUrl": "/models/bmw_m4.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_m4.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_m4.png",
+      "storedName": "bmw_m4.png",
+      "extension": "png",
+      "name": "bmw_m4.png"
+    },
+    "model": {
+      "url": "/models/bmw_m4.glb",
+      "storedName": "bmw_m4.glb",
+      "extension": "glb",
+      "name": "bmw_m4.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_m4.pdf",
+      "storedName": "bmw_m4.pdf",
+      "extension": "pdf",
+      "name": "bmw_m4.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:23.888Z",
+    "updatedAt": "2026-05-22T08:40:43.703Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_m8",
+    "name": "BMW M8",
+    "vinNumber": "sdvsrgw",
+    "variant": "base",
+    "year": 2020,
+    "region": "india",
+    "type": "coupe",
+    "series": "m",
+    "seriesLabel": "M Series",
+    "imageUrl": "/images/vehicles/bmw_m8.png",
+    "modelUrl": "/models/bmw_m8.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_m8.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_m8.png",
+      "storedName": "bmw_m8.png",
+      "extension": "png",
+      "name": "bmw_m8.png"
+    },
+    "model": {
+      "url": "/models/bmw_m8.glb",
+      "storedName": "bmw_m8.glb",
+      "extension": "glb",
+      "name": "bmw_m8.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_m8.pdf",
+      "storedName": "bmw_m8.pdf",
+      "extension": "pdf",
+      "name": "bmw_m8.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:28.642Z",
+    "updatedAt": "2026-05-22T08:40:52.357Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_x3",
+    "name": "BMW X3",
+    "vinNumber": "dfcwerfw",
+    "variant": "base",
+    "year": 2020,
+    "region": "germany",
     "type": "suv",
-    "series": "m"
+    "series": "x",
+    "seriesLabel": "X Series",
+    "imageUrl": "/images/vehicles/bmw_x3.png",
+    "modelUrl": "/models/bmw_x3.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_x3.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_x3.png",
+      "storedName": "bmw_x3.png",
+      "extension": "png",
+      "name": "bmw_x3.png"
+    },
+    "model": {
+      "url": "/models/bmw_x3.glb",
+      "storedName": "bmw_x3.glb",
+      "extension": "glb",
+      "name": "bmw_x3.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_x3.pdf",
+      "storedName": "bmw_x3.pdf",
+      "extension": "pdf",
+      "name": "bmw_x3.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:34.075Z",
+    "updatedAt": "2026-05-22T08:40:30.072Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_xm",
+    "name": "BMW XM",
+    "vinNumber": "sdvsdrgw",
+    "variant": "base",
+    "year": 2020,
+    "region": "usa",
+    "type": "suv",
+    "series": "x",
+    "seriesLabel": "X Series",
+    "imageUrl": "/images/vehicles/bmw_xm.png",
+    "modelUrl": "/models/bmw_xm.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_xm.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_xm.png",
+      "storedName": "bmw_xm.png",
+      "extension": "png",
+      "name": "bmw_xm.png"
+    },
+    "model": {
+      "url": "/models/bmw_xm.glb",
+      "storedName": "bmw_xm.glb",
+      "extension": "glb",
+      "name": "bmw_xm.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_xm.pdf",
+      "storedName": "bmw_xm.pdf",
+      "extension": "pdf",
+      "name": "bmw_xm.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:39.354Z",
+    "updatedAt": "2026-05-22T08:40:24.009Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_z4",
+    "name": "BMW Z4 M40I",
+    "vinNumber": "sdfvwergweg",
+    "variant": "base",
+    "year": 2020,
+    "region": "germany",
+    "type": "sedan",
+    "series": "z",
+    "seriesLabel": "Z Series",
+    "imageUrl": "/images/vehicles/bmw_z4.png",
+    "modelUrl": "/models/bmw_z4.glb",
+    "modelDataUrl": "/Parts Details/Parts data.xlsx",
+    "manualUrl": "/manuals/bmw_z4.pdf",
+    "image": {
+      "url": "/images/vehicles/bmw_z4.png",
+      "storedName": "bmw_z4.png",
+      "extension": "png",
+      "name": "bmw_z4.png"
+    },
+    "model": {
+      "url": "/models/bmw_z4.glb",
+      "storedName": "bmw_z4.glb",
+      "extension": "glb",
+      "name": "bmw_z4.glb"
+    },
+    "modelData": {
+      "url": "/Parts Details/Parts data.xlsx",
+      "storedName": "Parts data.xlsx",
+      "extension": "xlsx",
+      "name": "Parts data.xlsx"
+    },
+    "manual": {
+      "url": "/manuals/bmw_z4.pdf",
+      "storedName": "bmw_z4.pdf",
+      "extension": "pdf",
+      "name": "bmw_z4.pdf"
+    },
+    "builtIn": false,
+    "readOnly": false,
+    "storageMode": "local",
+    "createdAt": "2026-05-22T06:30:44.381Z",
+    "updatedAt": "2026-05-22T08:39:39.215Z",
+    "source": "converted-from-existing-card"
+  },
+  {
+    "id": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27",
+    "name": "BMW I5",
+    "vinNumber": "34545345f",
+    "variant": "base",
+    "year": 2020,
+    "region": "europe",
+    "type": "electric_sedan",
+    "series": "i_series",
+    "seriesLabel": "i Series",
+    "image": {
+      "name": "audi_r5.png",
+      "storedName": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.png",
+      "localPath": "images/vehicles/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.png",
+      "url": "/images/vehicles/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.png",
+      "size": 203433,
+      "type": "image/png",
+      "extension": "png"
+    },
+    "model": {
+      "name": "bmw_i5.glb",
+      "storedName": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.glb",
+      "localPath": "models/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.glb",
+      "url": "/models/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.glb",
+      "size": 2250160,
+      "type": "application/octet-stream",
+      "extension": "glb"
+    },
+    "modelData": {
+      "name": "bmw_i5.xlsx",
+      "storedName": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.xlsx",
+      "localPath": "Parts Details/Model Data/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.xlsx",
+      "url": "/Parts%20Details/Model%20Data/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.xlsx",
+      "size": 12513,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "manual": {
+      "name": "audi_r5.pdf",
+      "storedName": "bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.pdf",
+      "localPath": "manuals/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.pdf",
+      "url": "/manuals/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.pdf",
+      "size": 5315498,
+      "type": "application/pdf",
+      "extension": "pdf"
+    },
+    "imageUrl": "/images/vehicles/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.png",
+    "modelUrl": "/models/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.glb",
+    "modelDataUrl": "/Parts%20Details/Model%20Data/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.xlsx",
+    "manualUrl": "/manuals/bmw_i5_i_series_base_2020_2026-01-31_2026-02-27.pdf",
+    "effectiveDate": "2026-01-31",
+    "validDate": "2026-02-27",
+    "productionCount": 1,
+    "sheetRows": [
+      {
+        "sino": "1",
+        "vinnumber": "WBAYTAKU29C000015",
+        "vehiclename": "BMW I5",
+        "model": "I5",
+        "series": "i Series",
+        "variant": "Base",
+        "year": "2020",
+        "region": "Europe",
+        "type": "Electric Sedan",
+        "effectivedate": "2026-01-31",
+        "validdate": "2026-02-27"
+      }
+    ],
+    "createdAt": "2026-05-26T05:46:48.908Z",
+    "updatedAt": "2026-05-26T08:39:07.543Z",
+    "builtIn": false,
+    "readOnly": false,
+    "source": "program-sheet-import",
+    "storageMode": "local",
+    "vinNumbers": []
+  },
+  {
+    "id": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28",
+    "name": "Audi R8",
+    "vinNumber": "345745745",
+    "vinNumbers": [
+      "345745745"
+    ],
+    "variant": "base",
+    "year": 2021,
+    "region": "india",
+    "type": "coupe",
+    "series": "r_series",
+    "seriesLabel": "R Series",
+    "image": {
+      "name": "audi_r5.png",
+      "storedName": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28.png",
+      "localPath": "images/vehicles/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.png",
+      "url": "/images/vehicles/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.png",
+      "size": 203433,
+      "type": "image/png",
+      "extension": "png"
+    },
+    "model": {
+      "name": "bmw_i5.glb",
+      "storedName": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28.glb",
+      "localPath": "models/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.glb",
+      "url": "/models/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.glb",
+      "size": 2250160,
+      "type": "application/octet-stream",
+      "extension": "glb"
+    },
+    "modelData": {
+      "name": "bmw_i5.xlsx",
+      "storedName": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "localPath": "Parts Details/Model Data/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "url": "/Parts%20Details/Model%20Data/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "size": 12513,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "manual": {
+      "name": "audi_r5.pdf",
+      "storedName": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+      "localPath": "manuals/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+      "url": "/manuals/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+      "size": 5315498,
+      "type": "application/pdf",
+      "extension": "pdf"
+    },
+    "imageUrl": "/images/vehicles/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.png",
+    "modelUrl": "/models/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.glb",
+    "modelDataUrl": "/Parts%20Details/Model%20Data/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+    "manualUrl": "/manuals/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+    "productionSheet": {
+      "name": "vehi (1).xlsx",
+      "storedName": "audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "localPath": "Production Sheets/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "url": "/Production%20Sheets/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "size": 9334,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "productionSheetUrl": "/Production%20Sheets/audi_r8_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+    "productionSheetSourceUrl": "",
+    "effectiveDate": "2026-01-01",
+    "validDate": "2026-02-28",
+    "productionCount": 1,
+    "sheetRows": [
+      {
+        "sino": "1",
+        "vinnumber": "345745745",
+        "vehiclename": "Audi R8",
+        "model": "R8",
+        "series": "R Series",
+        "variant": "Base",
+        "year": "2021",
+        "region": "India",
+        "type": "Coupe",
+        "effectivedate": "2026-01-01",
+        "validdate": "2026-02-28"
+      }
+    ],
+    "createdAt": "2026-05-26T09:26:40.984Z",
+    "updatedAt": "2026-05-26T09:26:40.984Z",
+    "builtIn": false,
+    "readOnly": false,
+    "source": "program-sheet-import",
+    "storageMode": "local"
+  },
+  {
+    "id": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28",
+    "name": "Audi R9",
+    "vinNumber": "3457457453",
+    "vinNumbers": [
+      "3457457453"
+    ],
+    "variant": "base",
+    "year": 2021,
+    "region": "india",
+    "type": "coupe",
+    "series": "r_series",
+    "seriesLabel": "R Series",
+    "image": {
+      "name": "audi_r5.png",
+      "storedName": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28.png",
+      "localPath": "images/vehicles/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.png",
+      "url": "/images/vehicles/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.png",
+      "size": 203433,
+      "type": "image/png",
+      "extension": "png"
+    },
+    "model": {
+      "name": "bmw_i5.glb",
+      "storedName": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28.glb",
+      "localPath": "models/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.glb",
+      "url": "/models/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.glb",
+      "size": 2250160,
+      "type": "application/octet-stream",
+      "extension": "glb"
+    },
+    "modelData": {
+      "name": "bmw_i5.xlsx",
+      "storedName": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "localPath": "Parts Details/Model Data/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "url": "/Parts%20Details/Model%20Data/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "size": 12513,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "manual": {
+      "name": "audi_r5.pdf",
+      "storedName": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+      "localPath": "manuals/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+      "url": "/manuals/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+      "size": 5315498,
+      "type": "application/pdf",
+      "extension": "pdf"
+    },
+    "imageUrl": "/images/vehicles/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.png",
+    "modelUrl": "/models/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.glb",
+    "modelDataUrl": "/Parts%20Details/Model%20Data/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+    "manualUrl": "/manuals/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.pdf",
+    "productionSheet": {
+      "name": "vehi (2).xlsx",
+      "storedName": "audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "localPath": "Production Sheets/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "url": "/Production%20Sheets/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+      "size": 9341,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "productionSheetUrl": "/Production%20Sheets/audi_r9_r_series_base_2021_2026-01-01_2026-02-28.xlsx",
+    "productionSheetSourceUrl": "",
+    "effectiveDate": "2026-01-01",
+    "validDate": "2026-02-28",
+    "productionCount": 1,
+    "sheetRows": [
+      {
+        "sino": "1",
+        "vinnumber": "3457457453",
+        "vehiclename": "Audi R9",
+        "model": "R9",
+        "series": "R Series",
+        "variant": "Base",
+        "year": "2021",
+        "region": "India",
+        "type": "Coupe",
+        "effectivedate": "2026-01-01",
+        "validdate": "2026-02-28"
+      }
+    ],
+    "createdAt": "2026-05-26T12:23:18.530Z",
+    "updatedAt": "2026-05-26T12:23:18.530Z",
+    "builtIn": false,
+    "readOnly": false,
+    "source": "program-sheet-import",
+    "storageMode": "local"
+  },
+  {
+    "id": "bmw_i5_i_series_base_2020_2026-02-01_2026-02-28",
+    "name": "BMW I5",
+    "vinNumber": "WBAYTAKU29C000015",
+    "vinNumbers": [
+      "WBAYTAKU29C000015"
+    ],
+    "variant": "base",
+    "year": 2020,
+    "region": "europe",
+    "type": "electric_sedan",
+    "series": "i_series",
+    "seriesLabel": "i Series",
+    "image": {
+      "name": "audi_r5.png",
+      "storedName": "bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.png",
+      "localPath": "images/vehicles/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.png",
+      "url": "/images/vehicles/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.png",
+      "size": 203433,
+      "type": "image/png",
+      "extension": "png"
+    },
+    "model": {
+      "name": "Product1 (12).stp",
+      "storedName": "bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.stp",
+      "localPath": "models/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.stp",
+      "url": "/models/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.stp",
+      "size": 389358,
+      "type": "application/octet-stream",
+      "extension": "stp"
+    },
+    "modelData": {
+      "name": "bmw_i5.xlsx",
+      "storedName": "bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+      "localPath": "Parts Details/Model Data/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+      "url": "/Parts%20Details/Model%20Data/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+      "size": 12513,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "manual": {
+      "name": "audi_r5.pdf",
+      "storedName": "bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.pdf",
+      "localPath": "manuals/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.pdf",
+      "url": "/manuals/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.pdf",
+      "size": 5315498,
+      "type": "application/pdf",
+      "extension": "pdf"
+    },
+    "imageUrl": "/images/vehicles/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.png",
+    "modelUrl": "/models/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.stp",
+    "modelDataUrl": "/Parts%20Details/Model%20Data/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+    "manualUrl": "/manuals/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.pdf",
+    "productionSheet": {
+      "name": "vehicle.xlsx",
+      "storedName": "bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+      "localPath": "Production Sheets/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+      "url": "/Production%20Sheets/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+      "size": 9225,
+      "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "extension": "xlsx"
+    },
+    "productionSheetUrl": "/Production%20Sheets/bmw_i5_i_series_base_2020_2026-02-01_2026-02-28.xlsx",
+    "productionSheetSourceUrl": "",
+    "effectiveDate": "2026-02-01",
+    "validDate": "2026-02-28",
+    "productionCount": 1,
+    "sheetRows": [
+      {
+        "sino": "1",
+        "vinnumber": "WBAYTAKU29C000015",
+        "vehiclename": "BMW I5",
+        "model": "I5",
+        "series": "i Series",
+        "variant": "Base",
+        "year": "2020",
+        "region": "Europe",
+        "type": "Electric Sedan",
+        "effectivedate": "2026-02-01",
+        "validdate": "2026-02-28"
+      }
+    ],
+    "createdAt": "2026-06-03T06:39:25.420Z",
+    "updatedAt": "2026-06-03T06:41:15.002Z",
+    "builtIn": false,
+    "readOnly": false,
+    "source": "program-sheet-import",
+    "storageMode": "local"
   }
 ]

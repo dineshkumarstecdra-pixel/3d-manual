@@ -4,11 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Manual</title>
+<script>
+  if (window.location.pathname === "/" || window.location.pathname === "") {
+    window.location.replace("/login.html");
+  }
+</script>
+
   <link rel="icon" type="image/x-icon" href="/images/icon.svg">
   <link rel="stylesheet" href="./src/style.css" />
+
+<script>document.documentElement.classList.add("auth-checking");</script>
+<style>html.auth-checking body > *:not(#authCheckingOverlay){visibility:hidden!important}</style>
+
+<script>
+  window.goHomeFromViewer = function(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    window.location.assign('/partscat.html');
+  };
+</script>
+<style>
+  #homeBtn { position: relative; z-index: 99999; pointer-events: auto; }
+  #homeBtn img { pointer-events: none; width: 22px; height: 22px; display: block; }
+</style>
 </head>
 
 <body>
+<!-- Part Details Overlay on 3D viewer -->
+<div id="partDetails" style="display: none;">
+  <h4>Part Details</h4>
+  <p id="partDescription">Select a part to see details.</p>
+</div>
+
  <div id="viewerTools">
 
   <button id="wireframeBtn" class="tool-btn" title="Wireframe">
@@ -24,32 +53,29 @@
 
         <div id="ui">
 
-          <div class="sidebar-header">
-           <h2>3D Manual</h2>
-            <button id="homeBtn"><img src="/images/home.svg" alt="Home"></button>
-          </div>
+  <!-- 1. Title -->
+  <div class="sidebar-header">
+    <h2>3D Manual</h2>
+    <button id="homeBtn" type="button" aria-label="Home" onclick="goHomeFromViewer(event)"><img src="/images/home.svg" alt="Home"></button>
+  </div>
+ <!-- 4 & 5. Search + Parts List -->
+  <div id="partsPanel">
+    <h4>Parts</h4>
+    <input type="text" id="partSearch" placeholder="Search parts..." />
+    <div id="hiddenHeader">
+      <div>Hidden Parts: <span id="hiddenCount">0</span></div>
+      <button id="showAllBtn">Show All</button>
+    </div>
+    
+  </div>
+  <!-- 2. BOM Structure -->
+  <div id="systemsPanel"></div>
 
-           <div id="systemsPanel"></div>
+ 
 
-           <div id="partDetails">
-      
-           <h4>Part Details</h4>
-            <p id="partDescription">Select a part to see details.</p>
-           </div>
-          <div id="partsPanel">
-           <h4>Parts</h4>
-           <input type="text" id="partSearch" placeholder="Search parts..." />
+ 
 
-            <div id="hiddenHeader">
-             <div>
-             Hidden Parts:
-             <span id="hiddenCount">0</span>
-             </div>
-             <button id="showAllBtn">Show All</button>
-             </div>
-
-           <div id="partsList"></div>
-         </div>
+</div>
 
   <div id="contextMenu" class="context-menu">
   <button id="hideOption">👁 Hide Selected Part</button>
