@@ -358,7 +358,7 @@ async function readJsonSafely(response, sourceUrl = "") {
   }
 
   if (trimmed.startsWith("<")) {
-    throw new Error(`Expected JSON but received HTML from ${sourceUrl || response.url}. Start the upload server with npm run upload-server and use https://threed-manual.onrender.com for API requests.`)
+    throw new Error(`Expected JSON but received HTML from ${sourceUrl || response.url}. Start the upload server with npm run upload-server and use http://localhost:3001 for API requests.`)
   }
 
   if (contentType && !contentType.toLowerCase().includes("json") && !trimmed.startsWith("[") && !trimmed.startsWith("{")) {

@@ -1,4 +1,4 @@
-const UPLOAD_SERVER = "https://threed-manual.onrender.com";
+const UPLOAD_SERVER = "http://localhost:3001";
 
 export const BUILT_IN_VEHICLES = [
   builtInVehicle("bmw_m3", "BMW M3", "coupe", "m", "M", 2022),
