@@ -1,6 +1,6 @@
 import { requireAdmin, secureLogout, ADMIN_EMAIL } from "./authGuard.js";
 const API_BASE_URL = "https://threed-manual.onrender.com";
-const API_BASE = `${API_BASE_URL}/api`;
+const API_BASE = "/api";
 const STANDARD_SERIES = new Set(["m", "x", "i", "r", "z"]);
 
 const allowedExtensions = {
