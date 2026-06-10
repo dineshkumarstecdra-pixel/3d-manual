@@ -2,23 +2,18 @@
   "main": "electron-main.cjs",
 "build": {
   "appId": "com.tecdra.3dmanual",
-  "productName": "Tecdra 3D Manual",
+  "productName": "3D Manual",
   "directories": {
     "output": "release"
   },
-   "win": {
-    "target": "nsis",
-    "icon": "build/icon.ico"
+  "win": {
+    "target": "nsis"
   },
   "nsis": {
     "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "installerIcon": "build/icon.ico",
-    "uninstallerIcon": "build/icon.ico",
-    "installerHeaderIcon": "build/icon.ico",
-    "shortcutName": "3D Manual"
+    "allowToChangeInstallationDirectory": true
   }
-},
+}
   "name": "my-3d-manual",
   "private": true,
   "version": "0.0.0",
@@ -50,7 +45,7 @@
     "three": "^0.181.2"
   },
   "description": "",
-  "main": "electron-main.cjs",
+  "main": "main.js",
   "keywords": [],
   "author": "",
   "license": "ISC"

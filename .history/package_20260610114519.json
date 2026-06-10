@@ -2,7 +2,7 @@
   "main": "electron-main.cjs",
 "build": {
   "appId": "com.tecdra.3dmanual",
-  "productName": "Tecdra 3D Manual",
+  "productName": "3D Manual",
   "directories": {
     "output": "release"
   },
@@ -12,11 +12,7 @@
   },
   "nsis": {
     "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "installerIcon": "build/icon.ico",
-    "uninstallerIcon": "build/icon.ico",
-    "installerHeaderIcon": "build/icon.ico",
-    "shortcutName": "3D Manual"
+    "allowToChangeInstallationDirectory": true
   }
 },
   "name": "my-3d-manual",

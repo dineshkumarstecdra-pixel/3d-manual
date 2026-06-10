@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | New Program</title>
+  <link rel="icon" href="/images/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/src/admin.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>document.documentElement.classList.add("auth-checking");</script>
+<style>html.auth-checking body > *:not(#authCheckingOverlay){visibility:hidden!important}</style>
+</head>
+<body>
+  <div id="authOverlay" class="auth-overlay">
+    <div class="loader"></div>
+    <p>Checking admin access...</p>
+  </div>
+
+  <header class="admin-header">
+    <div class="brand">
+      <a href="home.html" class="brand-logo" aria-label="Home" target="_blank" rel="noopener noreferrer">
+        <img src="/images/icons/icon.svg" alt="logo" />
+      </a>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>Local vehicle asset management</p>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <a href="#vehicleSection">Vehicles</a>
+      <a href="#ordersSection">Orders</a>
+      <a href="home.html" target="_blank" rel="noopener noreferrer">Home</a>
+    </nav>
+
+    <div class="admin-user">
+      <span id="adminEmail">admin</span>
+      <button id="logoutBtn" type="button">Logout</button>
+    </div>
+  </header>
+
+  <main id="adminApp" class="admin-shell" hidden>
+    <section class="panel form-panel program-update-panel" id="vehicleSection">
+      <div class="panel-title-row program-title-row">
+        <div>
+          <h2>Program Updates</h2>
+          <p>Import production sheet data, group programs by model/series/date, and upload assets for each program.</p>
+        </div>
+        <button id="clearFormBtn" class="ghost-btn" type="button">Clear</button>
+      </div>
+
+      <div class="program-tabs program-mode-grid" role="tablist" aria-label="Program update modes">
+        <button id="newProgramTabBtn" class="program-tab program-mode-card active" type="button" role="tab" aria-selected="true">
+          <span class="mode-icon">🆕</span>
+          <span class="mode-copy">
+            <strong>New Program Update</strong>
+            <small>Create a new vehicle program from a production sheet, then upload assets for each detected model/series/date range.</small>
+          </span>
+          <span class="mode-pill">Production → Assets</span>
+        </button>
+        <button id="existingProgramTabBtn" class="program-tab program-mode-card" type="button" role="tab" aria-selected="false">
+          <span class="mode-icon">🔁</span>
+          <span class="mode-copy">
+            <strong>Existing Program Update</strong>
+            <small>Add a date-based BOM revision to an already uploaded program and preview old-vs-new changes.</small>
+          </span>
+          <span class="mode-pill warning">BOM Revision</span>
+        </button>
+      </div>
+
+      <section id="newProgramPane" class="program-pane active new-workflow" aria-labelledby="newProgramTabBtn">
+        <div class="workflow-hero new-hero">
+          <div>
+            <span class="workflow-kicker">Workflow 1</span>
+            <h3>Create New Production Program</h3>
+            <p>Use this when a new model/series/variant starts production. The sheet can contain thousands of production rows; the app groups them into unique programs automatically.</p>
+          </div>
+          <ol class="workflow-steps" aria-label="New program steps">
+            <li><strong>1</strong><span>Import sheet</span></li>
+            <li><strong>2</strong><span>Review groups</span></li>
+            <li><strong>3</strong><span>Upload assets</span></li>
+            <li><strong>4</strong><span>Save program</span></li>
+          </ol>
+        </div>
+
+        <div class="program-import-card new-import-card">
+          <div>
+            <h3>Step 1: Import production sheet</h3>
+            <p>Required columns: Vehicle Name, Model, Series, Variant, Year, Region, Type, Effective Date, Valid Date.</p>
+          </div>
+          <div class="sheet-import-grid">
+            <label class="field">
+              <span>Production Sheet</span>
+              <input id="newProgramSheet" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" />
+            </label>
+            <label class="field">
+              <span>Google Sheet / CSV URL</span>
+              <input id="newProgramSheetUrl" type="url" placeholder="Paste published Google Sheet CSV/export URL" />
+            </label>
+            <button id="readNewProgramBtn" class="primary-btn" type="button">Read Sheet</button>
+          </div>
+        </div>
+
+        <div id="newProgramSummary" class="program-summary" hidden></div>
+        <div id="programPreview" class="program-preview empty-preview new-empty-preview">
+          <div class="empty-icon">📄</div>
+          <h3>No production sheet imported</h3>
+          <p>After reading the sheet, each unique model/series/variant/date range will appear here with an asset upload action.</p>
+        </div>
+      </section>
+
+      <section id="existingProgramPane" class="program-pane existing-workflow" aria-labelledby="existingProgramTabBtn" hidden>
+        <div class="workflow-hero existing-hero">
+          <div>
+            <span class="workflow-kicker">Workflow 2</span>
+            <h3>Add BOM Revision to Existing Program</h3>
+            <p>Use this when a production date range gets updated parts. The revision is matched to existing programs by model, series, variant and effective/valid dates.</p>
+          </div>
+          <ol class="workflow-steps" aria-label="Existing program steps">
+            <li><strong>1</strong><span>Import BOM sheet</span></li>
+            <li><strong>2</strong><span>Match program</span></li>
+            <li><strong>3</strong><span>Compare BOM</span></li>
+            <li><strong>4</strong><span>Save revision</span></li>
+          </ol>
+        </div>
+
+        <div class="program-import-card existing-update-card">
+          <div>
+            <h3>Step 1: Import BOM / change sheet</h3>
+            <p>Include program columns plus Part Name, Part ID, Qty, System, Subsystem, Assembly and Sub Assembly.</p>
+          </div>
+          <div class="sheet-import-grid">
+            <label class="field">
+              <span>BOM / Change Sheet</span>
+              <input id="existingProgramSheet" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" />
+            </label>
+            <label class="field">
+              <span>Google Sheet / CSV URL</span>
+              <input id="existingProgramSheetUrl" type="url" placeholder="Paste published Google Sheet CSV/export URL" />
+            </label>
+            <button id="readExistingProgramBtn" class="primary-btn existing-action-btn" type="button">Preview Update</button>
+          </div>
+        </div>
+
+        <div id="existingProgramSummary" class="program-summary existing-summary" hidden></div>
+        <div id="existingProgramPreview" class="program-preview empty-preview existing-empty-preview">
+          <div class="empty-icon">🧩</div>
+          <h3>No BOM update sheet imported</h3>
+          <p>Preview matched programs and date ranges before saving a BOM revision record.</p>
+        </div>
+      </section>
+
+      <div id="manualEditorWrap" class="manual-editor-wrap" hidden>
+        <div class="manual-editor-heading">
+          <div>
+            <h3 id="formTitle">Manual / Edit Program</h3>
+            <p>Use this only for editing an existing vehicle or replacing files manually.</p>
+          </div>
+        </div>
+      <form id="vehicleForm" class="vehicle-form">
+        <input id="vehicleId" name="id" type="hidden" />
+
+        <div class="grid one-col">
+          <label class="field">
+            <span>Vehicle Name</span>
+            <input id="vehicleName" name="name" type="text" placeholder="e.g., BMW M5" autocomplete="off" required />
+            <small>Local file names will be generated automatically from the vehicle name.</small>
+          </label>
+        </div>
+
+        <div class="grid three-col">
+          <label class="field">
+            <span>VIN Number</span>
+            <input id="vinNumber" name="vinNumber" type="text" placeholder="e.g., WBA123456789" autocomplete="off" required />
+          </label>
+
+          <label class="field">
+            <span>Variant</span>
+            <select id="variant" name="variant" required>
+              <option value="">Select variant</option>
+              <option value="base">Base</option>
+              <option value="plus">Plus</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Year</span>
+            <input id="year" name="year" type="number" min="1900" max="2100" placeholder="e.g., 2025" required />
+          </label>
+        </div>
+
+        <div class="grid three-col">
+          <label class="field">
+            <span>Region</span>
+            <select id="region" name="region" required>
+              <option value="">Select region</option>
+              <option value="india">India</option>
+              <option value="europe">Europe</option>
+              <option value="usa">USA</option>
+              <option value="germany">Germany</option>
+              <option value="china">China</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Type</span>
+            <select id="type" name="type" required>
+              <option value="">Select type</option>
+              <option value="suv">SUV</option>
+              <option value="sedan">Sedan</option>
+              <option value="coupe">Coupe</option>
+              <option value="hatchback">Hatchback</option>
+              <option value="truck">Truck</option>
+              <option value="van">Van</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Series</span>
+            <select id="series" name="series" required>
+              <option value="">Select series</option>
+              <option value="m">M Series</option>
+              <option value="x">X Series</option>
+              <option value="i">I Series</option>
+              <option value="r">R Series</option>
+              <option value="z">Z Series</option>
+              <option value="other">Other</option>
+            </select>
+            <input id="customSeries" name="customSeries" class="series-other-input" type="text" placeholder="Enter custom series, e.g., F Series" autocomplete="off" hidden />
+            <small id="seriesHelp">Choose Other to add a custom series manually.</small>
+          </label>
+        </div>
+
+        <div class="grid four-col file-grid">
+          <label class="file-card">
+            <span class="file-title">Car Image</span>
+            <span class="file-help">JPEG / PNG / SVG / WebP</span>
+            <input id="carImage" name="carImage" type="file" accept=".jpg,.jpeg,.png,.svg,.webp,image/jpeg,image/png,image/svg+xml,image/webp" />
+            <strong id="carImageName">No file selected</strong>
+          </label>
+
+          <label class="file-card">
+            <span class="file-title">Model File</span>
+            <span class="file-help">STP / STEP / STL / GLB / GLTF / OBJ / DWG / DXF / FBX</span>
+            <input id="modelFile" name="modelFile" type="file" accept=".stp,.step,.stl,.glb,.gltf,.obj,.dwg,.dxf,.fbx" />
+            <strong id="modelFileName">No file selected</strong>
+          </label>
+
+          <label class="file-card">
+            <span class="file-title">Model Data</span>
+            <span class="file-help">Excel / CSV</span>
+            <input id="modelDataFile" name="modelDataFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" />
+            <strong id="modelDataFileName">No file selected</strong>
+          </label>
+
+          <label class="file-card">
+            <span class="file-title">Service Manual</span>
+            <span class="file-help">PDF / Excel / Word / PPT / TXT</span>
+            <input id="manualFile" name="manualFile" type="file" accept=".pdf,.xlsx,.xls,.doc,.docx,.ppt,.pptx,.txt" />
+            <strong id="manualFileName">No file selected</strong>
+          </label>
+        </div>
+
+        <div id="currentFiles" class="current-files" hidden></div>
+
+
+        <div class="form-actions">
+          <button id="submitBtn" class="primary-btn" type="submit">Upload Vehicle</button>
+          <button id="cancelEditBtn" class="secondary-btn" type="button" hidden>Cancel Edit</button>
+        </div>
+      </form>
+      </div>
+
+      <div class="progress-wrap" aria-live="polite">
+        <div class="progress-top">
+          <span id="statusText">Ready</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar"><div id="progressFill"></div></div>
+      </div>
+
+      <div id="messageBox" class="message-box" role="status"></div>
+
+      <dialog id="programAssetDialog" class="program-asset-dialog">
+        <form id="programAssetForm" method="dialog" class="program-asset-form">
+          <div class="dialog-title-row">
+            <div>
+              <h3 id="assetDialogTitle">Upload Program Assets</h3>
+              <p id="assetDialogMeta">Select the files for this program.</p>
+            </div>
+            <button id="closeAssetDialogBtn" class="ghost-btn" type="button">Close</button>
+          </div>
+
+          <div id="assetDialogDetails" class="asset-dialog-details"></div>
+
+          <div class="grid four-col file-grid">
+            <label class="file-card">
+              <span class="file-title">Car Image</span>
+              <span class="file-help">JPEG / PNG / SVG / WebP</span>
+              <input id="programCarImage" type="file" accept=".jpg,.jpeg,.png,.svg,.webp,image/jpeg,image/png,image/svg+xml,image/webp" />
+              <strong id="programCarImageName">No file selected</strong>
+            </label>
+
+            <label class="file-card">
+              <span class="file-title">Model File</span>
+              <span class="file-help">STP / STEP / STL / GLB / GLTF / OBJ / DWG / DXF / FBX</span>
+              <input id="programModelFile" type="file" accept=".stp,.step,.stl,.glb,.gltf,.obj,.dwg,.dxf,.fbx" />
+              <strong id="programModelFileName">No file selected</strong>
+            </label>
+
+            <label class="file-card">
+              <span class="file-title">Model Data / BOM</span>
+              <span class="file-help">Excel / CSV</span>
+              <input id="programModelDataFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" />
+              <strong id="programModelDataFileName">No file selected</strong>
+            </label>
+
+            <label class="file-card">
+              <span class="file-title">Service Manual</span>
+              <span class="file-help">PDF / Excel / Word / PPT / TXT</span>
+              <input id="programManualFile" type="file" accept=".pdf,.xlsx,.xls,.doc,.docx,.ppt,.pptx,.txt" />
+              <strong id="programManualFileName">No file selected</strong>
+            </label>
+          </div>
+
+          <div class="dialog-actions">
+            <button id="saveProgramAssetsBtn" class="primary-btn" type="submit">Save Program</button>
+            <button id="cancelProgramAssetsBtn" class="secondary-btn" type="button">Cancel</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="panel-title-row">
+        <div>
+          <h2>Uploaded Vehicles</h2>
+          <p>Check uploaded vehicles, edit information, replace files, or delete records.</p>
+        </div>
+        <input id="vehicleSearch" class="search-input" type="search" placeholder="Search vehicle, VIN, region..." />
+      </div>
+
+      <div class="table-wrap">
+        <table class="vehicle-table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>VIN</th>
+              <th>Variant</th>
+              <th>Year</th>
+              <th>Region</th>
+              <th>Type</th>
+              <th>Series</th>
+              <th>Files</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vehicleTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="emptyState" class="empty-state" hidden>
+        <h3>No vehicles uploaded yet</h3>
+        <p>Upload a vehicle using the form above.</p>
+      </div>
+    </section>
+
+    <section class="panel orders-panel" id="ordersSection">
+      <div class="panel-title-row">
+        <div>
+          <h2>Parts Orders</h2>
+          <p>Review part requests from Parts Catalogue, then approve, reject, or mark them completed.</p>
+        </div>
+        <div class="orders-toolbar">
+          <select id="orderStatusFilter" class="search-input order-filter" aria-label="Filter order status">
+            <option value="">All status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="completed">Completed</option>
+          </select>
+          <input id="orderSearch" class="search-input" type="search" placeholder="Search order, user, vehicle, part..." />
+          <button id="refreshOrdersBtn" class="ghost-btn" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <div class="order-summary-grid" id="orderSummaryGrid">
+        <div class="order-summary-card"><span>Pending</span><strong id="pendingOrderCount">0</strong></div>
+        <div class="order-summary-card"><span>Approved</span><strong id="approvedOrderCount">0</strong></div>
+        <div class="order-summary-card"><span>Rejected</span><strong id="rejectedOrderCount">0</strong></div>
+        <div class="order-summary-card"><span>Completed</span><strong id="completedOrderCount">0</strong></div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="vehicle-table orders-table">
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Requester</th>
+              <th>Vehicle / Parts</th>
+              <th>Qty</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="ordersEmptyState" class="empty-state" hidden>
+        <h3>No part orders yet</h3>
+        <p>Orders placed from the Parts Bag will appear here.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="/src/admin.js"></script>
+</body>
+</html>
