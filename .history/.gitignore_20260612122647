@@ -29,7 +29,7 @@ release
 release/
 *.exe
 *.blockmap
-
+# .gitignore-ல் இதை சேர்க்கவும்
 echo "release/" >> .gitignore
 echo "*.exe" >> .gitignore
 echo "*.asar" >> .gitignore
