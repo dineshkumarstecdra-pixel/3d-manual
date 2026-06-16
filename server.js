@@ -26,6 +26,7 @@ const TEMP_DIR = path.join(PROJECT_ROOT, ".upload-temp");
 const MONGO_URI = process.env.MONGO_URI;
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "3dmanual";
 const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "https://threed-manual.onrender.com").replace(/\/$/, "");
+const FRONTEND_BASE_URL = (process.env.FRONTEND_BASE_URL || "https://3dmanual.netlify.app").replace(/\/$/, "");
 let mongoClient;
 let mongoDb;
 
@@ -796,22 +797,49 @@ function toPublicUrl(localPath) {
   return makeAbsoluteUrl(publicPath);
 }
 
+function makeFrontendUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return "";
+
+  if (/^(https?:|data:|blob:)/i.test(value)) {
+    return value;
+  }
+
+  const cleanPath = value.startsWith("/") ? value : `/${value}`;
+  return `${FRONTEND_BASE_URL}${cleanPath}`;
+}
+
+function makeAssetUrl(fileMeta, fallbackUrl = "") {
+  const url = fileMeta?.url || fallbackUrl || "";
+  if (!url) return "";
+
+  // Uploaded files saved by this server have localPath.
+  // Those files live on Render.
+  if (fileMeta?.localPath) {
+    return makeAbsoluteUrl(url);
+  }
+
+  // Built-in/static files do not have localPath.
+  // Those files live on Netlify/frontend.
+  return makeFrontendUrl(url);
+}
+
 function withPublicAssetUrls(vehicle) {
   if (!vehicle || typeof vehicle !== "object") return vehicle;
 
   const next = { ...vehicle };
 
-  next.imageUrl = makeAbsoluteUrl(next.imageUrl || next.image?.url);
-  next.modelUrl = makeAbsoluteUrl(next.modelUrl || next.model?.url);
-  next.modelDataUrl = makeAbsoluteUrl(next.modelDataUrl || next.modelData?.url);
-  next.manualUrl = makeAbsoluteUrl(next.manualUrl || next.manual?.url);
-  next.productionSheetUrl = makeAbsoluteUrl(next.productionSheetUrl || next.productionSheet?.url);
+  next.imageUrl = makeAssetUrl(next.image, next.imageUrl);
+  next.modelUrl = makeAssetUrl(next.model, next.modelUrl);
+  next.modelDataUrl = makeAssetUrl(next.modelData, next.modelDataUrl);
+  next.manualUrl = makeAssetUrl(next.manual, next.manualUrl);
+  next.productionSheetUrl = makeAssetUrl(next.productionSheet, next.productionSheetUrl);
 
   ["image", "model", "modelData", "manual", "productionSheet"].forEach((key) => {
     if (next[key]?.url) {
       next[key] = {
         ...next[key],
-        url: makeAbsoluteUrl(next[key].url)
+        url: makeAssetUrl(next[key])
       };
     }
   });
