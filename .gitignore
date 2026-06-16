@@ -27,8 +27,11 @@ dist-ssr
 *.sw?
 release
 release/
+release.zip
 *.exe
+*.zip
 *.blockmap
+.history/
 
 echo "release/" >> .gitignore
 echo "*.exe" >> .gitignore

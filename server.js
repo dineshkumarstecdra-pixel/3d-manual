@@ -25,7 +25,7 @@ const PRODUCTION_SHEET_UPLOAD_DIR = path.join(ASSET_ROOT, "Production Sheets");
 const TEMP_DIR = path.join(PROJECT_ROOT, ".upload-temp");
 const MONGO_URI = process.env.MONGO_URI;
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "3dmanual";
-
+const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || "https://threed-manual.onrender.com").replace(/\/$/, "");
 let mongoClient;
 let mongoDb;
 
@@ -148,8 +148,8 @@ app.get("/api/health", (req, res) => {
 app.get("/api/vehicles/public", async (req, res) => {
   try {
     const uploadedVehicles = await readDatabase();
-    const vehicles = mergeBuiltInVehicles(uploadedVehicles);
-    res.json(vehicles);
+   const vehicles = mergeBuiltInVehicles(uploadedVehicles).map(withPublicAssetUrls);
+res.json(vehicles);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message || "Could not load vehicles." });
@@ -158,8 +158,8 @@ app.get("/api/vehicles/public", async (req, res) => {
 
 app.get("/api/vehicles", requireAdmin, async (req, res) => {
   const uploadedVehicles = await readDatabase();
-  const vehicles = mergeBuiltInVehicles(uploadedVehicles);
-  res.json(vehicles);
+  const vehicles = mergeBuiltInVehicles(uploadedVehicles).map(withPublicAssetUrls);
+res.json(vehicles);
 });
 
 app.post(
@@ -265,7 +265,7 @@ app.post(
         ? "Model uploaded locally. DWG direct preview is not available in the browser; convert DWG to DXF, STP/STEP, GLB, OBJ, STL or FBX for viewer preview."
         : "";
 
-      res.json({ ...vehicle, warning });
+      res.json({ ...withPublicAssetUrls(vehicle), warning });
     } catch (error) {
       await cleanupTempFiles(uploadedTempFiles);
       const status = error.status || 500;
@@ -439,17 +439,19 @@ app.get("/api/program-revisions/active", async (req, res) => {
     const matches = findRevisionMatches(vehicle, revisions, requestedDate);
     const active = matches[0] || null;
 
-    res.json({
-      active: Boolean(active),
-      targetDate: requestedDate,
-      vehicleId: vehicle.id,
-      vehicleName: vehicle.name,
-      baseModelDataUrl: vehicle.modelDataUrl || vehicle.modelData?.url || "",
-      revision: active ? toPublicRevision(active.revision) : null,
-      group: active ? active.group : null,
-      sheet: active ? getRevisionSheet(active.revision) : null,
-      matchesCount: matches.length
-    });
+    const publicVehicle = withPublicAssetUrls(vehicle);
+ 
+     res.json({
+  active: Boolean(active),
+  targetDate: requestedDate,
+  vehicleId: publicVehicle.id,
+  vehicleName: publicVehicle.name,
+  baseModelDataUrl: publicVehicle.modelDataUrl || publicVehicle.modelData?.url || "",
+  revision: active ? toPublicRevision(active.revision) : null,
+  group: active ? active.group : null,
+  sheet: active ? getRevisionSheet(active.revision) : null,
+  matchesCount: matches.length
+});
   } catch (error) {
     console.error(error);
     res.status(error.status || 500).json({ error: error.message || "Could not resolve active BOM revision." });
@@ -777,10 +779,45 @@ function createUniqueVehicleId(name, vehicles) {
   return candidate;
 }
 
-function toPublicUrl(localPath) {
-  return `/${localPath.split("/").map(encodeURIComponent).join("/")}`;
+function makeAbsoluteUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return "";
+
+  if (/^(https?:|data:|blob:)/i.test(value)) {
+    return value;
+  }
+
+  const cleanPath = value.startsWith("/") ? value : `/${value}`;
+  return `${PUBLIC_BASE_URL}${cleanPath}`;
 }
 
+function toPublicUrl(localPath) {
+  const publicPath = `/${localPath.split("/").map(encodeURIComponent).join("/")}`;
+  return makeAbsoluteUrl(publicPath);
+}
+
+function withPublicAssetUrls(vehicle) {
+  if (!vehicle || typeof vehicle !== "object") return vehicle;
+
+  const next = { ...vehicle };
+
+  next.imageUrl = makeAbsoluteUrl(next.imageUrl || next.image?.url);
+  next.modelUrl = makeAbsoluteUrl(next.modelUrl || next.model?.url);
+  next.modelDataUrl = makeAbsoluteUrl(next.modelDataUrl || next.modelData?.url);
+  next.manualUrl = makeAbsoluteUrl(next.manualUrl || next.manual?.url);
+  next.productionSheetUrl = makeAbsoluteUrl(next.productionSheetUrl || next.productionSheet?.url);
+
+  ["image", "model", "modelData", "manual", "productionSheet"].forEach((key) => {
+    if (next[key]?.url) {
+      next[key] = {
+        ...next[key],
+        url: makeAbsoluteUrl(next[key].url)
+      };
+    }
+  });
+
+  return next;
+}
 function getExtension(fileName) {
   return String(fileName || "").split(".").pop().toLowerCase();
 }
@@ -849,12 +886,20 @@ function toPublicRevision(revision) {
 
 function getRevisionSheet(revision) {
   if (!revision) return null;
-  if (revision.sheet?.url) return revision.sheet;
+
+  if (revision.sheet?.url) {
+    return {
+      ...revision.sheet,
+      url: makeAbsoluteUrl(revision.sheet.url)
+    };
+  }
+
   const sourceUrl = String(revision.sourceUrl || "").trim();
   if (!sourceUrl) return null;
+
   return {
     name: "Google Sheet / external sheet",
-    url: sourceUrl,
+    url: makeAbsoluteUrl(sourceUrl),
     extension: sourceUrl.toLowerCase().includes("csv") ? "csv" : "xlsx",
     external: true
   };
