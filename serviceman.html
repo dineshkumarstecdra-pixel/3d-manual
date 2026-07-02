@@ -31,8 +31,10 @@
   <main class="container">
     <h1>Select Vehicle</h1>
     <div class="selectors">
-      <div class="select-box"><select id="typeSelect"><option value="">Select the Type</option></select></div>
-      <div class="select-box"><select id="modelSelect"><option value="">Select the series</option></select></div>
+      <div class="select-box vin-search-box"><input id="vinSearchInput" type="search" placeholder="Search VIN number" autocomplete="off" /></div>
+      <div class="select-box"><select id="modelSelect"><option value="">Select the Series</option></select></div>
+      <div class="select-box"><select id="variantTypeSelect"><option value="">Select Variant Type</option></select></div>
+      <div class="select-box"><select id="typeSelect"><option value="">Select Body Type</option></select></div>
       <button id="resetFilter" type="button">Reset</button>
     </div>
     <section class="section">

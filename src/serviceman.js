@@ -5,12 +5,15 @@ import {
   writeSelectedVehicleData,
   uniqueSortedOptions,
   matchesVehicleRegion,
+  matchesVehicleVin,
   vehicleYearText
 } from "./vehicleService.js";
 
 const typeSelect = document.getElementById("typeSelect");
 const seriesSelect = document.getElementById("modelSelect");
+const variantTypeSelect = document.getElementById("variantTypeSelect");
 const regionSelect = document.getElementById("regionSelect");
+const vinSearchInput = document.getElementById("vinSearchInput");
 const resetBtn = document.getElementById("resetFilter");
 const grid = document.querySelector(".vehicle-grid");
 const profileMenu = document.getElementById("profileMenu");
@@ -41,8 +44,9 @@ async function initVehicles() {
 
 function hydrateDropdowns(vehicles) {
   fillSelect(regionSelect, "", "All Regions", uniqueSortedOptions(vehicles, "region"));
-  fillSelect(typeSelect, "", "Select the Type", uniqueSortedOptions(vehicles, "type"));
-  fillSelect(seriesSelect, "", "Select the series", uniqueSortedOptions(vehicles, "series"));
+  fillSelect(seriesSelect, "", "Select the Series", uniqueSortedOptions(vehicles, "series"));
+  fillSelect(variantTypeSelect, "", "Select Variant Type", uniqueSortedOptions(vehicles, "variantType"));
+  fillSelect(typeSelect, "", "Select Body Type", uniqueSortedOptions(vehicles, "bodyType"));
 }
 
 function fillSelect(select, emptyValue, emptyLabel, options) {
@@ -62,27 +66,41 @@ function getFilteredVehicles() {
   const region = regionSelect?.value || "";
   const type = typeSelect?.value || "";
   const series = seriesSelect?.value || "";
+  const variantType = variantTypeSelect?.value || "";
+  const vinQuery = vinSearchInput?.value || "";
 
   return allVehicles.filter((vehicle) => {
-    return matchesVehicleRegion(vehicle, region) &&
-      (!type || vehicle.type === type) &&
-      (!series || vehicle.series === series);
+    const regionMatch = matchesVehicleRegion(vehicle, region);
+    const typeMatch = !type || vehicle.bodyType === type || vehicle.type === type || vehicle.filterFields?.bodyType === type;
+    const seriesMatch = !series || vehicle.series === series;
+    const variantTypeMatch = !variantType || vehicle.filterFields?.variantType === variantType || vehicle.variantType === variantType;
+    const vinMatch = matchesVehicleVin(vehicle, vinQuery);
+    return regionMatch && typeMatch && seriesMatch && variantTypeMatch && vinMatch;
   });
 }
 
 function updateDependentDropdowns() {
   const region = regionSelect?.value || "";
   const type = typeSelect?.value || "";
+  const series = seriesSelect?.value || "";
+  const variantType = variantTypeSelect?.value || "";
+
   const regionVehicles = allVehicles.filter((vehicle) => matchesVehicleRegion(vehicle, region));
-  const seriesVehicles = regionVehicles.filter((vehicle) => !type || vehicle.type === type);
-  const currentType = typeSelect?.value || "";
-  const currentSeries = seriesSelect?.value || "";
+  const seriesVehicles = regionVehicles.filter((vehicle) => !type || vehicle.bodyType === type || vehicle.type === type || vehicle.filterFields?.bodyType === type);
+  const variantVehicles = seriesVehicles.filter((vehicle) => !series || vehicle.series === series);
 
-  fillSelect(typeSelect, "", "Select the Type", uniqueSortedOptions(regionVehicles, "type"));
-  if (currentType && [...typeSelect.options].some((option) => option.value === currentType)) typeSelect.value = currentType;
+  const currentType = type;
+  const currentSeries = series;
+  const currentVariantType = variantType;
 
-  fillSelect(seriesSelect, "", "Select the series", uniqueSortedOptions(seriesVehicles, "series"));
+  fillSelect(seriesSelect, "", "Select the Series", uniqueSortedOptions(regionVehicles, "series"));
   if (currentSeries && [...seriesSelect.options].some((option) => option.value === currentSeries)) seriesSelect.value = currentSeries;
+
+  fillSelect(variantTypeSelect, "", "Select Variant Type", uniqueSortedOptions(variantVehicles, "variantType"));
+  if (currentVariantType && [...variantTypeSelect.options].some((option) => option.value === currentVariantType)) variantTypeSelect.value = currentVariantType;
+
+  fillSelect(typeSelect, "", "Select Body Type", uniqueSortedOptions(regionVehicles, "bodyType"));
+  if (currentType && [...typeSelect.options].some((option) => option.value === currentType)) typeSelect.value = currentType;
 }
 
 function renderVehicles(vehicles) {
@@ -98,6 +116,8 @@ function renderVehicles(vehicles) {
     const card = document.createElement("div");
     card.className = "vehicle-card";
     card.dataset.type = vehicle.type;
+    card.dataset.bodyType = vehicle.bodyType || vehicle.type;
+    card.dataset.variantType = vehicle.filterFields?.variantType || vehicle.variantType || "";
     card.dataset.series = vehicle.series;
     card.dataset.region = vehicle.region;
     card.tabIndex = 0;
@@ -139,22 +159,23 @@ function openVehicle(vehicle) {
 }
 
 regionSelect?.addEventListener("change", () => {
-  typeSelect.value = "";
-  seriesSelect.value = "";
+  if (typeSelect) typeSelect.value = "";
+  if (seriesSelect) seriesSelect.value = "";
+  if (variantTypeSelect) variantTypeSelect.value = "";
   applyFilters();
 });
 
-typeSelect?.addEventListener("change", () => {
-  seriesSelect.value = "";
-  applyFilters();
-});
-
+typeSelect?.addEventListener("change", applyFilters);
 seriesSelect?.addEventListener("change", applyFilters);
+variantTypeSelect?.addEventListener("change", applyFilters);
+vinSearchInput?.addEventListener("input", applyFilters);
 
 resetBtn?.addEventListener("click", () => {
   if (regionSelect) regionSelect.value = "";
   if (typeSelect) typeSelect.value = "";
   if (seriesSelect) seriesSelect.value = "";
+  if (variantTypeSelect) variantTypeSelect.value = "";
+  if (vinSearchInput) vinSearchInput.value = "";
   hydrateDropdowns(allVehicles);
   renderVehicles(allVehicles);
 });

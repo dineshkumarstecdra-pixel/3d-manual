@@ -226,12 +226,22 @@ app.post(
         name: String(req.body.name || "").trim(),
         vinNumber: String(req.body.vinNumber || previous?.vinNumber || "").trim(),
         vinNumbers: safeJsonArray(req.body.vinNumbers, previous?.vinNumbers || []),
-        variant: String(req.body.variant || "").trim().toLowerCase(),
+        variant: String(req.body.variant || previous?.variant || "base").trim().toLowerCase(),
+        variantName: String(req.body.variantName || previous?.variantName || "").trim(),
+        variantType: String(req.body.variantType || previous?.variantType || req.body.variantName || "").trim(),
         year: Number(req.body.year),
-        region: String(req.body.region || "").trim().toLowerCase(),
-        type: String(req.body.type || "").trim().toLowerCase(),
+        region: String(req.body.region || previous?.region || "").trim().toLowerCase(),
+        type: String(req.body.type || req.body.bodyType || previous?.type || "").trim().toLowerCase(),
+        bodyType: String(req.body.bodyType || req.body.type || previous?.bodyType || "").trim().toLowerCase(),
+        bodyTypeLabel: String(req.body.bodyTypeLabel || previous?.bodyTypeLabel || req.body.bodyType || req.body.type || "").trim(),
         series: seriesValue,
         seriesLabel,
+        modelName: String(req.body.modelName || previous?.modelName || "").trim(),
+        fuelType: String(req.body.fuelType || previous?.fuelType || "").trim(),
+        transmission: String(req.body.transmission || previous?.transmission || "").trim(),
+        engine: String(req.body.engine || previous?.engine || "").trim(),
+        emission: String(req.body.emission || previous?.emission || "").trim(),
+        productionDate: String(req.body.productionDate || previous?.productionDate || "").trim(),
         image: savedFiles.image,
         model: savedFiles.model,
         modelData: savedFiles.modelData,
@@ -247,6 +257,18 @@ app.post(
         validDate: String(req.body.validDate || previous?.validDate || "").trim(),
         productionCount: Number.parseInt(req.body.productionCount || previous?.productionCount || 0, 10) || 0,
         sheetRows: safeJsonArray(req.body.sheetRows, previous?.sheetRows || []),
+        rawRows: safeJsonArray(req.body.rawRows, previous?.rawRows || safeJsonArray(req.body.sheetRows, [])),
+        normalizedRows: safeJsonArray(req.body.normalizedRows, previous?.normalizedRows || []),
+        sheetHeaders: safeJsonArray(req.body.sheetHeaders, previous?.sheetHeaders || []),
+        groupFields: safeJsonObject(req.body.groupFields, previous?.groupFields || {}),
+        normalizedGroupFields: safeJsonObject(req.body.normalizedGroupFields, previous?.normalizedGroupFields || {}),
+        filterFields: safeJsonObject(req.body.filterFields, previous?.filterFields || {}),
+        groupKey: String(req.body.groupKey || previous?.groupKey || "").trim(),
+        groupByHeaders: safeJsonArray(req.body.groupByHeaders, previous?.groupByHeaders || []),
+        vinColumn: String(req.body.vinColumn || previous?.vinColumn || "").trim(),
+        productionDateColumn: String(req.body.productionDateColumn || previous?.productionDateColumn || "").trim(),
+        excelImportMode: String(req.body.excelImportMode || previous?.excelImportMode || "append").trim().toLowerCase(),
+        sheetName: String(req.body.sheetName || previous?.sheetName || "").trim(),
         createdAt: isBuiltInEdit ? now : (previous?.createdAt || now),
         updatedAt: now,
         builtIn: false,
@@ -255,6 +277,7 @@ app.post(
         storageMode: "local"
       };
 
+      assertNoDuplicateVinConflicts(vehicle, vehicles, vehicle.id);
       validateVehiclePayload(vehicle);
 
       const nextVehicles = upsertVehicle(vehicles, vehicle);
@@ -688,16 +711,77 @@ function upsertVehicle(vehicles, vehicle) {
   return next;
 }
 
-function validateVehiclePayload(vehicle) {
-  const required = ["id", "name", "variant", "year", "region", "type", "series"];
-  for (const key of required) {
-    if (vehicle[key] === "" || vehicle[key] === null || Number.isNaN(vehicle[key])) {
-      throw httpError(400, `${key} is required.`);
-    }
+function getVehicleVinNumbers(vehicle) {
+  const values = [];
+  if (vehicle?.vinNumber) values.push(vehicle.vinNumber);
+  if (Array.isArray(vehicle?.vinNumbers)) values.push(...vehicle.vinNumbers);
+
+  const rows = [
+    ...(Array.isArray(vehicle?.rawRows) ? vehicle.rawRows : []),
+    ...(Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : [])
+  ];
+
+  rows.forEach((row) => {
+    Object.entries(row || {}).forEach(([key, value]) => {
+      const normalizedKey = normalizeHeaderForVin(key);
+      if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber", "serialnumber"].includes(normalizedKey)) {
+        if (value) values.push(value);
+      }
+    });
+  });
+
+  return values.map((value) => String(value || "").trim()).filter(Boolean);
+}
+
+function normalizeHeaderForVin(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_\-/.]+/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function normalizeVin(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function assertNoDuplicateVinConflicts(vehicle, vehicles, currentVehicleId) {
+  const vinNumbers = getVehicleVinNumbers(vehicle);
+  const seen = new Set();
+  const duplicatesInRequest = [];
+
+  vinNumbers.forEach((vin) => {
+    const key = normalizeVin(vin);
+    if (seen.has(key)) duplicatesInRequest.push(vin);
+    seen.add(key);
+  });
+
+  if (duplicatesInRequest.length) {
+    throw httpError(400, `Duplicate VIN in uploaded data: ${duplicatesInRequest.slice(0, 10).join(", ")}`);
   }
 
-  if (!["base", "plus"].includes(vehicle.variant)) {
-    throw httpError(400, "Variant must be Base or Plus.");
+  const currentId = normalizeVehicleId(currentVehicleId || vehicle.id);
+  const conflicts = [];
+
+  for (const existing of Array.isArray(vehicles) ? vehicles : []) {
+    if (normalizeVehicleId(existing.id) === currentId) continue;
+    const existingVinSet = new Set(getVehicleVinNumbers(existing).map(normalizeVin));
+    vinNumbers.forEach((vin) => {
+      if (existingVinSet.has(normalizeVin(vin))) conflicts.push(`${vin} already exists in ${existing.name || existing.id}`);
+    });
+  }
+
+  if (conflicts.length) {
+    throw httpError(400, `VIN already exists: ${conflicts.slice(0, 10).join("; ")}`);
+  }
+}
+
+function validateVehiclePayload(vehicle) {
+  const required = ["id", "name"];
+  for (const key of required) {
+    if (vehicle[key] === "" || vehicle[key] === null || vehicle[key] === undefined) {
+      throw httpError(400, `${key} is required.`);
+    }
   }
 }
 
@@ -881,6 +965,19 @@ function safeJsonArray(value, fallback = []) {
     return Array.isArray(parsed) ? parsed : (Array.isArray(fallback) ? fallback : []);
   } catch {
     return Array.isArray(fallback) ? fallback : [];
+  }
+}
+
+function safeJsonObject(value, fallback = {}) {
+  if (value && typeof value === "object" && !Array.isArray(value)) return value;
+  if (!value) return fallback && typeof fallback === "object" && !Array.isArray(fallback) ? fallback : {};
+  try {
+    const parsed = JSON.parse(String(value));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : (fallback && typeof fallback === "object" && !Array.isArray(fallback) ? fallback : {});
+  } catch {
+    return fallback && typeof fallback === "object" && !Array.isArray(fallback) ? fallback : {};
   }
 }
 

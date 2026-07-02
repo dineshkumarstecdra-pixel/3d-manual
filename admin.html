@@ -98,6 +98,14 @@
               <span>Google Sheet / CSV URL</span>
               <input id="newProgramSheetUrl" type="url" placeholder="Paste published Google Sheet CSV/export URL" />
             </label>
+            <label class="field">
+              <span>Import Mode</span>
+              <select id="newProgramImportMode">
+                <option value="append">Append new VINs</option>
+                <option value="replace">Replace existing group</option>
+              </select>
+              <small>Append blocks duplicate VINs. Replace updates the existing group/VIN rows.</small>
+            </label>
             <button id="readNewProgramBtn" class="primary-btn" type="button">Read Sheet</button>
           </div>
         </div>

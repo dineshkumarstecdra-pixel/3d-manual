@@ -46,6 +46,7 @@ const newProgramPane = document.getElementById("newProgramPane");
 const existingProgramPane = document.getElementById("existingProgramPane");
 const newProgramSheet = document.getElementById("newProgramSheet");
 const newProgramSheetUrl = document.getElementById("newProgramSheetUrl");
+const newProgramImportMode = document.getElementById("newProgramImportMode");
 const readNewProgramBtn = document.getElementById("readNewProgramBtn");
 const newProgramSummary = document.getElementById("newProgramSummary");
 const programPreview = document.getElementById("programPreview");
@@ -111,6 +112,36 @@ let existingProgramGroups = [];
 let selectedProgramGroup = null;
 let latestNewProgramRows = [];
 let latestExistingProgramRows = [];
+let latestNewProgramHeaders = [];
+
+const VIN_HEADER_ALIASES = [
+  "VEHICLE IDENTIFICATION NUMBER", "VIN", "VIN NUMBER", "VIN NO", "CHASSIS NUMBER", "SERIAL NUMBER"
+];
+const SERIAL_HEADER_ALIASES = ["SI.NO", "S.NO", "SNO", "SERIAL NO", "SERIAL NUMBER", "SL NO"];
+const PRODUCTION_DATE_HEADER_ALIASES = ["Production Date", "PRODUCTION DATE", "Built Date", "Build Date"];
+const GROUP_EXCLUDED_HEADER_KEYS = new Set([
+  ...VIN_HEADER_ALIASES,
+  ...SERIAL_HEADER_ALIASES,
+  ...PRODUCTION_DATE_HEADER_ALIASES
+].map(normalizeHeader));
+
+const PROGRAM_FIELD_ALIASES = {
+  vinNumber: VIN_HEADER_ALIASES,
+  modelName: ["MODEL", "Vehicle Model", "Car Model", "Model Name"],
+  seriesLabel: ["SERIES", "Model Series", "Program Series"],
+  variantName: ["VARIANT NAME", "VARIENT NAME", "Variant", "Varient", "Trim"],
+  variantType: ["VARIENT TYPE", "VARIANT TYPE", "Type Code", "Variant Code"],
+  bodyType: ["BODY TYPE", "Body", "Vehicle Type", "Type"],
+  modelYear: ["MODEL YEAR", "Year", "MY"],
+  region: ["REGION", "Market", "Country"],
+  fuelType: ["FUEL TYPE", "Fuel"],
+  transmission: ["TRANSMISSION", "Gearbox"],
+  engine: ["ENGINE", "Engine Type"],
+  emission: ["EMISSION", "Emission Norm", "Emission Standard"],
+  productionDate: PRODUCTION_DATE_HEADER_ALIASES,
+  effectiveDate: ["Effective Date", "Effective From", "From Date", "Start Date"],
+  validDate: ["Valid Date", "Valid To", "Valid Until", "To Date", "End Date"]
+};
 
 const verifiedAdmin = await requireAdmin();
 currentUser = verifiedAdmin;
@@ -278,6 +309,7 @@ function clearProgramUpdateUI() {
   existingProgramGroups = [];
   latestNewProgramRows = [];
   latestExistingProgramRows = [];
+  latestNewProgramHeaders = [];
   if (newProgramSheet) newProgramSheet.value = "";
   if (newProgramSheetUrl) newProgramSheetUrl.value = "";
   if (existingProgramSheet) existingProgramSheet.value = "";
@@ -300,9 +332,10 @@ async function readNewProgramSheet() {
     showMessage("", "");
     const rows = await readSheetInput(newProgramSheet, newProgramSheetUrl);
     latestNewProgramRows = rows;
+    latestNewProgramHeaders = getSheetHeaders(rows);
     newProgramGroups = groupProgramRows(rows, "new");
     renderNewProgramGroups();
-    setProgress(`Found ${newProgramGroups.length} unique program(s)`, 100);
+    setProgress(`Found ${newProgramGroups.length} unique OEM configuration group(s)`, 100);
   } catch (error) {
     console.error(error);
     showMessage(error.message || "Could not read sheet.", "error");
@@ -390,15 +423,56 @@ function toCsvUrl(url) {
 }
 
 function normalizeSheetRows(rows) {
-  return (Array.isArray(rows) ? rows : [])
+  const seenHeaders = new Set();
+  const headers = [];
+
+  const normalizedRows = (Array.isArray(rows) ? rows : [])
     .map((row) => {
+      const rawRow = {};
       const normalized = {};
+
       for (const [key, value] of Object.entries(row || {})) {
-        normalized[normalizeHeader(key)] = normalizeCell(value);
+        const rawKey = String(key || "").trim();
+        if (!rawKey) continue;
+
+        const normalizedKey = normalizeHeader(rawKey);
+        const cellValue = normalizeCell(value);
+
+        rawRow[rawKey] = cellValue;
+        normalized[normalizedKey] = cellValue;
+
+        if (!seenHeaders.has(rawKey)) {
+          seenHeaders.add(rawKey);
+          headers.push(rawKey);
+        }
       }
-      return normalized;
+
+      return {
+        ...normalized,
+        __rawRow: rawRow,
+        __normalizedRow: normalized,
+        __headers: headers
+      };
     })
-    .filter((row) => Object.values(row).some((value) => String(value || "").trim()));
+    .filter((row) => Object.values(row.__rawRow || {}).some((value) => String(value || "").trim()));
+
+  normalizedRows.forEach((row) => {
+    row.__headers = [...headers];
+  });
+
+  return normalizedRows;
+}
+
+function getSheetHeaders(rows) {
+  return Array.from(new Set((Array.isArray(rows) ? rows : []).flatMap((row) => row.__headers || Object.keys(row.__rawRow || {}))));
+}
+
+function getRawRow(row) {
+  return row?.__rawRow || row || {};
+}
+
+function getNormalizedRow(row) {
+  return row?.__normalizedRow || row || {};
 }
 
 function normalizeHeader(header) {
@@ -466,22 +540,27 @@ function parseCsv(text) {
   row.push(cell);
   rows.push(row);
 
-  const headers = (rows.shift() || []).map(normalizeHeader);
+  const headers = (rows.shift() || []).map((header, index) => String(header || `Column ${index + 1}`).trim());
   return rows.map((values) => {
     const obj = {};
     headers.forEach((header, index) => {
-      obj[header || `col${index}`] = values[index] || "";
+      obj[header || `Column ${index + 1}`] = values[index] || "";
     });
     return obj;
   });
 }
 
 function sheetValue(row, aliases) {
+  const normalized = getNormalizedRow(row);
   for (const alias of aliases) {
     const key = normalizeHeader(alias);
-    if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== "") return String(row[key]).trim();
+    if (normalized[key] !== undefined && normalized[key] !== null && String(normalized[key]).trim() !== "") return String(normalized[key]).trim();
   }
   return "";
+}
+
+function getProgramValue(row, fieldName) {
+  return sheetValue(row, PROGRAM_FIELD_ALIASES[fieldName] || [fieldName]);
 }
 
 function rowChangeType(row) {
@@ -514,37 +593,127 @@ function countChangeActions(rows) {
 }
 
 function rowToProgram(row) {
-  const vehicleName = sheetValue(row, ["Vehicle Name", "Vehicle", "Program Name", "Car Name", "Name"]);
-  const model = sheetValue(row, ["Model", "Vehicle Model", "Car Model"]) || vehicleName;
-  const seriesLabel = sheetValue(row, ["Series", "Model Series", "Program Series"]);
-  const variant = sheetValue(row, ["Variant", "Varient", "Trim"]) || "base";
-  const year = sheetValue(row, ["Year", "Model Year", "MY"]);
-  const region = sheetValue(row, ["Region", "Market", "Country"]);
-  const type = sheetValue(row, ["Type", "Body Type", "Vehicle Type"]);
-  const effectiveDate = sheetValue(row, ["Effective Date", "Effective From", "From Date", "Start Date"]);
-  const validDate = sheetValue(row, ["Valid Date", "Valid To", "Valid Until", "To Date", "End Date"]);
-  const vinNumber = sheetValue(row, ["VIN Number", "VIN", "Chassis Number", "Serial Number"]);
+  const modelName = getProgramValue(row, "modelName");
+  const seriesLabel = getProgramValue(row, "seriesLabel");
+  const variantName = getProgramValue(row, "variantName") || "BASE";
+  const variantType = getProgramValue(row, "variantType") || variantName;
+  const bodyTypeLabel = getProgramValue(row, "bodyType");
+  const year = getProgramValue(row, "modelYear");
+  const regionLabel = getProgramValue(row, "region");
+  const fuelType = getProgramValue(row, "fuelType");
+  const transmission = getProgramValue(row, "transmission");
+  const engine = getProgramValue(row, "engine");
+  const emission = getProgramValue(row, "emission");
+  const productionDate = getProgramValue(row, "productionDate");
+  const effectiveDate = getProgramValue(row, "effectiveDate");
+  const validDate = getProgramValue(row, "validDate");
+  const vinNumber = getProgramValue(row, "vinNumber");
+  const displayName = buildOemDisplayName({ modelName, seriesLabel, variantName, variantType, fuelType, transmission });
 
   return {
-    vehicleName,
-    model,
-    displayName: vehicleName || model,
+    vehicleName: displayName,
+    model: modelName || displayName,
+    modelName,
+    displayName,
     seriesLabel,
     series: normalizeSeriesValue(seriesLabel),
-    variant: normalizeVariant(variant),
+    variant: normalizeVariant(variantName),
+    variantName,
+    variantType,
     year,
-    region: normalizeSelectValue(region),
-    regionLabel: region,
-    type: normalizeSelectValue(type),
-    typeLabel: type,
+    region: normalizeSelectValue(regionLabel),
+    regionLabel,
+    type: normalizeSelectValue(bodyTypeLabel),
+    typeLabel: bodyTypeLabel,
+    bodyType: normalizeSelectValue(bodyTypeLabel),
+    bodyTypeLabel,
+    fuelType,
+    transmission,
+    engine,
+    emission,
+    productionDate,
     effectiveDate,
     validDate,
     vinNumber,
-    raw: row
+    raw: getRawRow(row),
+    normalized: getNormalizedRow(row)
   };
 }
 
+function buildOemDisplayName(program) {
+  return [
+    program.modelName,
+    program.seriesLabel,
+    program.variantName,
+    program.variantType,
+    program.fuelType,
+    program.transmission
+  ].map((part) => String(part || "").trim()).filter(Boolean).join(" ");
+}
+
 function groupProgramRows(rows, mode) {
+  if (mode !== "new") return groupRevisionRows(rows, mode);
+
+  validateDuplicateVinRows(rows);
+  const map = new Map();
+  const headers = getSheetHeaders(rows);
+
+  rows.forEach((row, index) => {
+    const program = rowToProgram(row);
+    if (!program.displayName || !program.series || !program.variant || !program.year || !program.region || !program.type) return;
+
+    const key = buildConfigurationKey(row);
+    if (!key) return;
+
+    if (!map.has(key)) {
+      const groupFields = buildGroupFields(row);
+      const normalizedGroupFields = buildNormalizedGroupFields(row);
+      const groupId = createProgramId(program, normalizedGroupFields);
+      map.set(key, {
+        ...program,
+        groupKey: key,
+        groupId,
+        groupFields,
+        normalizedGroupFields,
+        sheetHeaders: headers,
+        filterFields: {
+          series: program.series,
+          seriesLabel: program.seriesLabel,
+          variantType: normalizeSelectValue(program.variantType || program.variantName),
+          variantTypeLabel: program.variantType || program.variantName,
+          bodyType: program.bodyType,
+          bodyTypeLabel: program.bodyTypeLabel,
+          region: program.region,
+          modelName: program.modelName,
+          fuelType: program.fuelType,
+          transmission: program.transmission,
+          engine: program.engine,
+          emission: program.emission
+        },
+        rows: [],
+        rawRows: [],
+        normalizedRows: [],
+        rowIndexes: [],
+        vinNumbers: [],
+        saved: false,
+        mode
+      });
+    }
+
+    const group = map.get(key);
+    group.rows.push(row);
+    group.rawRows.push(getRawRow(row));
+    group.normalizedRows.push(getNormalizedRow(row));
+    group.rowIndexes.push(index + 2);
+    if (program.vinNumber && !group.vinNumbers.includes(program.vinNumber)) {
+      group.vinNumbers.push(program.vinNumber);
+    }
+  });
+
+  return Array.from(map.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
+}
+
+function groupRevisionRows(rows, mode) {
   const map = new Map();
 
   rows.forEach((row, index) => {
@@ -563,7 +732,7 @@ function groupProgramRows(rows, mode) {
     ].map((part) => String(part || "").toLowerCase()).join("|");
 
     if (!map.has(key)) {
-      const groupId = createProgramId(program);
+      const groupId = createProgramId(program, buildNormalizedGroupFields(row));
       map.set(key, {
         ...program,
         groupId,
@@ -586,14 +755,70 @@ function groupProgramRows(rows, mode) {
   return Array.from(map.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
 }
 
-function createProgramId(program) {
+function buildConfigurationKey(row) {
+  const normalized = getNormalizedRow(row);
+  return Object.entries(normalized)
+    .filter(([key]) => !GROUP_EXCLUDED_HEADER_KEYS.has(key))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${normalizeComparisonValue(value)}`)
+    .join("|");
+}
+
+function buildGroupFields(row) {
+  const raw = getRawRow(row);
+  const fields = {};
+  for (const [key, value] of Object.entries(raw)) {
+    if (!GROUP_EXCLUDED_HEADER_KEYS.has(normalizeHeader(key))) fields[key] = value;
+  }
+  return fields;
+}
+
+function buildNormalizedGroupFields(row) {
+  const normalized = getNormalizedRow(row);
+  const fields = {};
+  for (const [key, value] of Object.entries(normalized)) {
+    if (!GROUP_EXCLUDED_HEADER_KEYS.has(key)) fields[key] = value;
+  }
+  return fields;
+}
+
+function normalizeComparisonValue(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function validateDuplicateVinRows(rows) {
+  const seen = new Map();
+  const duplicates = [];
+  rows.forEach((row, index) => {
+    const vin = getProgramValue(row, "vinNumber");
+    if (!vin) return;
+    const key = normalizeComparisonValue(vin);
+    if (seen.has(key)) duplicates.push(`${vin} (rows ${seen.get(key)}, ${index + 2})`);
+    else seen.set(key, index + 2);
+  });
+  if (duplicates.length) {
+    throw new Error(`Duplicate VIN found in uploaded sheet: ${duplicates.slice(0, 8).join(", ")}`);
+  }
+}
+
+function createProgramId(program, normalizedGroupFields = {}) {
   return createVehicleIdFromName([
     program.displayName,
+    program.modelName,
     program.seriesLabel || program.series,
-    program.variant,
+    program.variantName || program.variant,
+    program.variantType,
+    program.bodyTypeLabel || program.type,
     program.year,
-    program.effectiveDate,
-    program.validDate
+    program.region,
+    program.fuelType,
+    program.transmission,
+    program.engine,
+    program.emission,
+    Object.values(normalizedGroupFields).join(" ")
   ].filter(Boolean).join(" "));
 }
 
@@ -635,23 +860,25 @@ function renderNewProgramGroups() {
 
 function buildProgramCard(group) {
   const badge = group.saved ? `<span class="program-status saved">Saved</span>` : `<span class="program-status pending">Assets Needed</span>`;
+  const vinPreview = (group.vinNumbers || []).slice(0, 3).join(", ");
   return `
     <article class="program-card ${group.saved ? "saved" : ""}">
       <div class="program-card-main">
         <div>
           <h3>${escapeHtml(group.displayName)}</h3>
-          <p>${escapeHtml(group.year)} · ${escapeHtml(formatTitle(group.variant))} · ${escapeHtml(formatSeriesLabel(group.seriesLabel || group.series))}</p>
+          <p>${escapeHtml(group.year || "-")} · ${escapeHtml(formatTitle(group.regionLabel || group.region))} · ${escapeHtml(group.vinNumbers?.length || 0)} VIN(s)</p>
         </div>
         ${badge}
       </div>
       <div class="program-meta-grid">
-        <span><strong>Model</strong>${escapeHtml(group.model || group.displayName)}</span>
-        <span><strong>Type</strong>${escapeHtml(formatTitle(group.typeLabel || group.type))}</span>
-        <span><strong>Region</strong>${escapeHtml(formatTitle(group.regionLabel || group.region))}</span>
-        <span><strong>Effective</strong>${escapeHtml(group.effectiveDate || "-")}</span>
-        <span><strong>Valid</strong>${escapeHtml(group.validDate || "-")}</span>
+        <span><strong>Model</strong>${escapeHtml(group.modelName || group.model || group.displayName)}</span>
+        <span><strong>Series</strong>${escapeHtml(formatSeriesLabel(group.seriesLabel || group.series))}</span>
+        <span><strong>Variant Type</strong>${escapeHtml(group.variantType || group.variantName || "-")}</span>
+        <span><strong>Body Type</strong>${escapeHtml(formatTitle(group.bodyTypeLabel || group.typeLabel || group.type))}</span>
+        <span><strong>Fuel</strong>${escapeHtml(group.fuelType || "-")}</span>
+        <span><strong>Transmission</strong>${escapeHtml(group.transmission || "-")}</span>
         <span><strong>Rows</strong>${escapeHtml(group.rows.length)}</span>
-        <span><strong>VINs</strong>${escapeHtml(group.vinNumbers?.length || 0)}</span>
+        <span><strong>VINs</strong>${escapeHtml(vinPreview || "-")}${group.vinNumbers?.length > 3 ? "..." : ""}</span>
       </div>
       <button class="primary-btn program-card-btn" data-program-action="assets" data-group-id="${escapeAttr(group.groupId)}" type="button">
         ${group.saved ? "Replace Assets / Re-save" : "Upload Assets"}
@@ -734,14 +961,17 @@ function openProgramAssetDialog(group) {
   selectedProgramGroup = group;
   resetProgramAssetFileInputs();
   if (assetDialogTitle) assetDialogTitle.textContent = `Upload Assets: ${group.displayName}`;
-  if (assetDialogMeta) assetDialogMeta.textContent = `${group.year} · ${formatTitle(group.variant)} · ${formatSeriesLabel(group.seriesLabel || group.series)} · ${group.rows.length} production row(s)`;
+  if (assetDialogMeta) assetDialogMeta.textContent = `${group.year || "-"} · ${group.regionLabel || group.region || "-"} · ${group.vinNumbers?.length || 0} VIN(s) · ${newProgramImportMode?.value || "append"} mode`;
   if (assetDialogDetails) {
     assetDialogDetails.innerHTML = `
       <span><strong>Program ID</strong>${escapeHtml(group.groupId)}</span>
-      <span><strong>Region</strong>${escapeHtml(formatTitle(group.regionLabel || group.region))}</span>
-      <span><strong>Type</strong>${escapeHtml(formatTitle(group.typeLabel || group.type))}</span>
-      <span><strong>Effective</strong>${escapeHtml(group.effectiveDate || "-")}</span>
-      <span><strong>Valid</strong>${escapeHtml(group.validDate || "-")}</span>
+      <span><strong>Series</strong>${escapeHtml(formatSeriesLabel(group.seriesLabel || group.series))}</span>
+      <span><strong>Variant Type</strong>${escapeHtml(group.variantType || group.variantName || "-")}</span>
+      <span><strong>Body Type</strong>${escapeHtml(formatTitle(group.bodyTypeLabel || group.typeLabel || group.type))}</span>
+      <span><strong>Fuel</strong>${escapeHtml(group.fuelType || "-")}</span>
+      <span><strong>Transmission</strong>${escapeHtml(group.transmission || "-")}</span>
+      <span><strong>Engine</strong>${escapeHtml(group.engine || "-")}</span>
+      <span><strong>Emission</strong>${escapeHtml(group.emission || "-")}</span>
     `;
   }
   programAssetDialog?.showModal?.();
@@ -789,22 +1019,50 @@ async function saveSelectedProgramAssets() {
   setProgress("Uploading program assets...", 10);
 
   try {
+    const importMode = newProgramImportMode?.value || "append";
+    const existingVehicle = vehicles.find((vehicle) => vehicle.id === selectedProgramGroup.groupId) || null;
+    const merged = buildMergedProgramRows(selectedProgramGroup, existingVehicle, importMode);
+
     const formData = new FormData();
     formData.append("id", selectedProgramGroup.groupId);
+    formData.append("editingId", existingVehicle ? selectedProgramGroup.groupId : "");
     formData.append("name", selectedProgramGroup.displayName);
-    formData.append("vinNumber", selectedProgramGroup.vinNumbers?.[0] || "");
-    formData.append("vinNumbers", JSON.stringify(selectedProgramGroup.vinNumbers || []));
-    formData.append("variant", selectedProgramGroup.variant);
-    formData.append("year", selectedProgramGroup.year);
-    formData.append("region", selectedProgramGroup.region);
-    formData.append("type", selectedProgramGroup.type);
-    formData.append("series", selectedProgramGroup.series);
+    formData.append("modelName", selectedProgramGroup.modelName || selectedProgramGroup.model || "");
+    formData.append("vinNumber", merged.vinNumbers?.[0] || "");
+    formData.append("vinNumbers", JSON.stringify(merged.vinNumbers || []));
+    formData.append("variant", selectedProgramGroup.variant || "base");
+    formData.append("variantName", selectedProgramGroup.variantName || "");
+    formData.append("variantType", selectedProgramGroup.variantType || selectedProgramGroup.variantName || "");
+    formData.append("year", selectedProgramGroup.year || "");
+    formData.append("region", selectedProgramGroup.region || "");
+    formData.append("type", selectedProgramGroup.type || selectedProgramGroup.bodyType || "");
+    formData.append("bodyType", selectedProgramGroup.bodyType || selectedProgramGroup.type || "");
+    formData.append("bodyTypeLabel", selectedProgramGroup.bodyTypeLabel || selectedProgramGroup.typeLabel || "");
+    formData.append("series", selectedProgramGroup.series || "");
     formData.append("seriesLabel", selectedProgramGroup.seriesLabel || formatSeriesLabel(selectedProgramGroup.series));
+    formData.append("fuelType", selectedProgramGroup.fuelType || "");
+    formData.append("transmission", selectedProgramGroup.transmission || "");
+    formData.append("engine", selectedProgramGroup.engine || "");
+    formData.append("emission", selectedProgramGroup.emission || "");
+    formData.append("productionDate", selectedProgramGroup.productionDate || "");
     formData.append("effectiveDate", selectedProgramGroup.effectiveDate || "");
     formData.append("validDate", selectedProgramGroup.validDate || "");
-    formData.append("productionCount", String(selectedProgramGroup.rows.length));
-    formData.append("source", "program-sheet-import");
-    formData.append("sheetRows", JSON.stringify(selectedProgramGroup.rows));
+    formData.append("productionCount", String(merged.rawRows.length));
+    formData.append("source", "oem-monthly-production-sheet");
+    formData.append("sheetRows", JSON.stringify(merged.rawRows));
+    formData.append("rawRows", JSON.stringify(merged.rawRows));
+    formData.append("normalizedRows", JSON.stringify(merged.normalizedRows));
+    formData.append("sheetHeaders", JSON.stringify(selectedProgramGroup.sheetHeaders || latestNewProgramHeaders || []));
+    formData.append("groupFields", JSON.stringify(selectedProgramGroup.groupFields || {}));
+    formData.append("normalizedGroupFields", JSON.stringify(selectedProgramGroup.normalizedGroupFields || {}));
+    formData.append("filterFields", JSON.stringify(selectedProgramGroup.filterFields || {}));
+    formData.append("groupKey", selectedProgramGroup.groupKey || "");
+    formData.append("groupByHeaders", JSON.stringify((selectedProgramGroup.sheetHeaders || latestNewProgramHeaders || []).filter((header) => !GROUP_EXCLUDED_HEADER_KEYS.has(normalizeHeader(header)))));
+    formData.append("vinColumn", findFirstHeaderName(selectedProgramGroup.sheetHeaders || latestNewProgramHeaders, VIN_HEADER_ALIASES));
+    formData.append("productionDateColumn", findFirstHeaderName(selectedProgramGroup.sheetHeaders || latestNewProgramHeaders, PRODUCTION_DATE_HEADER_ALIASES));
+    formData.append("excelImportMode", importMode);
+    formData.append("sheetName", newProgramSheet?.files?.[0]?.name || "Google Sheet / CSV URL");
+
     const originalProductionSheet = newProgramSheet?.files?.[0] || null;
     const productionSheetUrl = newProgramSheetUrl?.value?.trim() || "";
     if (originalProductionSheet) {
@@ -827,7 +1085,7 @@ async function saveSelectedProgramAssets() {
     await loadVehicles();
     closeProgramAssetDialog();
     setProgress("Program saved", 100);
-    showMessage(`${savedGroupName} program saved locally.`, "success");
+    showMessage(`${savedGroupName} saved with ${merged.vinNumbers.length} VIN(s) in ${importMode} mode.`, "success");
   } catch (error) {
     console.error(error);
     showMessage(error.message || "Program save failed.", "error");
@@ -836,6 +1094,46 @@ async function saveSelectedProgramAssets() {
     saveProgramAssetsBtn.disabled = false;
     saveProgramAssetsBtn.textContent = "Save Program";
   }
+}
+
+function buildMergedProgramRows(group, existingVehicle, importMode) {
+  const newRawRows = group.rawRows || group.rows.map(getRawRow);
+  const newNormalizedRows = group.normalizedRows || group.rows.map(getNormalizedRow);
+  const newVinNumbers = Array.from(new Set((group.vinNumbers || []).filter(Boolean)));
+
+  if (!existingVehicle) {
+    return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
+  }
+
+  const existingRawRows = Array.isArray(existingVehicle.rawRows)
+    ? existingVehicle.rawRows
+    : (Array.isArray(existingVehicle.sheetRows) ? existingVehicle.sheetRows : []);
+  const existingNormalizedRows = Array.isArray(existingVehicle.normalizedRows) ? existingVehicle.normalizedRows : [];
+  const existingVinNumbers = Array.from(new Set([
+    ...(Array.isArray(existingVehicle.vinNumbers) ? existingVehicle.vinNumbers : []),
+    existingVehicle.vinNumber
+  ].filter(Boolean)));
+
+  const duplicateVins = newVinNumbers.filter((vin) => existingVinNumbers.some((existing) => normalizeComparisonValue(existing) === normalizeComparisonValue(vin)));
+
+  if (importMode === "append" && duplicateVins.length) {
+    throw new Error(`These VINs already exist in this program: ${duplicateVins.slice(0, 10).join(", ")}. Change Import Mode to Replace existing group to update them.`);
+  }
+
+  if (importMode === "replace") {
+    return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
+  }
+
+  return {
+    rawRows: [...existingRawRows, ...newRawRows],
+    normalizedRows: [...existingNormalizedRows, ...newNormalizedRows],
+    vinNumbers: Array.from(new Set([...existingVinNumbers, ...newVinNumbers]))
+  };
+}
+
+function findFirstHeaderName(headers, aliases) {
+  const normalizedAliases = new Set((aliases || []).map(normalizeHeader));
+  return (headers || []).find((header) => normalizedAliases.has(normalizeHeader(header))) || "";
 }
 
 async function saveExistingRevision() {
@@ -1158,25 +1456,15 @@ ordersTableBody?.addEventListener("click", async (event) => {
   }
 
   let note = "";
-
   if (action === "rejected") {
-    note = "Rejected by admin";
+    note = prompt("Reason for rejecting this order?") || "";
   } else if (action === "approved") {
-    note = "Approved by admin";
+    note = prompt("Approval note, optional:") || "";
   } else if (action === "completed") {
-    note = "Completed by admin";
+    note = prompt("Completion note, optional:") || "";
   }
 
-  button.disabled = true;
-  const oldText = button.textContent;
-  button.textContent = "Updating...";
-
-  try {
-    await updateOrderStatus(orderId, action, note);
-  } finally {
-    button.disabled = false;
-    button.textContent = oldText;
-  }
+  await updateOrderStatus(orderId, action, note);
 });
 
 async function updateOrderStatus(orderId, status, adminNote = "") {
