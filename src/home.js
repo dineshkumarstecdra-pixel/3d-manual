@@ -7,7 +7,9 @@ import {
   matchesVehicleRegion,
   matchesVehicleVin,
   vehicleYearText,
-  formatSeriesLabel
+  formatSeriesLabel,
+  getVehicleCardName,
+  getVehicleImageUrl
 } from "./vehicleService.js";
 
 const typeSelect = document.getElementById("typeSelect");
@@ -121,6 +123,8 @@ function renderVehicles(vehicles) {
   }
 
   vehicles.forEach((vehicle) => {
+    const cardTitle = getVehicleCardName(vehicle);
+    const imageUrl = getVehicleImageUrl(vehicle);
     const card = document.createElement("div");
     card.className = "vehicle-card";
     card.dataset.type = vehicle.type;
@@ -130,11 +134,11 @@ function renderVehicles(vehicles) {
     card.dataset.region = vehicle.region;
     card.tabIndex = 0;
     card.setAttribute("role", "button");
-    card.setAttribute("aria-label", `Open ${vehicle.name}`);
+    card.setAttribute("aria-label", `Open ${cardTitle}`);
     card.innerHTML = `
-      <img src="${escapeAttr(vehicle.imageUrl)}" alt="${escapeAttr(vehicle.name)}" onerror="this.src='/images/vehicles/${escapeAttr(vehicle.id)}.png'">
+      <img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(cardTitle)}" onerror="this.style.display='none'">
       <div class="vehicle-info">
-        <h3>${escapeHtml(vehicle.name)}</h3>
+        <h3>${escapeHtml(cardTitle)}</h3>
         <p>${escapeHtml(vehicleYearText(vehicle))}</p>
         <button type="button">Open</button>
       </div>

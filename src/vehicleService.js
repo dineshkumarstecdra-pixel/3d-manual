@@ -68,10 +68,19 @@ function textValue(value) {
     return value.map(textValue).filter(Boolean).join(", ");
   }
   if (typeof value === "object") {
-    // Do not allow file metadata objects like raw.model to become "[object Object]".
-    return "";
+    if (isLikelyFileMeta(value)) return "";
+    const displayValue = value.text ?? value.label ?? value.value ?? value.w ?? value.v;
+    return displayValue === value ? "" : textValue(displayValue);
   }
   return String(value).trim();
+}
+
+function isLikelyFileMeta(value) {
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    (value.url || value.localPath || value.storedName || value.extension || value.size || value.mimetype)
+  );
 }
 
 function firstValue(...values) {
@@ -160,9 +169,25 @@ export function normalizeVehicle(raw = {}) {
     fieldValue(raw, ["variantName", "VARIANT NAME", "VARIENT NAME", "VARIANT"]),
     raw.variant
   );
-  const variantType = firstValue(
+  const fuelType = firstValue(raw.fuelType, fieldValue(raw, ["fuelType", "FUEL TYPE"]));
+  const transmission = firstValue(raw.transmission, fieldValue(raw, ["transmission", "TRANSMISSION"]));
+  const derivedVariantType = deriveVariantTypeFromName(raw.name || raw.vehicleName, {
+    modelName,
+    seriesLabel,
+    variantName,
+    fuelType,
+    transmission
+  });
+  let variantTypeCandidate = firstValue(
     raw.variantType,
-    fieldValue(raw, ["variantType", "VARIENT TYPE", "VARIANT TYPE"]),
+    fieldValue(raw, ["variantType", "VARIENT TYPE", "VARIANT TYPE"])
+  );
+  if (derivedVariantType && isWeakVariantType(variantTypeCandidate, variantName)) {
+    variantTypeCandidate = derivedVariantType;
+  }
+  const variantType = firstValue(
+    variantTypeCandidate,
+    derivedVariantType,
     variantName,
     raw.variant
   );
@@ -178,8 +203,6 @@ export function normalizeVehicle(raw = {}) {
   const region = normalizeId(firstValue(raw.region, fieldValue(raw, ["region", "REGION"]), "multiple")) || "multiple";
   const year = Number.parseInt(firstValue(raw.year, raw.modelYear, fieldValue(raw, ["modelYear", "MODEL YEAR", "YEAR"])), 10) || "";
   const variant = normalizeId(firstValue(raw.variant, variantName, "base")) || "base";
-  const fuelType = firstValue(raw.fuelType, fieldValue(raw, ["fuelType", "FUEL TYPE"]));
-  const transmission = firstValue(raw.transmission, fieldValue(raw, ["transmission", "TRANSMISSION"]));
   const engine = firstValue(raw.engine, fieldValue(raw, ["engine", "ENGINE"]));
   const emission = firstValue(raw.emission, fieldValue(raw, ["emission", "EMISSION"]));
   const productionDate = firstValue(raw.productionDate, fieldValue(raw, ["productionDate", "PRODUCTION DATE", "Production Date"]));
@@ -232,10 +255,10 @@ export function normalizeVehicle(raw = {}) {
       engine,
       emission
     },
-    imageUrl: raw.imageUrl || raw.image?.url || `/images/vehicles/${id}.png`,
-    modelUrl: raw.modelUrl || raw.model?.url || `/models/${id}.glb`,
-    modelDataUrl: raw.modelDataUrl || raw.modelData?.url || "/Parts Details/Parts data.xlsx",
-    manualUrl: raw.manualUrl || raw.manual?.url || `/manuals/${id}.pdf`,
+    imageUrl: assetUrl(raw.image, raw.imageUrl, `/images/vehicles/${id}.png`),
+    modelUrl: assetUrl(raw.model, raw.modelUrl, `/models/${id}.glb`),
+    modelDataUrl: assetUrl(raw.modelData, raw.modelDataUrl, "/Parts Details/Parts data.xlsx"),
+    manualUrl: assetUrl(raw.manual, raw.manualUrl, `/manuals/${id}.pdf`),
     image: raw.image || null,
     model: raw.model || null,
     modelData: raw.modelData || null,
@@ -249,14 +272,90 @@ function buildDisplayName({ modelName, seriesLabel, variantType }) {
   // Client card title should stay OEM-readable and short.
   // Example: BMW M3 BS.
   return [modelName, seriesLabel, variantType]
-    .map((part) => String(part || "").trim())
+    .map((part) => textValue(part))
     .filter(Boolean)
     .join(" ");
 }
 
-export function getVehicleDisplayName(vehicle) {
+function assetUrl(fileMeta, fallbackUrl = "", defaultUrl = "") {
+  const directUrl = firstValue(fallbackUrl, fileMeta?.url);
+  if (directUrl) return directUrl;
+
+  const localPath = textValue(fileMeta?.localPath);
+  if (localPath) {
+    return `${UPLOAD_SERVER}/${localPath.split("/").map(encodeURIComponent).join("/")}`;
+  }
+
+  return defaultUrl;
+}
+
+function deriveVariantTypeFromName(name, context = {}) {
+  const text = textValue(name);
+  if (!text) return "";
+
+  const removeWords = new Set([
+    ...splitWords(context.modelName),
+    ...splitWords(context.seriesLabel),
+    ...splitWords(context.variantName),
+    ...splitWords(context.fuelType),
+    ...splitWords(context.transmission),
+    "BASE",
+    "PLUS",
+    "MID",
+    "HIGH",
+    "PETROL",
+    "DIESEL",
+    "HYBRID",
+    "EV",
+    "ELECTRIC",
+    "MANUAL",
+    "AUTOMATIC",
+    "AUTO",
+    "AT",
+    "MT"
+  ]);
+
+  return splitWords(text).find((word) => word && !removeWords.has(word)) || "";
+}
+
+function splitWords(value) {
+  return textValue(value)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function isWeakVariantType(variantType, variantName) {
+  const typeText = normalizeFieldKey(variantType);
+  const nameText = normalizeFieldKey(variantName);
+  return !typeText || typeText === nameText || ["base", "plus", "mid"].includes(typeText);
+}
+
+export function getVehicleCardName(vehicle) {
   const normalized = normalizeVehicle(vehicle || {});
-  return normalized.name || "Vehicle";
+  const title = buildDisplayName({
+    modelName: normalized.modelName,
+    seriesLabel: normalized.seriesLabel,
+    variantType: normalized.variantType
+  });
+
+  return title || normalized.name || "Vehicle";
+}
+
+export function getVehicleDisplayName(vehicle) {
+  return getVehicleCardName(vehicle);
+}
+
+export function getVehicleImageUrl(vehicle) {
+  const normalized = normalizeVehicle(vehicle || {});
+  return firstValue(
+    vehicle?.imageUrl,
+    vehicle?.image?.url,
+    vehicle?.image?.localPath ? `${UPLOAD_SERVER}/${String(vehicle.image.localPath).split("/").map(encodeURIComponent).join("/")}` : "",
+    normalized.imageUrl,
+    `/images/vehicles/${normalized.id}.png`
+  );
 }
 
 export function mergeVehicles(uploaded = [], builtIns = BUILT_IN_VEHICLES) {
