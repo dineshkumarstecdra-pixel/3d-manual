@@ -1,39 +1,15 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
-import { getVehicleById, writeSelectedVehicleData, getVehicleDisplayName } from "./vehicleService.js";
+import {
+  getVehicleById,
+  writeSelectedVehicleData,
+  getVehicleDisplayName,
+  getVehicleImageUrl,
+  VEHICLE_PLACEHOLDER_IMAGE
+} from "./vehicleService.js";
 
 const vehicleId = localStorage.getItem("selectedVehicle");
 let currentVehicle = null;
-
-const VIN_HEADER_KEYS = new Set([
-  "vin",
-  "vinnumber",
-  "vehiclenumber",
-  "vehicleidentificationnumber",
-  "chassisnumber",
-  "serialnumber"
-]);
-
-const SERIAL_HEADER_KEYS = new Set([
-  "sino",
-  "sno",
-  "serialno",
-  "serialnumber",
-  "slno",
-  "sl"
-]);
-
-const PRODUCTION_DATE_KEYS = new Set([
-  "productiondate",
-  "mfgdate",
-  "manufacturingdate",
-  "builddate"
-]);
-
-const VARIANT_NAME_KEYS = new Set([
-  "variantname",
-  "varientname"
-]);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -49,6 +25,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   currentVehicle = await getVehicleById(vehicleId);
+
   if (!currentVehicle) {
     alert("Vehicle details not found. Please select the vehicle again.");
     window.location.replace("home.html");
@@ -61,236 +38,162 @@ onAuthStateChanged(auth, async (user) => {
 
 function renderVehicleDetails(vehicle) {
   const displayName = getVehicleDisplayName(vehicle);
+
   setText("carName", displayName);
   setText("carDesc", generateDescription(vehicle, displayName));
 
   const img = document.getElementById("carImg");
   if (img) {
-    const imageUrls = collectImageUrls(vehicle);
+    img.src = getVehicleImageUrl(vehicle);
     img.alt = displayName;
-    loadImageFromList(img, imageUrls);
+    img.onerror = () => {
+      img.onerror = null;
+      img.src = VEHICLE_PLACEHOLDER_IMAGE;
+    };
   }
 
-  renderSpecGrid(vehicle);
+  renderDetailCards(vehicle);
 }
 
-function collectImageUrls(vehicle) {
-  const urls = [
-    vehicle.imageUrl,
-    vehicle.image?.url,
-    vehicle.builtIn ? `/images/vehicles/${vehicle.id}.png` : ""
-  ];
-
-  return [...new Set(urls.map((url) => String(url || "").trim()).filter(Boolean))];
-}
-
-function loadImageFromList(img, urls) {
-  let index = 0;
-
-  const tryNext = () => {
-    const nextUrl = urls[index];
-    index += 1;
-
-    if (!nextUrl) {
-      img.removeAttribute("src");
-      img.classList.add("image-missing");
-      return;
-    }
-
-    img.onerror = tryNext;
-    img.src = nextUrl;
-  };
-
-  tryNext();
-}
-
-function renderSpecGrid(vehicle) {
+function renderDetailCards(vehicle) {
   const specs = document.querySelector(".specs");
   if (!specs) return;
 
   const rows = buildDetailRows(vehicle);
-  if (!rows.length) {
-    specs.innerHTML = `<div class="spec"><span>Details</span><p>No details available.</p></div>`;
-    return;
-  }
 
-  specs.innerHTML = rows.map(({ label, value }) => `
+  specs.innerHTML = rows.map(([label, value]) => `
     <div class="spec">
       <span>${escapeHtml(label)}</span>
-      <p>${escapeHtml(value || "—")}</p>
+      <p>${escapeHtml(formatDisplayValue(value))}</p>
     </div>
   `).join("");
 }
 
 function buildDetailRows(vehicle) {
   const selectedVin = String(vehicle.selectedVinNumber || "").trim();
-  const rawRows = Array.isArray(vehicle.rawRows) ? vehicle.rawRows : [];
-  const groupFields = vehicle.groupFields && typeof vehicle.groupFields === "object" ? vehicle.groupFields : {};
-  const selectedRow = selectedVin ? findRowByVin(rawRows, selectedVin) : null;
+  const selectedRow = selectedVin ? findRowByVin(vehicle, selectedVin) : null;
 
-  const headers = collectHeaders(vehicle, selectedRow, groupFields);
-  const details = [];
+  const rows = [];
 
-  for (const header of headers) {
-    const key = normalizeHeader(header);
-    if (!key || isSerialHeader(key)) continue;
-    if (isVariantNameHeader(key)) continue;
-
-    // VIN should show only when user searched/opened by VIN.
-    if (isVinHeader(key) && !selectedVin) continue;
-
-    let value = "";
-    if (selectedRow) {
-      value = readHeaderValue(selectedRow, header);
-    } else if (isProductionDateHeader(key)) {
-      value = aggregateHeaderValues(rawRows, header);
-    } else {
-      value = readHeaderValue(groupFields, header) || aggregateHeaderValues(rawRows, header, { onlyIfSame: true });
-    }
-
-    if (!value) continue;
-    details.push({ label: formatLabel(header), value });
+  if (selectedVin) {
+    rows.push(["VIN Number", selectedVin]);
   }
 
-  if (!details.length) {
-    return fallbackDetails(vehicle, selectedVin);
-  }
+  rows.push(
+    ["Model", readValue(vehicle, selectedRow, ["MODEL", "MODEL NAME", "VEHICLE MODEL"], vehicle.modelName)],
+    ["Series", readValue(vehicle, selectedRow, ["SERIES"], vehicle.seriesLabel || vehicle.series)],
+    ["Variant", readValue(vehicle, selectedRow, ["VARIANT NAME", "VARIENT NAME", "VARIANT"], vehicle.variantName || vehicle.variantType || vehicle.variant)],
+    ["Body Type", readValue(vehicle, selectedRow, ["BODY TYPE", "TYPE"], vehicle.bodyTypeLabel || vehicle.bodyType || vehicle.type)],
+    ["Model Year", readValue(vehicle, selectedRow, ["MODEL YEAR", "YEAR"], vehicle.year)],
+    ["Region", readValue(vehicle, selectedRow, ["REGION"], vehicle.region)],
+    ["Fuel Type", readValue(vehicle, selectedRow, ["FUEL TYPE"], vehicle.fuelType)],
+    ["Transmission", readValue(vehicle, selectedRow, ["TRANSMISSION"], vehicle.transmission)],
+    ["Engine", readValue(vehicle, selectedRow, ["ENGINE"], vehicle.engine)],
+    ["Emission", readValue(vehicle, selectedRow, ["EMISSION"], vehicle.emission)],
+    ["Production Date", readValue(vehicle, selectedRow, ["PRODUCTION DATE", "Production Date"], vehicle.productionDate)]
+  );
 
-  return details;
+  return rows.filter(([, value]) => textValue(value));
 }
 
-function collectHeaders(vehicle, selectedRow, groupFields) {
-  const ordered = [];
-  const add = (value) => {
-    const text = String(value || "").trim();
-    if (!text) return;
-    const key = normalizeHeader(text);
-    if (!key) return;
-    if (ordered.some((item) => normalizeHeader(item) === key)) return;
-    ordered.push(text);
-  };
-
-  (Array.isArray(vehicle.sheetHeaders) ? vehicle.sheetHeaders : []).forEach(add);
-  Object.keys(selectedRow || {}).forEach(add);
-  Object.keys(groupFields || {}).forEach(add);
-
-  if (!ordered.length) {
-    ["MODEL", "SERIES", "VARIANT NAME", "VARIENT TYPE", "BODY TYPE", "MODEL YEAR", "REGION", "FUEL TYPE", "TRANSMISSION", "ENGINE", "EMISSION"].forEach(add);
-  }
-
-  return ordered;
+function readValue(vehicle, selectedRow, aliases, fallback = "") {
+  return firstTextValue(
+    fieldValue(selectedRow, aliases),
+    fieldValue(vehicle.groupFields, aliases),
+    fieldValue(vehicle.normalizedGroupFields, aliases),
+    fieldValue(Array.isArray(vehicle.rawRows) ? vehicle.rawRows[0] : null, aliases),
+    fieldValue(Array.isArray(vehicle.normalizedRows) ? vehicle.normalizedRows[0] : null, aliases),
+    fallback
+  );
 }
 
-function findRowByVin(rows, selectedVin) {
-  const target = String(selectedVin || "").trim().toLowerCase();
-  if (!target) return null;
+function findRowByVin(vehicle, vin) {
+  const needle = normalizeText(vin);
+  const rows = Array.isArray(vehicle.rawRows) ? vehicle.rawRows : [];
 
   return rows.find((row) => {
-    const vinValue = findVinValue(row);
-    return String(vinValue || "").trim().toLowerCase() === target;
-  }) || rows.find((row) => {
-    const vinValue = findVinValue(row);
-    return String(vinValue || "").trim().toLowerCase().includes(target);
+    const values = [
+      fieldValue(row, ["VEHICLE IDENTIFICATION NUMBER", "VIN", "VIN NUMBER", "CHASSIS NUMBER", "SERIAL NUMBER"]),
+      ...Object.values(row || {})
+    ];
+
+    return values.some((value) => normalizeText(value) === needle);
   }) || null;
 }
 
-function findVinValue(row = {}) {
-  for (const [key, value] of Object.entries(row || {})) {
-    if (isVinHeader(normalizeHeader(key))) return value;
+function fieldValue(source, aliases) {
+  if (!source || typeof source !== "object") return "";
+
+  for (const alias of aliases) {
+    const wanted = normalizeFieldKey(alias);
+    const foundKey = Object.keys(source).find((key) => normalizeFieldKey(key) === wanted);
+    if (!foundKey) continue;
+
+    const value = textValue(source[foundKey]);
+    if (value) return value;
+  }
+
+  return "";
+}
+
+function firstTextValue(...values) {
+  for (const value of values) {
+    const text = textValue(value);
+    if (text) return text;
   }
   return "";
 }
 
-function readHeaderValue(obj = {}, header) {
-  if (!obj || typeof obj !== "object") return "";
-  if (Object.prototype.hasOwnProperty.call(obj, header)) return formatValue(obj[header]);
-
-  const target = normalizeHeader(header);
-  const matchedKey = Object.keys(obj).find((key) => normalizeHeader(key) === target);
-  return matchedKey ? formatValue(obj[matchedKey]) : "";
+function textValue(value) {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) return value.map(textValue).filter(Boolean).join(", ");
+  if (typeof value === "object") return "";
+  return String(value).trim();
 }
 
-function aggregateHeaderValues(rows, header, options = {}) {
-  const values = [];
-  const seen = new Set();
-  for (const row of rows) {
-    const value = readHeaderValue(row, header);
-    const key = String(value || "").trim().toLowerCase();
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    values.push(value);
-  }
-
-  if (options.onlyIfSame && values.length > 1) return "";
-  if (!values.length) return "";
-  if (values.length <= 4) return values.join(", ");
-  return `${values.slice(0, 4).join(", ")} +${values.length - 4} more`;
-}
-
-function fallbackDetails(vehicle, selectedVin) {
-  const rows = [];
-  if (selectedVin) rows.push({ label: "VIN Number", value: selectedVin });
-  if (vehicle.modelName) rows.push({ label: "MODEL", value: vehicle.modelName });
-  if (vehicle.seriesLabel || vehicle.series) rows.push({ label: "SERIES", value: vehicle.seriesLabel || vehicle.series });
-  if (vehicle.variantType) rows.push({ label: "VARIENT TYPE", value: vehicle.variantType });
-  if (vehicle.bodyTypeLabel || vehicle.bodyType || vehicle.type) rows.push({ label: "BODY TYPE", value: vehicle.bodyTypeLabel || vehicle.bodyType || vehicle.type });
-  if (vehicle.year) rows.push({ label: "MODEL YEAR", value: String(vehicle.year) });
-  if (vehicle.region) rows.push({ label: "REGION", value: capitalize(vehicle.region) });
-  if (vehicle.fuelType) rows.push({ label: "FUEL TYPE", value: vehicle.fuelType });
-  if (vehicle.transmission) rows.push({ label: "TRANSMISSION", value: vehicle.transmission });
-  if (vehicle.engine) rows.push({ label: "ENGINE", value: vehicle.engine });
-  if (vehicle.emission) rows.push({ label: "EMISSION", value: vehicle.emission });
-  return rows;
-}
-
-function generateDescription(vehicle, displayName = "") {
-  const bits = [displayName || getVehicleDisplayName(vehicle)];
-  if (vehicle.year) bits.push(`${vehicle.year}`);
-  if (vehicle.region && vehicle.region !== "multiple") bits.push(`${capitalize(vehicle.region)} region`);
-
-  const selectedVin = String(vehicle.selectedVinNumber || "").trim();
-  if (selectedVin) bits.push(`VIN ${selectedVin}`);
-
-  return `${bits.filter(Boolean).join(" · ")} vehicle details are loaded dynamically from the uploaded Excel sheet and linked files.`;
-}
-
-function normalizeHeader(header) {
-  return String(header || "")
+function normalizeFieldKey(value) {
+  return String(value || "")
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 }
 
-function isVinHeader(key) {
-  return VIN_HEADER_KEYS.has(key) || key.includes("vehicleidentificationnumber") || key === "vinno";
+function normalizeText(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
-function isSerialHeader(key) {
-  return SERIAL_HEADER_KEYS.has(key) || key === "sino" || key === "slno";
+function formatDisplayValue(value) {
+  const text = textValue(value);
+  const id = text.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  if (id === "base") return "Base";
+  if (id === "plus") return "Plus";
+
+  return text
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .replace(/\bBmw\b/g, "BMW")
+    .replace(/\bAudi\b/g, "Audi")
+    .replace(/\bVin\b/g, "VIN")
+    .replace(/\bSuv\b/g, "SUV")
+    .replace(/\bBs\b/g, "BS")
+    .replace(/\bBs6\b/g, "BS6")
+    .replace(/\bEv\b/g, "EV");
 }
 
-function isProductionDateHeader(key) {
-  return PRODUCTION_DATE_KEYS.has(key);
-}
+function generateDescription(vehicle, displayName) {
+  const bits = [displayName];
 
-function isVariantNameHeader(key) {
-  return VARIANT_NAME_KEYS.has(key);
-}
+  if (vehicle.year) bits.push(`${vehicle.year}`);
+  if (vehicle.region && !["multiple", "all", "global"].includes(String(vehicle.region).toLowerCase())) {
+    bits.push(`${formatDisplayValue(vehicle.region)} region`);
+  }
 
-function formatLabel(label) {
-  const text = String(label || "").trim();
-  if (!text) return "Detail";
-  const key = normalizeHeader(text);
-  if (key === "vehiclenidentificationnumber" || isVinHeader(key)) return "VIN Number";
-  return text;
-}
-
-function formatValue(value) {
-  if (value === null || value === undefined) return "";
-  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
-  if (Array.isArray(value)) return value.map(formatValue).filter(Boolean).join(", ");
-  if (typeof value === "object") return "";
-  return String(value).trim();
+  return `${bits.join(" · ")} vehicle details are loaded dynamically from the uploaded Excel sheet and linked files.`;
 }
 
 function setText(id, value) {
@@ -298,18 +201,12 @@ function setText(id, value) {
   if (el) el.innerText = value || "";
 }
 
-function capitalize(value) {
-  return String(value || "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
 function escapeHtml(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
+    .replace(/\"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
 

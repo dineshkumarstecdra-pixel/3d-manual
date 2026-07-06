@@ -15,6 +15,19 @@ export const BUILT_IN_VEHICLES = [
   builtInVehicle("bmw_xm", "BMW XM", "suv", "x", "X", 2020)
 ];
 
+export const VEHICLE_PLACEHOLDER_IMAGE =
+  "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+      <rect width="640" height="360" rx="28" fill="#eef1f6"/>
+      <rect x="170" y="115" width="300" height="130" rx="20" fill="#ffffff" stroke="#d8dee9"/>
+      <path d="M215 210h210l-35-55H250l-35 55Z" fill="#d8dee9"/>
+      <circle cx="255" cy="225" r="24" fill="#c8d0dc"/>
+      <circle cx="385" cy="225" r="24" fill="#c8d0dc"/>
+      <text x="320" y="295" text-anchor="middle" font-family="Arial" font-size="24" fill="#667085">Vehicle image not available</text>
+    </svg>
+  `);
+
 function builtInVehicle(id, name, type, series, seriesLabel, year) {
   return normalizeVehicle({
     id,
@@ -24,6 +37,7 @@ function builtInVehicle(id, name, type, series, seriesLabel, year) {
     variant: "base",
     variantName: "Base",
     variantType: "Base",
+    variantCode: "",
     year,
     region: "multiple",
     type,
@@ -48,6 +62,13 @@ function normalizeId(value) {
     .replace(/^_+|_+$/g, "");
 }
 
+function normalizeFieldKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 function normalizeLabel(value) {
   return String(value || "")
     .replace(/_/g, " ")
@@ -56,31 +77,21 @@ function normalizeLabel(value) {
     .toLowerCase()
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
     .replace(/\bBmw\b/g, "BMW")
+    .replace(/\bAudi\b/g, "Audi")
+    .replace(/\bVw\b/g, "VW")
     .replace(/\bVin\b/g, "VIN")
     .replace(/\bSuv\b/g, "SUV")
-    .replace(/\bBs\b/g, "BS");
+    .replace(/\bBs\b/g, "BS")
+    .replace(/\bBs6\b/g, "BS6")
+    .replace(/\bEv\b/g, "EV");
 }
 
 function textValue(value) {
   if (value === null || value === undefined) return "";
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
-  if (Array.isArray(value)) {
-    return value.map(textValue).filter(Boolean).join(", ");
-  }
-  if (typeof value === "object") {
-    if (isLikelyFileMeta(value)) return "";
-    const displayValue = value.text ?? value.label ?? value.value ?? value.w ?? value.v;
-    return displayValue === value ? "" : textValue(displayValue);
-  }
+  if (Array.isArray(value)) return value.map(textValue).filter(Boolean).join(", ");
+  if (typeof value === "object") return "";
   return String(value).trim();
-}
-
-function isLikelyFileMeta(value) {
-  return Boolean(
-    value &&
-    typeof value === "object" &&
-    (value.url || value.localPath || value.storedName || value.extension || value.size || value.mimetype)
-  );
 }
 
 function firstValue(...values) {
@@ -94,20 +105,22 @@ function firstValue(...values) {
 function fieldValue(raw = {}, aliases = []) {
   const keys = Array.isArray(aliases) ? aliases : [aliases];
   const sources = [
-    raw,
-    raw.filterFields || {},
     raw.groupFields || {},
+    raw.filterFields || {},
     raw.normalizedGroupFields || {},
     Array.isArray(raw.normalizedRows) ? raw.normalizedRows[0] || {} : {},
-    Array.isArray(raw.rawRows) ? raw.rawRows[0] || {} : {}
+    Array.isArray(raw.rawRows) ? raw.rawRows[0] || {} : {},
+    raw
   ];
 
   for (const source of sources) {
     if (!source || typeof source !== "object") continue;
+
     for (const alias of keys) {
       const wanted = normalizeFieldKey(alias);
       const foundKey = Object.keys(source).find((key) => normalizeFieldKey(key) === wanted);
       if (!foundKey) continue;
+
       const value = textValue(source[foundKey]);
       if (value) return value;
     }
@@ -116,11 +129,72 @@ function fieldValue(raw = {}, aliases = []) {
   return "";
 }
 
-function normalizeFieldKey(value) {
-  return String(value || "")
+function splitNameTokens(raw = {}) {
+  const source = firstValue(raw.name, raw.vehicleName, raw.id);
+  return String(source || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/[^\w\s.]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, "");
+    .split(" ")
+    .filter(Boolean);
+}
+
+function guessFromName(raw = {}) {
+  const tokens = splitNameTokens(raw);
+  const lower = tokens.map((token) => token.toLowerCase());
+
+  const variantIndex = lower.findIndex((token) => token === "base" || token === "plus");
+
+  const modelName = tokens[0] || "";
+  const seriesLabel = tokens[1] || "";
+
+  const variantName = variantIndex >= 0 ? tokens[variantIndex] : "";
+  const variantCode = variantIndex >= 0 ? tokens[variantIndex + 1] || "" : "";
+
+  const fuelType = variantIndex >= 0 ? tokens[variantIndex + 2] || "" : "";
+  const transmission = variantIndex >= 0 ? tokens[variantIndex + 3] || "" : "";
+
+  return {
+    modelName,
+    seriesLabel,
+    variantName,
+    variantCode,
+    fuelType,
+    transmission
+  };
+}
+
+function normalizeVariantDisplay(value) {
+  const text = String(value || "").trim();
+  const id = normalizeId(text);
+
+  if (!text) return "";
+  if (id === "base") return "Base";
+  if (id === "plus") return "Plus";
+
+  return normalizeLabel(text);
+}
+
+function isBadVariantCode(value, modelName, seriesLabel, variantName) {
+  const id = normalizeId(value);
+  if (!id) return true;
+
+  return [
+    normalizeId(modelName),
+    normalizeId(seriesLabel),
+    normalizeId(variantName),
+    "base",
+    "plus",
+    "manual",
+    "automatic",
+    "auto",
+    "hybrid",
+    "petrol",
+    "diesel",
+    "electric",
+    "ev"
+  ].includes(id);
 }
 
 const GLOBAL_REGION_VALUES = new Set(["multiple", "all", "global"]);
@@ -132,6 +206,7 @@ export function isGlobalRegion(region) {
 export function matchesVehicleRegion(vehicle, selectedRegion) {
   const selected = normalizeId(selectedRegion);
   if (!selected) return true;
+
   const vehicleRegion = normalizeId(vehicle?.region || vehicle?.filterFields?.region);
   return vehicleRegion === selected;
 }
@@ -144,77 +219,122 @@ export function formatVehicleName(idOrName) {
 
 export function formatSeriesLabel(series, seriesLabel = "") {
   const label = String(seriesLabel || "").trim();
-  if (label) return label;
+  if (label) return normalizeLabel(label);
+
   const value = String(series || "").trim();
   if (!value) return "Other";
   if (value.length <= 2) return value.toUpperCase();
+
   return normalizeLabel(value);
 }
 
 export function normalizeVehicle(raw = {}) {
+  const guessed = guessFromName(raw);
   const id = normalizeId(raw.id || raw.vehicleId || raw.name);
 
-  const modelName = firstValue(
+  const modelName = normalizeLabel(firstValue(
     raw.modelName,
-    fieldValue(raw, ["modelName", "MODEL", "MODEL NAME", "VEHICLE MODEL"])
-  );
-  const seriesLabel = firstValue(
+    fieldValue(raw, ["modelName", "MODEL", "MODEL NAME", "VEHICLE MODEL"]),
+    guessed.modelName
+  ));
+
+  const seriesLabel = normalizeLabel(firstValue(
     raw.seriesLabel,
     fieldValue(raw, ["seriesLabel", "SERIES"]),
+    guessed.seriesLabel,
     raw.series
-  );
+  ));
+
   const series = normalizeId(firstValue(raw.series, seriesLabel, "other")) || "other";
-  const variantName = firstValue(
+
+  const variantName = normalizeVariantDisplay(firstValue(
     raw.variantName,
     fieldValue(raw, ["variantName", "VARIANT NAME", "VARIENT NAME", "VARIANT"]),
-    raw.variant
+    guessed.variantName,
+    raw.variant,
+    "base"
+  ));
+
+  const variant = normalizeId(firstValue(raw.variant, variantName, "base")) || "base";
+
+  const variantTypeRaw = firstValue(
+    fieldValue(raw, ["variantType", "VARIENT TYPE", "VARIANT TYPE"]),
+    raw.variantType
   );
-  const fuelType = firstValue(raw.fuelType, fieldValue(raw, ["fuelType", "FUEL TYPE"]));
-  const transmission = firstValue(raw.transmission, fieldValue(raw, ["transmission", "TRANSMISSION"]));
-  const derivedVariantType = deriveVariantTypeFromName(raw.name || raw.vehicleName, {
-    modelName,
-    seriesLabel,
-    variantName,
-    fuelType,
-    transmission
-  });
-  let variantTypeCandidate = firstValue(
-    raw.variantType,
-    fieldValue(raw, ["variantType", "VARIENT TYPE", "VARIANT TYPE"])
-  );
-  if (derivedVariantType && isWeakVariantType(variantTypeCandidate, variantName)) {
-    variantTypeCandidate = derivedVariantType;
+
+  let variantCode = normalizeLabel(firstValue(
+    raw.variantCode,
+    raw.oemVariantCode,
+    fieldValue(raw, ["variantCode", "VARIANT CODE", "CONFIGURATION CODE", "EMISSION"]),
+    variantTypeRaw,
+    guessed.variantCode
+  ));
+
+  if (isBadVariantCode(variantCode, modelName, seriesLabel, variantName)) {
+    variantCode = normalizeLabel(guessed.variantCode);
   }
-  const variantType = firstValue(
-    variantTypeCandidate,
-    derivedVariantType,
-    variantName,
-    raw.variant
-  );
-  const bodyTypeLabel = firstValue(
+
+  const variantType = variantName || normalizeVariantDisplay(variant);
+
+  const bodyTypeLabel = normalizeLabel(firstValue(
     raw.bodyTypeLabel,
     raw.bodyType,
     fieldValue(raw, ["bodyType", "BODY TYPE", "TYPE"]),
     raw.type,
     "other"
-  );
+  ));
+
   const type = normalizeId(firstValue(raw.type, bodyTypeLabel, "other")) || "other";
   const bodyType = normalizeId(firstValue(raw.bodyType, bodyTypeLabel, type)) || type;
-  const region = normalizeId(firstValue(raw.region, fieldValue(raw, ["region", "REGION"]), "multiple")) || "multiple";
-  const year = Number.parseInt(firstValue(raw.year, raw.modelYear, fieldValue(raw, ["modelYear", "MODEL YEAR", "YEAR"])), 10) || "";
-  const variant = normalizeId(firstValue(raw.variant, variantName, "base")) || "base";
+
+  const region = normalizeId(firstValue(
+    raw.region,
+    fieldValue(raw, ["region", "REGION"]),
+    "multiple"
+  )) || "multiple";
+
+  const year = Number.parseInt(firstValue(
+    raw.year,
+    raw.modelYear,
+    fieldValue(raw, ["modelYear", "MODEL YEAR", "YEAR"])
+  ), 10) || "";
+
+  const fuelType = normalizeLabel(firstValue(
+    raw.fuelType,
+    fieldValue(raw, ["fuelType", "FUEL TYPE"]),
+    guessed.fuelType
+  ));
+
+  const transmission = normalizeLabel(firstValue(
+    raw.transmission,
+    fieldValue(raw, ["transmission", "TRANSMISSION"]),
+    guessed.transmission
+  ));
+
   const engine = firstValue(raw.engine, fieldValue(raw, ["engine", "ENGINE"]));
   const emission = firstValue(raw.emission, fieldValue(raw, ["emission", "EMISSION"]));
   const productionDate = firstValue(raw.productionDate, fieldValue(raw, ["productionDate", "PRODUCTION DATE", "Production Date"]));
-  const vinNumbers = Array.isArray(raw.vinNumbers) ? raw.vinNumbers.map(String).filter(Boolean) : [];
+
+  const vinNumbers = Array.isArray(raw.vinNumbers)
+    ? raw.vinNumbers.map((value) => String(value || "").trim()).filter(Boolean)
+    : [];
   const vinNumber = firstValue(raw.vinNumber, raw.vin, vinNumbers[0]);
-  const oemDisplayName = buildDisplayName({ modelName, seriesLabel, variantType });
-  const hasOemSheetData = Boolean(raw.groupFields || raw.normalizedGroupFields || raw.sheetHeaders || raw.rawRows || raw.normalizedRows);
+
+  const hasOemSheetData = Boolean(
+    raw.groupFields ||
+    raw.normalizedGroupFields ||
+    raw.sheetHeaders ||
+    raw.rawRows ||
+    raw.normalizedRows
+  );
+
+  const oemDisplayName = buildDisplayName({ modelName, seriesLabel, variantCode });
+
   const name = firstValue(
     hasOemSheetData ? oemDisplayName : "",
+    oemDisplayName,
     raw.name,
     raw.vehicleName,
-    oemDisplayName,
     formatVehicleName(id)
   );
 
@@ -222,12 +342,14 @@ export function normalizeVehicle(raw = {}) {
     ...raw,
     id,
     name,
+    displayName: oemDisplayName || name,
     modelName,
     vinNumber,
     vinNumbers,
     variant,
     variantName,
     variantType,
+    variantCode,
     year,
     region,
     type,
@@ -244,8 +366,9 @@ export function normalizeVehicle(raw = {}) {
       ...(raw.filterFields || {}),
       series,
       seriesLabel: seriesLabel || formatSeriesLabel(series),
-      variantType: normalizeId(variantType || variantName || variant),
-      variantTypeLabel: variantType || variantName || formatVehicleName(variant),
+      variantType: normalizeId(variantType),
+      variantTypeLabel: variantType,
+      variantCode,
       bodyType,
       bodyTypeLabel: bodyTypeLabel || formatVehicleName(bodyType),
       region,
@@ -255,10 +378,10 @@ export function normalizeVehicle(raw = {}) {
       engine,
       emission
     },
-    imageUrl: assetUrl(raw.image, raw.imageUrl, `/images/vehicles/${id}.png`),
-    modelUrl: assetUrl(raw.model, raw.modelUrl, `/models/${id}.glb`),
-    modelDataUrl: assetUrl(raw.modelData, raw.modelDataUrl, "/Parts Details/Parts data.xlsx"),
-    manualUrl: assetUrl(raw.manual, raw.manualUrl, `/manuals/${id}.pdf`),
+    imageUrl: firstValue(raw.imageUrl, raw.image?.url, raw.thumbnailUrl, `/images/vehicles/${id}.png`),
+    modelUrl: firstValue(raw.modelUrl, raw.model?.url, `/models/${id}.glb`),
+    modelDataUrl: firstValue(raw.modelDataUrl, raw.modelData?.url, "/Parts Details/Parts data.xlsx"),
+    manualUrl: firstValue(raw.manualUrl, raw.manual?.url, `/manuals/${id}.pdf`),
     image: raw.image || null,
     model: raw.model || null,
     modelData: raw.modelData || null,
@@ -268,94 +391,21 @@ export function normalizeVehicle(raw = {}) {
   };
 }
 
-function buildDisplayName({ modelName, seriesLabel, variantType }) {
-  // Client card title should stay OEM-readable and short.
-  // Example: BMW M3 BS.
-  return [modelName, seriesLabel, variantType]
-    .map((part) => textValue(part))
+function buildDisplayName({ modelName, seriesLabel, variantCode }) {
+  return [modelName, seriesLabel, variantCode]
+    .map((part) => String(part || "").trim())
     .filter(Boolean)
     .join(" ");
 }
 
-function assetUrl(fileMeta, fallbackUrl = "", defaultUrl = "") {
-  const directUrl = firstValue(fallbackUrl, fileMeta?.url);
-  if (directUrl) return directUrl;
-
-  const localPath = textValue(fileMeta?.localPath);
-  if (localPath) {
-    return `${UPLOAD_SERVER}/${localPath.split("/").map(encodeURIComponent).join("/")}`;
-  }
-
-  return defaultUrl;
-}
-
-function deriveVariantTypeFromName(name, context = {}) {
-  const text = textValue(name);
-  if (!text) return "";
-
-  const removeWords = new Set([
-    ...splitWords(context.modelName),
-    ...splitWords(context.seriesLabel),
-    ...splitWords(context.variantName),
-    ...splitWords(context.fuelType),
-    ...splitWords(context.transmission),
-    "BASE",
-    "PLUS",
-    "MID",
-    "HIGH",
-    "PETROL",
-    "DIESEL",
-    "HYBRID",
-    "EV",
-    "ELECTRIC",
-    "MANUAL",
-    "AUTOMATIC",
-    "AUTO",
-    "AT",
-    "MT"
-  ]);
-
-  return splitWords(text).find((word) => word && !removeWords.has(word)) || "";
-}
-
-function splitWords(value) {
-  return textValue(value)
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
-}
-
-function isWeakVariantType(variantType, variantName) {
-  const typeText = normalizeFieldKey(variantType);
-  const nameText = normalizeFieldKey(variantName);
-  return !typeText || typeText === nameText || ["base", "plus", "mid"].includes(typeText);
-}
-
-export function getVehicleCardName(vehicle) {
-  const normalized = normalizeVehicle(vehicle || {});
-  const title = buildDisplayName({
-    modelName: normalized.modelName,
-    seriesLabel: normalized.seriesLabel,
-    variantType: normalized.variantType
-  });
-
-  return title || normalized.name || "Vehicle";
-}
-
 export function getVehicleDisplayName(vehicle) {
-  return getVehicleCardName(vehicle);
+  const normalized = normalizeVehicle(vehicle || {});
+  return normalized.displayName || normalized.name || "Vehicle";
 }
 
 export function getVehicleImageUrl(vehicle) {
   const normalized = normalizeVehicle(vehicle || {});
-  return firstValue(
-    vehicle?.imageUrl,
-    vehicle?.image?.url,
-    vehicle?.image?.localPath ? `${UPLOAD_SERVER}/${String(vehicle.image.localPath).split("/").map(encodeURIComponent).join("/")}` : "",
-    normalized.imageUrl,
-    `/images/vehicles/${normalized.id}.png`
-  );
+  return normalized.imageUrl || VEHICLE_PLACEHOLDER_IMAGE;
 }
 
 export function mergeVehicles(uploaded = [], builtIns = BUILT_IN_VEHICLES) {
@@ -438,34 +488,37 @@ export function readSelectedVehicleData() {
 
 export function writeSelectedVehicleData(vehicle) {
   if (!vehicle?.id) return;
-  localStorage.setItem("selectedVehicle", vehicle.id);
-  localStorage.setItem("selectedVehicleData", JSON.stringify(normalizeVehicle(vehicle)));
+  const normalized = normalizeVehicle(vehicle);
+  localStorage.setItem("selectedVehicle", normalized.id);
+  localStorage.setItem("selectedVehicleData", JSON.stringify(normalized));
 }
 
 export function uniqueSortedOptions(vehicles, key) {
   const map = new Map();
   vehicles.forEach((vehicle) => {
-    const value = optionValue(vehicle, key);
+    const normalized = normalizeVehicle(vehicle);
+    const value = optionValue(normalized, key);
     if (!value) return;
 
     if (key === "region" && isGlobalRegion(value)) return;
 
-    const label = optionLabel(vehicle, key, value);
+    const label = optionLabel(normalized, key, value);
     if (!map.has(value)) map.set(value, label);
   });
+
   return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
 }
 
 function optionValue(vehicle, key) {
-  if (key === "variantType") return normalizeId(vehicle.variantType || vehicle.filterFields?.variantType || vehicle.variantName || vehicle.variant);
-  if (key === "bodyType") return normalizeId(vehicle.bodyType || vehicle.filterFields?.bodyType || vehicle.type);
+  if (key === "variantType") return normalizeId(vehicle.variantType || vehicle.variantName || vehicle.variant);
+  if (key === "bodyType") return normalizeId(vehicle.bodyType || vehicle.type);
   return String(vehicle[key] || vehicle.filterFields?.[key] || "").trim();
 }
 
 function optionLabel(vehicle, key, value) {
   if (key === "series") return formatSeriesLabel(value, vehicle.seriesLabel || vehicle.filterFields?.seriesLabel);
-  if (key === "variantType") return String(vehicle.variantType || vehicle.filterFields?.variantTypeLabel || vehicle.variantName || normalizeLabel(value));
-  if (key === "bodyType") return String(vehicle.bodyTypeLabel || vehicle.filterFields?.bodyTypeLabel || normalizeLabel(value));
+  if (key === "variantType") return String(vehicle.variantType || vehicle.variantName || normalizeLabel(value));
+  if (key === "bodyType") return String(vehicle.bodyTypeLabel || normalizeLabel(value));
   return normalizeLabel(value);
 }
 
@@ -483,8 +536,11 @@ export function matchesVehicleVin(vehicle, query) {
 }
 
 export function vehicleYearText(vehicle) {
+  const normalized = normalizeVehicle(vehicle || {});
   const bits = [];
-  if (vehicle.year) bits.push(`${vehicle.year} Model`);
-  if (vehicle.region && !isGlobalRegion(vehicle.region)) bits.push(normalizeLabel(vehicle.region));
+
+  if (normalized.year) bits.push(`${normalized.year} Model`);
+  if (normalized.region && !isGlobalRegion(normalized.region)) bits.push(normalizeLabel(normalized.region));
+
   return bits.join(" · ") || "Vehicle";
 }
