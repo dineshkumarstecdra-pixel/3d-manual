@@ -1,6 +1,6 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged } from "firebase/auth";
-import { getVehicleById, writeSelectedVehicleData } from "./vehicleService.js";
+import { getVehicleById, writeSelectedVehicleData, getVehicleDisplayName } from "./vehicleService.js";
 
 const vehicleId = localStorage.getItem("selectedVehicle");
 let currentVehicle = null;
@@ -30,6 +30,11 @@ const PRODUCTION_DATE_KEYS = new Set([
   "builddate"
 ]);
 
+const VARIANT_NAME_KEYS = new Set([
+  "variantname",
+  "varientname"
+]);
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.replace("login.html");
@@ -55,20 +60,48 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function renderVehicleDetails(vehicle) {
-  setText("carName", vehicle.name);
-  setText("carDesc", generateDescription(vehicle));
+  const displayName = getVehicleDisplayName(vehicle);
+  setText("carName", displayName);
+  setText("carDesc", generateDescription(vehicle, displayName));
 
   const img = document.getElementById("carImg");
   if (img) {
-    img.src = vehicle.imageUrl || `/images/vehicles/${vehicle.id}.png`;
-    img.alt = vehicle.name;
-    img.onerror = () => {
-      img.onerror = null;
-      img.src = `/images/vehicles/${vehicle.id}.png`;
-    };
+    const imageUrls = collectImageUrls(vehicle);
+    img.alt = displayName;
+    loadImageFromList(img, imageUrls);
   }
 
   renderSpecGrid(vehicle);
+}
+
+function collectImageUrls(vehicle) {
+  const urls = [
+    vehicle.imageUrl,
+    vehicle.image?.url,
+    vehicle.builtIn ? `/images/vehicles/${vehicle.id}.png` : ""
+  ];
+
+  return [...new Set(urls.map((url) => String(url || "").trim()).filter(Boolean))];
+}
+
+function loadImageFromList(img, urls) {
+  let index = 0;
+
+  const tryNext = () => {
+    const nextUrl = urls[index];
+    index += 1;
+
+    if (!nextUrl) {
+      img.removeAttribute("src");
+      img.classList.add("image-missing");
+      return;
+    }
+
+    img.onerror = tryNext;
+    img.src = nextUrl;
+  };
+
+  tryNext();
 }
 
 function renderSpecGrid(vehicle) {
@@ -101,6 +134,7 @@ function buildDetailRows(vehicle) {
   for (const header of headers) {
     const key = normalizeHeader(header);
     if (!key || isSerialHeader(key)) continue;
+    if (isVariantNameHeader(key)) continue;
 
     // VIN should show only when user searched/opened by VIN.
     if (isVinHeader(key) && !selectedVin) continue;
@@ -198,7 +232,6 @@ function fallbackDetails(vehicle, selectedVin) {
   if (selectedVin) rows.push({ label: "VIN Number", value: selectedVin });
   if (vehicle.modelName) rows.push({ label: "MODEL", value: vehicle.modelName });
   if (vehicle.seriesLabel || vehicle.series) rows.push({ label: "SERIES", value: vehicle.seriesLabel || vehicle.series });
-  if (vehicle.variantName) rows.push({ label: "VARIANT NAME", value: vehicle.variantName });
   if (vehicle.variantType) rows.push({ label: "VARIENT TYPE", value: vehicle.variantType });
   if (vehicle.bodyTypeLabel || vehicle.bodyType || vehicle.type) rows.push({ label: "BODY TYPE", value: vehicle.bodyTypeLabel || vehicle.bodyType || vehicle.type });
   if (vehicle.year) rows.push({ label: "MODEL YEAR", value: String(vehicle.year) });
@@ -210,15 +243,15 @@ function fallbackDetails(vehicle, selectedVin) {
   return rows;
 }
 
-function generateDescription(vehicle) {
-  const bits = [vehicle.name];
+function generateDescription(vehicle, displayName = "") {
+  const bits = [displayName || getVehicleDisplayName(vehicle)];
   if (vehicle.year) bits.push(`${vehicle.year}`);
   if (vehicle.region && vehicle.region !== "multiple") bits.push(`${capitalize(vehicle.region)} region`);
 
   const selectedVin = String(vehicle.selectedVinNumber || "").trim();
   if (selectedVin) bits.push(`VIN ${selectedVin}`);
 
-  return `${bits.join(" · ")} vehicle details are loaded dynamically from the uploaded Excel sheet and linked files.`;
+  return `${bits.filter(Boolean).join(" · ")} vehicle details are loaded dynamically from the uploaded Excel sheet and linked files.`;
 }
 
 function normalizeHeader(header) {
@@ -240,6 +273,10 @@ function isProductionDateHeader(key) {
   return PRODUCTION_DATE_KEYS.has(key);
 }
 
+function isVariantNameHeader(key) {
+  return VARIANT_NAME_KEYS.has(key);
+}
+
 function formatLabel(label) {
   const text = String(label || "").trim();
   if (!text) return "Detail";
@@ -251,6 +288,8 @@ function formatLabel(label) {
 function formatValue(value) {
   if (value === null || value === undefined) return "";
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) return value.map(formatValue).filter(Boolean).join(", ");
+  if (typeof value === "object") return "";
   return String(value).trim();
 }
 

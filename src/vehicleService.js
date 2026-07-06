@@ -61,23 +61,57 @@ function normalizeLabel(value) {
     .replace(/\bBs\b/g, "BS");
 }
 
-function firstValue(...values) {
-  return values.find((value) => String(value ?? "").trim() !== "") ?? "";
+function textValue(value) {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) {
+    return value.map(textValue).filter(Boolean).join(", ");
+  }
+  if (typeof value === "object") {
+    // Do not allow file metadata objects like raw.model to become "[object Object]".
+    return "";
+  }
+  return String(value).trim();
 }
 
-function fieldValue(raw = {}, key) {
-  const filterFields = raw.filterFields || {};
-  const groupFields = raw.groupFields || {};
-  const normalizedGroupFields = raw.normalizedGroupFields || {};
-  const normalizedRows = Array.isArray(raw.normalizedRows) ? raw.normalizedRows : [];
-  const firstNormalizedRow = normalizedRows[0] || {};
+function firstValue(...values) {
+  for (const value of values) {
+    const text = textValue(value);
+    if (text) return text;
+  }
+  return "";
+}
 
-  const direct = raw[key];
-  const filter = filterFields[key];
-  const group = groupFields[key] || groupFields[key?.toUpperCase?.()] || groupFields[key?.toLowerCase?.()];
-  const normalized = normalizedGroupFields[key] || firstNormalizedRow[key];
+function fieldValue(raw = {}, aliases = []) {
+  const keys = Array.isArray(aliases) ? aliases : [aliases];
+  const sources = [
+    raw,
+    raw.filterFields || {},
+    raw.groupFields || {},
+    raw.normalizedGroupFields || {},
+    Array.isArray(raw.normalizedRows) ? raw.normalizedRows[0] || {} : {},
+    Array.isArray(raw.rawRows) ? raw.rawRows[0] || {} : {}
+  ];
 
-  return firstValue(direct, filter, group, normalized);
+  for (const source of sources) {
+    if (!source || typeof source !== "object") continue;
+    for (const alias of keys) {
+      const wanted = normalizeFieldKey(alias);
+      const foundKey = Object.keys(source).find((key) => normalizeFieldKey(key) === wanted);
+      if (!foundKey) continue;
+      const value = textValue(source[foundKey]);
+      if (value) return value;
+    }
+  }
+
+  return "";
+}
+
+function normalizeFieldKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 const GLOBAL_REGION_VALUES = new Set(["multiple", "all", "global"]);
@@ -110,29 +144,56 @@ export function formatSeriesLabel(series, seriesLabel = "") {
 
 export function normalizeVehicle(raw = {}) {
   const id = normalizeId(raw.id || raw.vehicleId || raw.name);
-  const modelName = String(firstValue(raw.modelName, raw.model, fieldValue(raw, "modelName"))).trim();
-  const seriesLabel = String(firstValue(raw.seriesLabel, fieldValue(raw, "seriesLabel"), raw.series)).trim();
+
+  const modelName = firstValue(
+    raw.modelName,
+    fieldValue(raw, ["modelName", "MODEL", "MODEL NAME", "VEHICLE MODEL"])
+  );
+  const seriesLabel = firstValue(
+    raw.seriesLabel,
+    fieldValue(raw, ["seriesLabel", "SERIES"]),
+    raw.series
+  );
   const series = normalizeId(firstValue(raw.series, seriesLabel, "other")) || "other";
-  const variantName = String(firstValue(raw.variantName, fieldValue(raw, "variantName"), raw.variant)).trim();
-  const variantType = String(firstValue(raw.variantType, fieldValue(raw, "variantType"), variantName, raw.variant)).trim();
-  const bodyTypeLabel = String(firstValue(raw.bodyType, raw.bodyTypeLabel, raw.type, fieldValue(raw, "bodyType"), "other")).trim();
-  const type = normalizeId(raw.type || bodyTypeLabel || "other") || "other";
-  const bodyType = normalizeId(bodyTypeLabel || type) || type;
-  const region = normalizeId(firstValue(raw.region, fieldValue(raw, "region"), "multiple")) || "multiple";
-  const year = Number.parseInt(firstValue(raw.year, raw.modelYear, fieldValue(raw, "modelYear")), 10) || "";
-  const variant = normalizeId(raw.variant || variantName || "base") || "base";
-  const fuelType = String(firstValue(raw.fuelType, fieldValue(raw, "fuelType"))).trim();
-  const transmission = String(firstValue(raw.transmission, fieldValue(raw, "transmission"))).trim();
-  const engine = String(firstValue(raw.engine, fieldValue(raw, "engine"))).trim();
-  const emission = String(firstValue(raw.emission, fieldValue(raw, "emission"))).trim();
+  const variantName = firstValue(
+    raw.variantName,
+    fieldValue(raw, ["variantName", "VARIANT NAME", "VARIENT NAME", "VARIANT"]),
+    raw.variant
+  );
+  const variantType = firstValue(
+    raw.variantType,
+    fieldValue(raw, ["variantType", "VARIENT TYPE", "VARIANT TYPE"]),
+    variantName,
+    raw.variant
+  );
+  const bodyTypeLabel = firstValue(
+    raw.bodyTypeLabel,
+    raw.bodyType,
+    fieldValue(raw, ["bodyType", "BODY TYPE", "TYPE"]),
+    raw.type,
+    "other"
+  );
+  const type = normalizeId(firstValue(raw.type, bodyTypeLabel, "other")) || "other";
+  const bodyType = normalizeId(firstValue(raw.bodyType, bodyTypeLabel, type)) || type;
+  const region = normalizeId(firstValue(raw.region, fieldValue(raw, ["region", "REGION"]), "multiple")) || "multiple";
+  const year = Number.parseInt(firstValue(raw.year, raw.modelYear, fieldValue(raw, ["modelYear", "MODEL YEAR", "YEAR"])), 10) || "";
+  const variant = normalizeId(firstValue(raw.variant, variantName, "base")) || "base";
+  const fuelType = firstValue(raw.fuelType, fieldValue(raw, ["fuelType", "FUEL TYPE"]));
+  const transmission = firstValue(raw.transmission, fieldValue(raw, ["transmission", "TRANSMISSION"]));
+  const engine = firstValue(raw.engine, fieldValue(raw, ["engine", "ENGINE"]));
+  const emission = firstValue(raw.emission, fieldValue(raw, ["emission", "EMISSION"]));
+  const productionDate = firstValue(raw.productionDate, fieldValue(raw, ["productionDate", "PRODUCTION DATE", "Production Date"]));
   const vinNumbers = Array.isArray(raw.vinNumbers) ? raw.vinNumbers.map(String).filter(Boolean) : [];
-  const vinNumber = String(raw.vinNumber || raw.vin || vinNumbers[0] || "").trim();
+  const vinNumber = firstValue(raw.vinNumber, raw.vin, vinNumbers[0]);
   const oemDisplayName = buildDisplayName({ modelName, seriesLabel, variantType });
   const hasOemSheetData = Boolean(raw.groupFields || raw.normalizedGroupFields || raw.sheetHeaders || raw.rawRows || raw.normalizedRows);
-  const name = String(hasOemSheetData
-    ? (oemDisplayName || raw.name || raw.vehicleName || formatVehicleName(id))
-    : (raw.name || raw.vehicleName || oemDisplayName || formatVehicleName(id))
-  ).trim();
+  const name = firstValue(
+    hasOemSheetData ? oemDisplayName : "",
+    raw.name,
+    raw.vehicleName,
+    oemDisplayName,
+    formatVehicleName(id)
+  );
 
   return {
     ...raw,
@@ -155,6 +216,7 @@ export function normalizeVehicle(raw = {}) {
     transmission,
     engine,
     emission,
+    productionDate,
     filterFields: {
       ...(raw.filterFields || {}),
       series,
@@ -190,6 +252,11 @@ function buildDisplayName({ modelName, seriesLabel, variantType }) {
     .map((part) => String(part || "").trim())
     .filter(Boolean)
     .join(" ");
+}
+
+export function getVehicleDisplayName(vehicle) {
+  const normalized = normalizeVehicle(vehicle || {});
+  return normalized.name || "Vehicle";
 }
 
 export function mergeVehicles(uploaded = [], builtIns = BUILT_IN_VEHICLES) {
@@ -240,12 +307,24 @@ export async function fetchVehicles() {
 export async function getVehicleById(vehicleId) {
   const id = normalizeId(vehicleId);
   const cached = readSelectedVehicleData();
-  if (cached?.id === id) return normalizeVehicle(cached);
+  const selectedVinNumber = cached?.id === id ? String(cached.selectedVinNumber || "").trim() : "";
 
-  const vehicles = await fetchVehicles();
-  const vehicle = vehicles.find((item) => item.id === id) || null;
-  if (vehicle) writeSelectedVehicleData(vehicle);
-  return vehicle;
+  try {
+    const vehicles = await fetchVehicles();
+    const freshVehicle = vehicles.find((item) => item.id === id) || null;
+    if (freshVehicle) {
+      const normalized = normalizeVehicle({
+        ...freshVehicle,
+        selectedVinNumber
+      });
+      writeSelectedVehicleData(normalized);
+      return normalized;
+    }
+  } catch (error) {
+    console.warn("Fresh vehicle lookup failed:", error.message || error);
+  }
+
+  return cached?.id === id ? normalizeVehicle(cached) : null;
 }
 
 export function readSelectedVehicleData() {
