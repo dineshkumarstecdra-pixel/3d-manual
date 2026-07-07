@@ -219,14 +219,22 @@ app.post(
       const now = new Date().toISOString();
       const seriesValue = normalizeSeriesValue(req.body.series || req.body.seriesLabel);
       const seriesLabel = String(req.body.seriesLabel || req.body.series || "").trim();
+      const requestRawRows = safeJsonArray(req.body.rawRows, previous?.rawRows || safeJsonArray(req.body.sheetRows, []));
+      const requestSheetRows = safeJsonArray(req.body.sheetRows, previous?.sheetRows || requestRawRows);
+      const requestNormalizedRows = safeJsonArray(req.body.normalizedRows, previous?.normalizedRows || []);
+      const requestVinNumbers = uniqueVinList([
+        ...safeJsonArray(req.body.vinNumbers, previous?.vinNumbers || []),
+        req.body.vinNumber,
+        ...extractVinsFromRows(requestRawRows.length ? requestRawRows : requestSheetRows)
+      ]);
 
       const vehicle = {
         ...(previous || {}),
         id: vehicleId,
         programId: String(req.body.programId || previous?.programId || req.body.id || vehicleId).trim(),
         name: String(req.body.name || "").trim(),
-        vinNumber: String(req.body.vinNumber || previous?.vinNumber || "").trim(),
-        vinNumbers: safeJsonArray(req.body.vinNumbers, previous?.vinNumbers || []),
+        vinNumber: String(req.body.vinNumber || requestVinNumbers[0] || previous?.vinNumber || "").trim(),
+        vinNumbers: requestVinNumbers,
         variant: String(req.body.variant || previous?.variant || "base").trim().toLowerCase(),
         variantName: String(req.body.variantName || previous?.variantName || "").trim(),
         variantType: String(req.body.variantType || previous?.variantType || req.body.variantName || "").trim(),
@@ -257,9 +265,9 @@ app.post(
         effectiveDate: String(req.body.effectiveDate || previous?.effectiveDate || "").trim(),
         validDate: String(req.body.validDate || previous?.validDate || "").trim(),
         productionCount: Number.parseInt(req.body.productionCount || previous?.productionCount || 0, 10) || 0,
-        sheetRows: safeJsonArray(req.body.sheetRows, previous?.sheetRows || []),
-        rawRows: safeJsonArray(req.body.rawRows, previous?.rawRows || safeJsonArray(req.body.sheetRows, [])),
-        normalizedRows: safeJsonArray(req.body.normalizedRows, previous?.normalizedRows || []),
+        sheetRows: requestSheetRows,
+        rawRows: requestRawRows,
+        normalizedRows: requestNormalizedRows,
         sheetHeaders: safeJsonArray(req.body.sheetHeaders, previous?.sheetHeaders || []),
         groupFields: safeJsonObject(req.body.groupFields, previous?.groupFields || {}),
         normalizedGroupFields: safeJsonObject(req.body.normalizedGroupFields, previous?.normalizedGroupFields || {}),
@@ -740,16 +748,24 @@ function upsertVehicle(vehicles, vehicle) {
 }
 
 function getVehicleVinNumbers(vehicle) {
+  return uniqueVinList([
+    ...(Array.isArray(vehicle?.vinNumbers) ? vehicle.vinNumbers : []),
+    vehicle?.vinNumber,
+    ...extractVinsFromRows(getPrimaryVinRows(vehicle))
+  ]);
+}
+
+function getPrimaryVinRows(vehicle) {
+  if (Array.isArray(vehicle?.rawRows) && vehicle.rawRows.length) return vehicle.rawRows;
+  if (Array.isArray(vehicle?.sheetRows) && vehicle.sheetRows.length) return vehicle.sheetRows;
+  if (Array.isArray(vehicle?.normalizedRows) && vehicle.normalizedRows.length) return vehicle.normalizedRows;
+  return [];
+}
+
+function extractVinsFromRows(rows = []) {
   const values = [];
-  if (vehicle?.vinNumber) values.push(vehicle.vinNumber);
-  if (Array.isArray(vehicle?.vinNumbers)) values.push(...vehicle.vinNumbers);
 
-  const rows = [
-    ...(Array.isArray(vehicle?.rawRows) ? vehicle.rawRows : []),
-    ...(Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : [])
-  ];
-
-  rows.forEach((row) => {
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
     Object.entries(row || {}).forEach(([key, value]) => {
       const normalizedKey = normalizeHeaderForVin(key);
       if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber", "serialnumber"].includes(normalizedKey)) {
@@ -759,6 +775,35 @@ function getVehicleVinNumbers(vehicle) {
   });
 
   return values.map((value) => String(value || "").trim()).filter(Boolean);
+}
+
+function uniqueVinList(values = []) {
+  const seen = new Set();
+  const unique = [];
+
+  (Array.isArray(values) ? values : []).forEach((value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    const key = normalizeVin(text);
+    if (seen.has(key)) return;
+    seen.add(key);
+    unique.push(text);
+  });
+
+  return unique;
+}
+
+function duplicateVinsFromRows(rows = []) {
+  const seen = new Map();
+  const duplicates = [];
+
+  extractVinsFromRows(rows).forEach((vin) => {
+    const key = normalizeVin(vin);
+    if (seen.has(key)) duplicates.push(vin);
+    else seen.set(key, vin);
+  });
+
+  return uniqueVinList(duplicates);
 }
 
 function normalizeHeaderForVin(value) {
@@ -774,20 +819,14 @@ function normalizeVin(value) {
 }
 
 function assertNoDuplicateVinConflicts(vehicle, vehicles, currentVehicleId) {
-  const vinNumbers = getVehicleVinNumbers(vehicle);
-  const seen = new Set();
-  const duplicatesInRequest = [];
-
-  vinNumbers.forEach((vin) => {
-    const key = normalizeVin(vin);
-    if (seen.has(key)) duplicatesInRequest.push(vin);
-    seen.add(key);
-  });
+  const primaryRows = getPrimaryVinRows(vehicle);
+  const duplicatesInRequest = duplicateVinsFromRows(primaryRows);
 
   if (duplicatesInRequest.length) {
-    throw httpError(400, `Duplicate VIN in uploaded data: ${duplicatesInRequest.slice(0, 10).join(", ")}`);
+    throw httpError(400, `Duplicate VIN in uploaded sheet rows: ${duplicatesInRequest.slice(0, 10).join(", ")}`);
   }
 
+  const vinNumbers = getVehicleVinNumbers(vehicle);
   const currentId = normalizeVehicleId(currentVehicleId || vehicle.id);
   const conflicts = [];
 

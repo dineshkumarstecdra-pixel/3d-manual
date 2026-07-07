@@ -1,5 +1,10 @@
 import { requireAdmin, secureLogout, ADMIN_EMAIL } from "./authGuard.js";
-const API_BASE_URL = "https://threed-manual.onrender.com";
+const API_BASE_URL = (
+  import.meta.env?.VITE_API_BASE_URL ||
+  ((window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://localhost:3001"
+    : "https://threed-manual.onrender.com")
+).replace(/\/$/, "");
 const API_BASE = `${API_BASE_URL}/api`;
 const STANDARD_SERIES = new Set(["m", "x", "i", "r", "z"]);
 
@@ -1224,9 +1229,17 @@ async function saveSelectedProgramAssets() {
 }
 
 function buildMergedProgramRows(group, existingVehicle, importMode) {
-  const newRawRows = group.rawRows || group.rows.map(getRawRow);
-  const newNormalizedRows = group.normalizedRows || group.rows.map(getNormalizedRow);
-  const newVinNumbers = Array.from(new Set((group.vinNumbers || []).filter(Boolean)));
+  const newRawRows = Array.isArray(group.rawRows)
+    ? group.rawRows
+    : (Array.isArray(group.rows) ? group.rows.map(getRawRow) : []);
+  const newNormalizedRows = Array.isArray(group.normalizedRows)
+    ? group.normalizedRows
+    : (Array.isArray(group.rows) ? group.rows.map(getNormalizedRow) : []);
+  const newVinNumbers = uniqueVinValues([
+    ...(Array.isArray(group.vinNumbers) ? group.vinNumbers : []),
+    ...newRawRows.map(rowVinValue),
+    ...newNormalizedRows.map(rowVinValue)
+  ]);
 
   if (!existingVehicle) {
     return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
@@ -1236,12 +1249,16 @@ function buildMergedProgramRows(group, existingVehicle, importMode) {
     ? existingVehicle.rawRows
     : (Array.isArray(existingVehicle.sheetRows) ? existingVehicle.sheetRows : []);
   const existingNormalizedRows = Array.isArray(existingVehicle.normalizedRows) ? existingVehicle.normalizedRows : [];
-  const existingVinNumbers = Array.from(new Set([
+  const existingVinNumbers = uniqueVinValues([
     ...(Array.isArray(existingVehicle.vinNumbers) ? existingVehicle.vinNumbers : []),
-    existingVehicle.vinNumber
-  ].filter(Boolean)));
+    existingVehicle.vinNumber,
+    ...existingRawRows.map(rowVinValue),
+    ...existingNormalizedRows.map(rowVinValue)
+  ]);
 
-  const duplicateVins = newVinNumbers.filter((vin) => existingVinNumbers.some((existing) => normalizeComparisonValue(existing) === normalizeComparisonValue(vin)));
+  const duplicateVins = newVinNumbers.filter((vin) =>
+    existingVinNumbers.some((existing) => normalizeComparisonValue(existing) === normalizeComparisonValue(vin))
+  );
 
   if (importMode === "append" && duplicateVins.length) {
     throw new Error(`These VINs already exist in this program: ${duplicateVins.slice(0, 10).join(", ")}. Change Import Mode to Replace existing group to update them.`);
@@ -1252,10 +1269,51 @@ function buildMergedProgramRows(group, existingVehicle, importMode) {
   }
 
   return {
-    rawRows: [...existingRawRows, ...newRawRows],
-    normalizedRows: [...existingNormalizedRows, ...newNormalizedRows],
-    vinNumbers: Array.from(new Set([...existingVinNumbers, ...newVinNumbers]))
+    rawRows: mergeRowsByVin(existingRawRows, newRawRows),
+    normalizedRows: mergeRowsByVin(existingNormalizedRows, newNormalizedRows),
+    vinNumbers: uniqueVinValues([...existingVinNumbers, ...newVinNumbers])
   };
+}
+
+function uniqueVinValues(values = []) {
+  const seen = new Set();
+  const unique = [];
+
+  (Array.isArray(values) ? values : []).forEach((value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    const key = normalizeComparisonValue(text);
+    if (seen.has(key)) return;
+    seen.add(key);
+    unique.push(text);
+  });
+
+  return unique;
+}
+
+function rowVinValue(row) {
+  const raw = row && typeof row === "object" ? row : {};
+  for (const alias of VIN_HEADER_ALIASES) {
+    const aliasKey = normalizeHeader(alias);
+    for (const [key, value] of Object.entries(raw)) {
+      if (normalizeHeader(key) === aliasKey && String(value || "").trim()) {
+        return String(value || "").trim();
+      }
+    }
+  }
+  return "";
+}
+
+function mergeRowsByVin(existingRows = [], newRows = []) {
+  const map = new Map();
+
+  [...existingRows, ...newRows].forEach((row, index) => {
+    const vin = rowVinValue(row);
+    const key = vin ? `vin:${normalizeComparisonValue(vin)}` : `row:${index}`;
+    map.set(key, row);
+  });
+
+  return Array.from(map.values());
 }
 
 function findFirstHeaderName(headers, aliases) {
