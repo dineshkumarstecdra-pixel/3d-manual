@@ -717,21 +717,53 @@ function getVehicleVinNumbers(vehicle) {
   if (vehicle?.vinNumber) values.push(vehicle.vinNumber);
   if (Array.isArray(vehicle?.vinNumbers)) values.push(...vehicle.vinNumbers);
 
-  const rows = [
-    ...(Array.isArray(vehicle?.rawRows) ? vehicle.rawRows : []),
-    ...(Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : [])
-  ];
+  // rawRows and sheetRows usually contain the same production sheet rows.
+  // Read only one row source, otherwise VIN001 appears multiple times and
+  // the backend incorrectly rejects a valid upload as duplicate.
+  const rows = Array.isArray(vehicle?.rawRows) && vehicle.rawRows.length
+    ? vehicle.rawRows
+    : (Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : []);
 
-  rows.forEach((row) => {
+  values.push(...getVinNumbersFromRows(rows));
+  return uniqueTextList(values);
+}
+
+function getVinNumbersFromRows(rows = []) {
+  const values = [];
+  (Array.isArray(rows) ? rows : []).forEach((row) => {
     Object.entries(row || {}).forEach(([key, value]) => {
       const normalizedKey = normalizeHeaderForVin(key);
-      if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber", "serialnumber"].includes(normalizedKey)) {
+      if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber"].includes(normalizedKey)) {
         if (value) values.push(value);
       }
     });
   });
-
   return values.map((value) => String(value || "").trim()).filter(Boolean);
+}
+
+function uniqueTextList(values = []) {
+  const seen = new Set();
+  const list = [];
+  (Array.isArray(values) ? values : []).forEach((value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    const key = normalizeVin(text);
+    if (seen.has(key)) return;
+    seen.add(key);
+    list.push(text);
+  });
+  return list;
+}
+
+function findDuplicateVinRows(rows = []) {
+  const seen = new Set();
+  const duplicates = [];
+  getVinNumbersFromRows(rows).forEach((vin) => {
+    const key = normalizeVin(vin);
+    if (seen.has(key)) duplicates.push(vin);
+    else seen.add(key);
+  });
+  return duplicates;
 }
 
 function normalizeHeaderForVin(value) {
@@ -747,20 +779,15 @@ function normalizeVin(value) {
 }
 
 function assertNoDuplicateVinConflicts(vehicle, vehicles, currentVehicleId) {
-  const vinNumbers = getVehicleVinNumbers(vehicle);
-  const seen = new Set();
-  const duplicatesInRequest = [];
-
-  vinNumbers.forEach((vin) => {
-    const key = normalizeVin(vin);
-    if (seen.has(key)) duplicatesInRequest.push(vin);
-    seen.add(key);
-  });
-
-  if (duplicatesInRequest.length) {
-    throw httpError(400, `Duplicate VIN in uploaded data: ${duplicatesInRequest.slice(0, 10).join(", ")}`);
+  const rowSource = Array.isArray(vehicle?.rawRows) && vehicle.rawRows.length
+    ? vehicle.rawRows
+    : (Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : []);
+  const duplicateRows = findDuplicateVinRows(rowSource);
+  if (duplicateRows.length) {
+    throw httpError(400, `Duplicate VIN in sheet rows: ${duplicateRows.slice(0, 10).join(", ")}`);
   }
 
+  const vinNumbers = getVehicleVinNumbers(vehicle);
   const currentId = normalizeVehicleId(currentVehicleId || vehicle.id);
   const conflicts = [];
 

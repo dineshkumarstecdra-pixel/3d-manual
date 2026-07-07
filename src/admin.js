@@ -1120,36 +1120,80 @@ async function saveSelectedProgramAssets() {
 function buildMergedProgramRows(group, existingVehicle, importMode) {
   const newRawRows = group.rawRows || group.rows.map(getRawRow);
   const newNormalizedRows = group.normalizedRows || group.rows.map(getNormalizedRow);
-  const newVinNumbers = Array.from(new Set((group.vinNumbers || []).filter(Boolean)));
+  const newVinNumbers = uniqueTextList(group.vinNumbers || []);
 
-  if (!existingVehicle) {
-    return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
+  if (!existingVehicle || importMode === "replace") {
+    return {
+      rawRows: newRawRows,
+      normalizedRows: newNormalizedRows,
+      vinNumbers: newVinNumbers
+    };
   }
 
   const existingRawRows = Array.isArray(existingVehicle.rawRows)
     ? existingVehicle.rawRows
     : (Array.isArray(existingVehicle.sheetRows) ? existingVehicle.sheetRows : []);
   const existingNormalizedRows = Array.isArray(existingVehicle.normalizedRows) ? existingVehicle.normalizedRows : [];
-  const existingVinNumbers = Array.from(new Set([
+  const existingVinNumbers = uniqueTextList([
     ...(Array.isArray(existingVehicle.vinNumbers) ? existingVehicle.vinNumbers : []),
-    existingVehicle.vinNumber
-  ].filter(Boolean)));
+    existingVehicle.vinNumber,
+    ...extractVinNumbersFromRows(existingRawRows)
+  ]);
+  const existingVinKeySet = new Set(existingVinNumbers.map(normalizeComparisonValue));
 
-  const duplicateVins = newVinNumbers.filter((vin) => existingVinNumbers.some((existing) => normalizeComparisonValue(existing) === normalizeComparisonValue(vin)));
-
-  if (importMode === "append" && duplicateVins.length) {
-    throw new Error(`These VINs already exist in this program: ${duplicateVins.slice(0, 10).join(", ")}. Change Import Mode to Replace existing group to update them.`);
-  }
-
-  if (importMode === "replace") {
-    return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
-  }
+  // Append mode should not resend existing VIN rows to the backend.
+  // If the same sheet is re-imported to replace/update assets, this avoids the
+  // server receiving VIN001 twice from vinNumbers + rawRows + sheetRows.
+  const appendRawRows = [];
+  const appendNormalizedRows = [];
+  newRawRows.forEach((row, index) => {
+    const vin = extractVinNumberFromRow(row) || newVinNumbers[index] || "";
+    if (vin && existingVinKeySet.has(normalizeComparisonValue(vin))) return;
+    appendRawRows.push(row);
+    appendNormalizedRows.push(newNormalizedRows[index] || {});
+  });
 
   return {
-    rawRows: [...existingRawRows, ...newRawRows],
-    normalizedRows: [...existingNormalizedRows, ...newNormalizedRows],
-    vinNumbers: Array.from(new Set([...existingVinNumbers, ...newVinNumbers]))
+    rawRows: [...existingRawRows, ...appendRawRows],
+    normalizedRows: [...existingNormalizedRows, ...appendNormalizedRows],
+    vinNumbers: uniqueTextList([...existingVinNumbers, ...newVinNumbers])
   };
+}
+
+function uniqueTextList(values = []) {
+  const seen = new Set();
+  const list = [];
+  (Array.isArray(values) ? values : []).forEach((value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    const key = normalizeComparisonValue(text);
+    if (seen.has(key)) return;
+    seen.add(key);
+    list.push(text);
+  });
+  return list;
+}
+
+function extractVinNumbersFromRows(rows = []) {
+  return (Array.isArray(rows) ? rows : [])
+    .map(extractVinNumberFromRow)
+    .filter(Boolean);
+}
+
+function extractVinNumberFromRow(row = {}) {
+  if (!row || typeof row !== "object") return "";
+  for (const [key, value] of Object.entries(row)) {
+    const normalizedKey = normalizeHeader(key);
+    if (GROUP_EXCLUDED_HEADER_KEYS.has(normalizedKey) && String(value || "").trim()) {
+      if ([...VIN_HEADER_ALIASES.map(normalizeHeader)].includes(normalizedKey)) {
+        return String(value || "").trim();
+      }
+    }
+    if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber", "serialnumber"].includes(normalizedKey)) {
+      return String(value || "").trim();
+    }
+  }
+  return "";
 }
 
 function findFirstHeaderName(headers, aliases) {
