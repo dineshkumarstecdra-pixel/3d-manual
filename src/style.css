@@ -2186,3 +2186,48 @@ canvas{
     min-width: 0;
   }
 }
+
+
+/* =========================================================
+   Tree-only viewer UI override
+   Removes duplicate top parts table and Current BOM box.
+   Keeps the OEM category tree as the only left navigation.
+   ========================================================= */
+#partsPanel,
+#bomRevisionPanel{
+  display: none !important;
+}
+
+#systemsPanel{
+  padding-top: 12px !important;
+  padding-bottom: 24px !important;
+}
+
+#systemsPanel h3{
+  position: sticky;
+  top: 66px;
+  z-index: 180;
+  margin: 0 0 10px !important;
+  padding: 10px 0 8px;
+  background: rgba(18,23,36,.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #dbeafe;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-bottom: 1px solid rgba(148,163,184,.16);
+}
+
+.tree-leaf{
+  border-radius: 10px;
+}
+
+.tree-leaf.active-tree{
+  background: rgba(255,200,87,.20) !important;
+  box-shadow: inset 3px 0 0 var(--viewer-highlight, #ffc857);
+}
+
+.tree-leaf:hover{
+  background: rgba(99,102,241,.14);
+}

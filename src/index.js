@@ -54,7 +54,7 @@ let revisionBomRows = []
 let appliedRevisionEntries = []
 let partHistoryByKey = new Map()
 let currentBomByKey = new Map()
-let latestRevisionLabel = "Base BOM"
+let latestRevisionLabel = "Base BOM
 
 if (!selectedVehicle) {
   alert("Vehicle missing")
@@ -1468,47 +1468,12 @@ function normalizeSelectValue(value) {
 }
 
 function renderBomRevisionPanel() {
-  const systemsPanel = document.getElementById("systemsPanel")
-  if (!systemsPanel?.parentElement) return
-
-  let panel = document.getElementById("bomRevisionPanel")
-  if (!panel) {
-    panel = document.createElement("div")
-    panel.id = "bomRevisionPanel"
-    panel.className = "bom-revision-panel"
-    systemsPanel.parentElement.insertBefore(panel, systemsPanel)
-  }
-
-  const diff = bomDiffSummary
-  const hasRevision = appliedRevisionEntries.length > 0
-  const latest = appliedRevisionEntries[appliedRevisionEntries.length - 1]
-
-  panel.innerHTML = `
-    <div class="bom-revision-head">
-      <div>
-        <span class="bom-kicker">Current BOM</span>
-        <strong>${hasRevision ? "Latest revision applied" : "Base BOM active"}</strong>
-      </div>
-      <span class="bom-current-pill">${escapeHtml(latestRevisionLabel)}</span>
-    </div>
-    <div class="bom-revision-body">
-      ${hasRevision ? `
-        <div class="bom-revision-line">Revision: <b>${escapeHtml(latest?.revision?.id || latestRevisionLabel || "-")}</b> · Mode: <b>${escapeHtml(formatBomRevisionMode(activeBomRevisionMode))}</b></div>
-        <div class="bom-revision-line">History available for changed parts. Open the info icon near a part name to view current details and old revision details.</div>
-      ` : `
-        <div class="bom-revision-line">No BOM revision applied yet. Showing base parts data.</div>
-      `}
-      ${diff ? `
-        <div class="bom-diff-chips">
-          <span>Added ${diff.added}</span>
-          <span>Changed ${diff.changed}</span>
-          <span>Removed ${diff.removed}</span>
-          <span>Current ${diff.total}</span>
-        </div>
-      ` : ""}
-    </div>
-  `
+  // Tree-only UI mode: keep revision data in memory for popups/history,
+  // but do not render the separate Current BOM summary card in the sidebar.
+  const panel = document.getElementById("bomRevisionPanel")
+  if (panel) panel.remove()
 }
+
 
 
 function buildPartDescriptionsFromRows(rows) {
@@ -2286,7 +2251,8 @@ function updateHideButton() {
 
 function updateHiddenUI() {
 
-  document.getElementById("hiddenCount").innerText = hiddenParts.length
+  const hiddenCount = document.getElementById("hiddenCount")
+  if (hiddenCount) hiddenCount.innerText = hiddenParts.length
 
   document.querySelectorAll("#partsList tr").forEach(row => {
 
