@@ -54,7 +54,7 @@ let revisionBomRows = []
 let appliedRevisionEntries = []
 let partHistoryByKey = new Map()
 let currentBomByKey = new Map()
-let latestRevisionLabel = "Base BOM
+let latestRevisionLabel = "Base BOM"
 
 if (!selectedVehicle) {
   alert("Vehicle missing")
