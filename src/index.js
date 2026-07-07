@@ -49,6 +49,12 @@ let activeBomRevision = null
 let activeBomRevisionMode = "base"
 let bomDiffSummary = null
 let lastLoadedBomRows = []
+let baseBomRows = []
+let revisionBomRows = []
+let appliedRevisionEntries = []
+let partHistoryByKey = new Map()
+let currentBomByKey = new Map()
+let latestRevisionLabel = "Base BOM"
 
 if (!selectedVehicle) {
   alert("Vehicle missing")
@@ -61,11 +67,13 @@ const floatingLabel = document.getElementById("floatingLabel")
 
 
 function formatName(name) {
-  return name
+  return String(name || "")
     .replaceAll("_", " ")
-    .replace(/\d+/g, "")
-    .trim() // 🔥 இதைச் சேர்ப்பது மிகவும் முக்கியம்
+    .replaceAll("-", " ")
+    .replace(/\s+/g, " ")
+    .trim()
 }
+
 
 function formatVehicleDisplayName(name) {
   const text = String(name || "Vehicle")
@@ -777,51 +785,45 @@ function isValidTexture(texture) {
 
 async function loadModelDataFile() {
   const baseModelDataInfo = getVehicleFileInfo("modelData", "./Parts Details/Parts data.xlsx")
-  const bomDate = getSelectedBomDate()
+  const sourceUrl = baseModelDataInfo.url
 
-  activeBomRevision = await fetchActiveBomRevision(bomDate)
-  let baseRows = []
-  let activeRows = []
-  let activeSheetRows = []
-  let sourceLabel = "Base BOM"
-  let sourceUrl = baseModelDataInfo.url
+  baseBomRows = []
+  revisionBomRows = []
+  appliedRevisionEntries = []
+  partHistoryByKey = new Map()
+  currentBomByKey = new Map()
+  activeBomRevision = null
+  activeBomRevisionMode = "base"
+  bomDiffSummary = null
+  latestRevisionLabel = "Base BOM"
 
   try {
-    baseRows = await loadSheetRows(baseModelDataInfo.url, baseModelDataInfo.extension || getExtension(baseModelDataInfo.url))
+    baseBomRows = await loadSheetRows(baseModelDataInfo.url, baseModelDataInfo.extension || getExtension(baseModelDataInfo.url))
   } catch (error) {
     console.warn("Base model data load failed:", error)
   }
 
-  let deltaApplyResult = null
-
   try {
-    const revisionSheetUrl = activeBomRevision?.sheet?.url || ""
-    if (activeBomRevision?.active && revisionSheetUrl) {
-      activeSheetRows = await loadSheetRows(revisionSheetUrl, activeBomRevision.sheet.extension || getExtension(revisionSheetUrl))
-      activeRows = filterRevisionRowsForVehicle(activeSheetRows, activeBomRevision.group)
-      if (activeRows.length) {
-        activeBomRevisionMode = detectBomRevisionMode(activeRows, activeBomRevision.revision)
-        sourceLabel = `${activeBomRevisionMode === "delta" ? "Delta Revision" : "Full Revision"} ${activeBomRevision.revision?.id || "BOM"}`
-        sourceUrl = revisionSheetUrl
-      }
-    }
+    const revisions = await fetchAllBomRevisions()
+    appliedRevisionEntries = await loadRevisionEntriesForVehicle(revisions)
+    revisionBomRows = appliedRevisionEntries.flatMap((entry) => entry.rows)
   } catch (error) {
-    console.warn("Active BOM revision load failed, falling back to base BOM:", error)
+    console.warn("Revision history load failed. Continuing with base BOM.", error)
+    appliedRevisionEntries = []
+    revisionBomRows = []
   }
 
-  let rowsToUse = baseRows
-  if (activeRows.length) {
-    if (activeBomRevisionMode === "delta") {
-      deltaApplyResult = applyDeltaBomRows(baseRows, activeRows)
-      rowsToUse = deltaApplyResult.rows
-    } else {
-      rowsToUse = activeRows
-    }
-  } else {
-    activeBomRevisionMode = "base"
-  }
+  const applyResult = applyRevisionEntriesToBaseBom(baseBomRows, appliedRevisionEntries)
+  let rowsToUse = applyResult.rows
+  activeBomRevisionMode = applyResult.mode
+  bomDiffSummary = applyResult.diff
+  latestRevisionLabel = applyResult.latestRevisionLabel || "Base BOM"
+  activeBomRevision = applyResult.latestRevision || null
 
   lastLoadedBomRows = rowsToUse
+  currentBomByKey = mapBomRows(rowsToUse)
+
+  buildPartHistory(baseBomRows, appliedRevisionEntries, rowsToUse)
 
   if (rowsToUse.length) {
     partDescriptions = buildPartDescriptionsFromRows(rowsToUse)
@@ -829,22 +831,242 @@ async function loadModelDataFile() {
 
   if (!rowsToUse.length || Object.keys(partDescriptions).length === 0) {
     partDescriptions = createFallbackPartDescriptions()
+    currentBomByKey = mapBomRows(Object.values(partDescriptions).map((p) => p.row || p))
   }
 
-  bomDiffSummary = activeRows.length ? compareBomRows(baseRows, rowsToUse, { mode: activeBomRevisionMode, deltaRows: activeRows, deltaResult: deltaApplyResult }) : null
-
   console.log("BOM data loaded ✅", {
-    sourceLabel,
     sourceUrl,
-    bomDate,
-    activeBomRevision,
+    baseRows: baseBomRows.length,
+    revisions: appliedRevisionEntries.length,
     bomDiffSummary,
+    latestRevisionLabel,
     partDescriptions
   })
 
   renderBomRevisionPanel()
   buildSystemTree()
   createPartsTable()
+}
+
+
+
+async function fetchAllBomRevisions() {
+  const urls = [
+    `/api/program-revisions/public?_=${Date.now()}`,
+    `${UPLOAD_SERVER}/api/program-revisions/public?_=${Date.now()}`
+  ]
+  const data = await fetchJsonFromAny(urls, [])
+  return Array.isArray(data) ? data : []
+}
+
+async function loadRevisionEntriesForVehicle(revisions) {
+  const entries = []
+
+  for (const revision of Array.isArray(revisions) ? revisions : []) {
+    const sheetUrl = revision?.sheet?.url || revision?.sourceUrl || ""
+    if (!sheetUrl) continue
+
+    let rows = []
+    try {
+      rows = await loadSheetRows(sheetUrl, revision?.sheet?.extension || getExtension(sheetUrl))
+    } catch (error) {
+      console.warn("Could not load revision sheet:", revision?.id, error)
+      continue
+    }
+
+    const filteredRows = filterRevisionRowsForSelectedVehicle(rows, revision)
+    if (!filteredRows.length) continue
+
+    entries.push({
+      revision,
+      rows: filteredRows,
+      mode: detectBomRevisionMode(filteredRows, revision),
+      effectiveDate: getEarliestDate(filteredRows, revision),
+      validDate: getLatestDate(filteredRows, revision)
+    })
+  }
+
+  return entries.sort((a, b) => {
+    const ad = Date.parse(`${a.effectiveDate || a.revision?.createdAt || ""}T00:00:00Z`) || Date.parse(a.revision?.createdAt || "") || 0
+    const bd = Date.parse(`${b.effectiveDate || b.revision?.createdAt || ""}T00:00:00Z`) || Date.parse(b.revision?.createdAt || "") || 0
+    if (ad !== bd) return ad - bd
+    return String(a.revision?.createdAt || "").localeCompare(String(b.revision?.createdAt || ""))
+  })
+}
+
+function filterRevisionRowsForSelectedVehicle(rows, revision = {}) {
+  if (!Array.isArray(rows) || !rows.length) return []
+
+  const vehicleProgramIds = new Set([
+    selectedVehicle,
+    selectedVehicleRecord?.id,
+    selectedVehicleRecord?.programId,
+    selectedVehicleRecord?.groupId,
+    selectedVehicleRecord?.groupFields?.["Program ID"],
+    selectedVehicleRecord?.normalizedGroupFields?.programid,
+    selectedVehicleRecord?.normalizedGroupFields?.programId
+  ].map(normalizeComparable).filter(Boolean))
+
+  const groupProgramIds = new Set((revision.groups || []).flatMap((group) => [
+    group.groupId,
+    group.vehicleId,
+    group.programId
+  ]).map(normalizeComparable).filter(Boolean))
+
+  const filtered = rows.filter((row) => {
+    const rowProgramId = normalizeComparable(getRowValue(row, ["Program ID", "ProgramID", "Program", "Vehicle ID", "VehicleId", "Vehicle"]));
+    if (rowProgramId && (vehicleProgramIds.has(rowProgramId) || groupProgramIds.has(rowProgramId))) return true
+
+    const rowModel = normalizeComparable(getRowValue(row, ["Model", "MODEL", "Vehicle Model", "Model Name"]))
+    const rowSeries = normalizeComparable(getRowValue(row, ["Series", "SERIES", "Model Series"]))
+    const rowVariant = normalizeComparable(getRowValue(row, ["Variant Level", "Variant", "VARIANT NAME", "Varient", "Trim"]))
+    const rowVariantCode = normalizeComparable(getRowValue(row, ["Variant Code", "VARIENT TYPE", "VARIANT TYPE", "Type Code"]))
+    const rowRegion = normalizeComparable(getRowValue(row, ["Region", "REGION", "Market", "Country"]))
+
+    const vehicleModel = normalizeComparable(selectedVehicleRecord?.modelName || selectedVehicleRecord?.groupFields?.MODEL || selectedVehicleRecord?.name || "")
+    const vehicleSeries = normalizeComparable(selectedVehicleRecord?.seriesLabel || selectedVehicleRecord?.series || "")
+    const vehicleVariant = normalizeComparable(selectedVehicleRecord?.variantName || selectedVehicleRecord?.variant || "")
+    const vehicleVariantCode = normalizeComparable(selectedVehicleRecord?.variantCode || selectedVehicleRecord?.filterFields?.variantCode || selectedVehicleRecord?.variantType || "")
+    const vehicleRegion = normalizeComparable(selectedVehicleRecord?.region || selectedVehicleRecord?.filterFields?.region || "")
+
+    const modelOk = !rowModel || !vehicleModel || rowModel === vehicleModel || vehicleModel.includes(rowModel) || rowModel.includes(vehicleModel)
+    const seriesOk = !rowSeries || !vehicleSeries || rowSeries === vehicleSeries
+    const variantOk = !rowVariant || !vehicleVariant || rowVariant === vehicleVariant
+    const variantCodeOk = !rowVariantCode || !vehicleVariantCode || rowVariantCode === vehicleVariantCode
+    const regionOk = !rowRegion || !vehicleRegion || rowRegion === vehicleRegion
+
+    return modelOk && seriesOk && variantOk && variantCodeOk && regionOk
+  })
+
+  return filtered.length ? filtered : rows
+}
+
+function getEarliestDate(rows, revision = {}) {
+  const dates = (Array.isArray(rows) ? rows : [])
+    .map((row) => normalizeDateInput(getRowValue(row, ["Effective Date", "Effective From", "From Date", "Start Date"])))
+    .filter(Boolean)
+    .sort()
+  if (dates[0]) return dates[0]
+  const groupDates = (revision.groups || []).map((group) => normalizeDateInput(group.effectiveDate)).filter(Boolean).sort()
+  return groupDates[0] || normalizeDateInput(revision.createdAt || "")
+}
+
+function getLatestDate(rows, revision = {}) {
+  const dates = (Array.isArray(rows) ? rows : [])
+    .map((row) => normalizeDateInput(getRowValue(row, ["Valid Date", "Valid To", "Valid Until", "End Date"])))
+    .filter(Boolean)
+    .sort()
+  if (dates.length) return dates[dates.length - 1]
+  const groupDates = (revision.groups || []).map((group) => normalizeDateInput(group.validDate)).filter(Boolean).sort()
+  return groupDates[groupDates.length - 1] || ""
+}
+
+function applyRevisionEntriesToBaseBom(baseRows, entries) {
+  let rows = Array.isArray(baseRows) ? [...baseRows] : []
+  const diff = { added: 0, changed: 0, removed: 0, total: 0, baseTotal: mapBomRows(baseRows).size, ignored: 0 }
+  let latestRevision = null
+  let latestRevisionLabel = "Base BOM"
+  let mode = "base"
+
+  for (const entry of Array.isArray(entries) ? entries : []) {
+    if (!entry.rows.length) continue
+    latestRevision = entry.revision
+    latestRevisionLabel = entry.revision?.id || "Revision BOM"
+    mode = entry.mode || detectBomRevisionMode(entry.rows, entry.revision)
+
+    if (mode === "full") {
+      rows = entry.rows
+      const fullDiff = compareBomRows(baseRows, rows, { mode: "full" })
+      diff.added += fullDiff.added || 0
+      diff.changed += fullDiff.changed || 0
+      diff.removed += fullDiff.removed || 0
+      diff.ignored += fullDiff.ignored || 0
+      continue
+    }
+
+    const result = applyDeltaBomRows(rows, entry.rows)
+    rows = result.rows
+    diff.added += result.added || 0
+    diff.changed += result.changed || 0
+    diff.removed += result.removed || 0
+    diff.ignored += result.ignored || 0
+  }
+
+  diff.total = mapBomRows(rows).size
+  return { rows, diff: entries?.length ? diff : null, latestRevision, latestRevisionLabel, mode }
+}
+
+function buildPartHistory(baseRows, entries, activeRows) {
+  const history = new Map()
+
+  ;(Array.isArray(baseRows) ? baseRows : []).forEach((row) => {
+    const item = normalizeBomRow(row)
+    if (!item.key) return
+    addPartHistoryRecord(history, item.key, {
+      revisionId: "BASE",
+      changeType: "Base Part",
+      partId: item.partId,
+      partName: item.partName,
+      qty: item.qty,
+      effectiveDate: getRowValue(row, ["Effective Date", "Effective From", "From Date", "Start Date"]),
+      validDate: getRowValue(row, ["Valid Date", "Valid To", "Valid Until", "End Date"]),
+      remark: getRowValue(row, ["Notes", "Remark", "Remarks"]),
+      row
+    })
+  })
+
+  ;(Array.isArray(entries) ? entries : []).forEach((entry) => {
+    entry.rows.forEach((row) => {
+      const oldPartId = getRowValue(row, ["Old Part ID", "Old PartId", "Previous Part ID", "Old ID"])
+      const newPartId = getRowValue(row, ["New Part ID", "New PartId", "Replacement Part ID", "Part ID", "PartId", "ID"])
+      const partName = getRowValue(row, ["Part Name", "PartName", "Name", "Part", "Component", "Description"])
+      const changeType = getChangeType(row) || "Changed"
+      const keys = [oldPartId, newPartId, partName].map(normalizePartKey).filter(Boolean)
+      const uniqueKeys = Array.from(new Set(keys))
+      uniqueKeys.forEach((key) => addPartHistoryRecord(history, key, {
+        revisionId: getRowValue(row, ["Revision ID", "RevisionId", "Revision", "Rev"]) || entry.revision?.id || "REVISION",
+        revisionMode: entry.mode,
+        changeType,
+        oldPartId,
+        newPartId,
+        partId: newPartId || oldPartId,
+        partName,
+        oldQty: getRowValue(row, ["Old Qty", "Old Quantity"]),
+        newQty: getRowValue(row, ["New Qty", "New Quantity", "Qty", "Quantity"]),
+        effectiveDate: getRowValue(row, ["Effective Date", "Effective From", "From Date", "Start Date"]),
+        validDate: getRowValue(row, ["Valid Date", "Valid To", "Valid Until", "End Date"]),
+        remark: getRowValue(row, ["Remark", "Remarks", "Notes", "Reason"]),
+        approvalStatus: getRowValue(row, ["Approval Status", "Status"]),
+        row
+      }))
+    })
+  })
+
+  ;(Array.isArray(activeRows) ? activeRows : []).forEach((row) => {
+    const item = normalizeBomRow(row)
+    if (!item.key) return
+    if (!history.has(item.key)) {
+      addPartHistoryRecord(history, item.key, {
+        revisionId: "CURRENT",
+        changeType: "Current Active Part",
+        partId: item.partId,
+        partName: item.partName,
+        qty: item.qty,
+        effectiveDate: getRowValue(row, ["Effective Date", "Effective From", "From Date", "Start Date"]),
+        validDate: getRowValue(row, ["Valid Date", "Valid To", "Valid Until", "End Date"]),
+        remark: getRowValue(row, ["Notes", "Remark", "Remarks"]),
+        row
+      })
+    }
+  })
+
+  partHistoryByKey = history
+}
+
+function addPartHistoryRecord(map, key, record) {
+  if (!key) return
+  if (!map.has(key)) map.set(key, [])
+  map.get(key).push(record)
 }
 
 async function loadSheetRows(url, extension = "") {
@@ -1099,24 +1321,59 @@ function mapBomRows(rows) {
 
 function normalizeBomRow(row) {
   const partName = getRowValue(row, ["Part Name", "PartName", "partName", "Name", "Part", "Component", "Description"])
-  const partId = getRowValue(row, ["Part ID", "PartId", "partId", "ID", "Item No", "ItemNo"])
-  const qty = getRowValue(row, ["Qty", "Quantity", "QTY", "Count"]) || "1"
+  const oldPartId = getRowValue(row, ["Old Part ID", "Old PartId", "Previous Part ID", "Old ID"])
+  const newPartId = getRowValue(row, ["New Part ID", "New PartId", "Replacement Part ID"])
+  const partId = getRowValue(row, ["Part ID", "PartId", "partId", "ID", "Item No", "ItemNo"]) || newPartId || oldPartId
+  const qty = getRowValue(row, ["Qty", "Quantity", "QTY", "Count", "New Qty", "New Quantity"]) || "1"
   const system = getRowValue(row, ["System", "Category"]) || "Others"
   const subsystem = getRowValue(row, ["Subsystem", "Sub System", "Group"]) || "General"
   const assembly = getRowValue(row, ["Assembly"]) || "Main"
   const subassembly = getRowValue(row, ["Sub Assembly", "SubAssembly", "Subassembly"]) || "Group"
-  const key = normalizeComparable(partId || partName)
+  const meshName = getRowValue(row, ["Mesh Name", "MeshName", "3D Mesh Name", "Object Name", "GLB Mesh Name"])
+  const basePartId = getRowValue(row, ["Base Part ID", "BasePartID", "Engineering Part No", "Engineering Part Number"])
+  const servicePartNo = getRowValue(row, ["Service Part No", "Service Part Number", "ServicePartNo"])
+  const orderPartNo = getRowValue(row, ["Order Part No", "Order Part Number", "Orderable Part No", "Spare Part No"])
+  const colourCode = getRowValue(row, ["Colour Code", "Color Code", "Colour", "Color"])
+  const colourName = getRowValue(row, ["Colour Name", "Color Name", "Finish"])
+  const effectiveDate = getRowValue(row, ["Effective Date", "Effective From", "From Date", "Start Date"])
+  const validDate = getRowValue(row, ["Valid Date", "Valid To", "Valid Until", "End Date"])
+  const programId = getRowValue(row, ["Program ID", "ProgramID", "Program"])
+  const key = normalizePartKey(partId || partName)
   return {
     key,
     row,
+    programId,
     partName,
     partId,
+    oldPartId,
+    newPartId,
     qty,
     system,
     subsystem,
     assembly,
-    subassembly
+    subassembly,
+    meshName,
+    basePartId,
+    servicePartNo,
+    orderPartNo,
+    colourCode,
+    colourName,
+    effectiveDate,
+    validDate,
+    changeType: getChangeType(row),
+    remark: getRowValue(row, ["Notes", "Remark", "Remarks", "Reason"])
   }
+}
+
+
+
+function normalizePartKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
 }
 
 function normalizeComparable(value) {
@@ -1150,66 +1407,79 @@ function renderBomRevisionPanel() {
     systemsPanel.parentElement.insertBefore(panel, systemsPanel)
   }
 
-  const date = getSelectedBomDate()
-  const active = Boolean(activeBomRevision?.active)
-  const group = activeBomRevision?.group || {}
   const diff = bomDiffSummary
+  const hasRevision = appliedRevisionEntries.length > 0
+  const latest = appliedRevisionEntries[appliedRevisionEntries.length - 1]
 
   panel.innerHTML = `
     <div class="bom-revision-head">
       <div>
-        <span class="bom-kicker">BOM Date</span>
-        <strong>${active ? "Revision BOM Active" : "Base BOM Active"}</strong>
+        <span class="bom-kicker">Current BOM</span>
+        <strong>${hasRevision ? "Latest revision applied" : "Base BOM active"}</strong>
       </div>
-      <input id="bomRevisionDateInput" type="date" value="${date}" />
+      <span class="bom-current-pill">${escapeHtml(latestRevisionLabel)}</span>
     </div>
     <div class="bom-revision-body">
-      ${active ? `
-        <div class="bom-revision-line">Effective: <b>${escapeHtml(group.effectiveDate || "-")}</b> · Valid: <b>${escapeHtml(group.validDate || "-")}</b></div>
-        <div class="bom-revision-line">Revision: <b>${escapeHtml(activeBomRevision.revision?.id || "-")}</b> · Mode: <b>${escapeHtml(formatBomRevisionMode(activeBomRevisionMode))}</b></div>
+      ${hasRevision ? `
+        <div class="bom-revision-line">Revision: <b>${escapeHtml(latest?.revision?.id || latestRevisionLabel || "-")}</b> · Mode: <b>${escapeHtml(formatBomRevisionMode(activeBomRevisionMode))}</b></div>
+        <div class="bom-revision-line">History available for changed parts. Open the info icon near a part name to view current details and old revision details.</div>
       ` : `
-        <div class="bom-revision-line">No revision matched this date. Using original model data.</div>
+        <div class="bom-revision-line">No BOM revision applied yet. Showing base parts data.</div>
       `}
       ${diff ? `
         <div class="bom-diff-chips">
           <span>Added ${diff.added}</span>
           <span>Changed ${diff.changed}</span>
           <span>Removed ${diff.removed}</span>
-          <span>Total ${diff.total}</span>
+          <span>Current ${diff.total}</span>
         </div>
       ` : ""}
     </div>
   `
-
-  const input = panel.querySelector("#bomRevisionDateInput")
-  input?.addEventListener("change", async () => {
-    setSelectedBomDate(input.value)
-    panel.classList.add("loading")
-    await loadModelDataFile()
-    panel.classList.remove("loading")
-  })
 }
+
 
 function buildPartDescriptionsFromRows(rows) {
   const descriptions = {}
 
-  rows.forEach((row) => {
-    const partKey = getRowValue(row, ["Part Name", "PartName", "partName", "Name", "Part", "Component", "Description"])
-    if (!partKey) return
+  rows.forEach((row, index) => {
+    const item = normalizeBomRow(row)
+    if (!item.partName && !item.partId) return
 
-    const cleanName = String(partKey).trim()
-    descriptions[cleanName] = {
-      displayName: cleanName,
-      partId: getRowValue(row, ["Part ID", "PartId", "partId", "ID", "Item No", "ItemNo"]) || "-",
-      system: getRowValue(row, ["System", "Category"]) || "Others",
-      subsystem: getRowValue(row, ["Subsystem", "Sub System", "Group"]) || "General",
-      assembly: getRowValue(row, ["Assembly"]) || "Main",
-      subassembly: getRowValue(row, ["Sub Assembly", "SubAssembly", "Subassembly"]) || "Group"
+    const displayName = String(item.partName || item.partId || `Part ${index + 1}`).trim()
+    const key = item.key || normalizePartKey(displayName)
+    if (!key) return
+
+    descriptions[key] = {
+      _partKey: key,
+      displayName,
+      partName: displayName,
+      itemNo: getRowValue(row, ["Item No", "ITEM NO", "S.No", "SNO"]) || String(index + 1),
+      partId: item.partId || "-",
+      basePartId: item.basePartId || item.partId || "-",
+      servicePartNo: item.servicePartNo || item.partId || "-",
+      orderPartNo: item.orderPartNo || item.servicePartNo || item.partId || "-",
+      colourCode: item.colourCode || "STD",
+      colourName: item.colourName || "Standard",
+      meshName: item.meshName || "",
+      qty: item.qty || "1",
+      system: item.system || "Others",
+      subsystem: item.subsystem || "General",
+      assembly: item.assembly || "Main",
+      subassembly: item.subassembly || "Group",
+      applicability: getRowValue(row, ["Applicability", "Applicable To", "Vehicle Applicability"]) || "Current selected program",
+      effectiveDate: item.effectiveDate || "",
+      validDate: item.validDate || "",
+      isActive: getRowValue(row, ["Is Active", "Active"]) || "YES",
+      notes: item.remark || "",
+      changeType: item.changeType || "",
+      row
     }
   })
 
   return descriptions
 }
+
 
 function getRowValue(row, possibleKeys) {
   for (const key of possibleKeys) {
@@ -1310,12 +1580,12 @@ camera.position.set(0, newMaxDim * 0.4, cameraDistance * 1.3)
 /* ================= TABLE (MERGED PARTS) ================= */
 
 function createPartsTable() {
-
   const container = document.getElementById("partsList")
   if (!container) return
   container.innerHTML = ""
 
   const table = document.createElement("table")
+  table.className = "parts-oem-table"
 
   table.innerHTML = `
     <thead>
@@ -1329,55 +1599,292 @@ function createPartsTable() {
     <tbody></tbody>
   `
 
-  // 1. ஒரே பெயருடைய பாகங்களை ஒன்றிணைக்க ஒரு Object-ஐ உருவாக்குதல்
-  const groupedParts = {}
+  const tbody = table.querySelector("tbody")
+  const bomItems = Object.values(partDescriptions)
 
-  parts.forEach((p) => {
-    // formatName மூலம் பெயரைச் சுத்தப்படுத்துகிறோம்
-    const cleanName = formatName(p.name)
+  if (bomItems.length) {
+    bomItems.forEach((item, index) => {
+      const key = item._partKey || normalizePartKey(item.partId || item.displayName)
+      const row = document.createElement("tr")
+      row.dataset.partKey = key
+      row.dataset.name = item.meshName || item.displayName
+      row.innerHTML = `
+        <td>${escapeHtml(item.itemNo || index + 1)}</td>
+        <td>
+          <div class="part-name-with-actions">
+            <span>${escapeHtml(item.displayName || item.partName || "Part")}</span>
+            <button type="button" class="part-details-icon" data-part-action="details" data-part-key="${escapeAttr(key)}" title="View part details and revision history">ⓘ</button>
+          </div>
+        </td>
+        <td>${escapeHtml(item.partId || "-")}</td>
+        <td>${escapeHtml(item.qty || "1")}</td>
+      `
 
-    // இந்தப் பெயர் ஏற்கனவே இல்லையென்றால், புதிதாகச் சேர்க்கவும்
-    if (!groupedParts[cleanName]) {
-      groupedParts[cleanName] = {
-        qty: 0,
-        partsArray: [] // அந்தப் பெயரில் உள்ள எல்லா 3D Object-களையும் சேமிக்க
-      }
+      row.addEventListener("click", (event) => {
+        if (event.target.closest("[data-part-action]")) return
+        selectBomPart(item, event.ctrlKey || event.metaKey)
+      })
+
+      tbody.appendChild(row)
+    })
+  } else {
+    const groupedParts = {}
+    parts.forEach((p) => {
+      const cleanName = formatName(p.name)
+      if (!groupedParts[cleanName]) groupedParts[cleanName] = { qty: 0, partsArray: [] }
+      groupedParts[cleanName].qty += 1
+      groupedParts[cleanName].partsArray.push(p)
+    })
+
+    let serialNo = 1
+    for (const [name, data] of Object.entries(groupedParts)) {
+      const key = normalizePartKey(name)
+      const row = document.createElement("tr")
+      row.dataset.partKey = key
+      row.dataset.name = data.partsArray[0].name
+      row.innerHTML = `
+        <td>${serialNo}</td>
+        <td>
+          <div class="part-name-with-actions">
+            <span>${escapeHtml(name)}</span>
+            <button type="button" class="part-details-icon" data-part-action="details" data-part-key="${escapeAttr(key)}" title="View part details">ⓘ</button>
+          </div>
+        </td>
+        <td>-</td>
+        <td>${data.qty}</td>
+      `
+      row.addEventListener("click", (event) => {
+        if (event.target.closest("[data-part-action]")) return
+        selectPart(data.partsArray, event.ctrlKey || event.metaKey)
+      })
+      tbody.appendChild(row)
+      serialNo += 1
     }
-
-    // QTY-ஐ 1 கூட்டுகிறோம், மற்றும் Object-ஐ Array-ல் சேர்க்கிறோம்
-    groupedParts[cleanName].qty += 1
-    groupedParts[cleanName].partsArray.push(p)
-  })
-
-  // 2. ஒன்றிணைக்கப்பட்ட டேட்டாவை வைத்து Table-ல் Rows உருவாக்குதல்
-  let serialNo = 1
-  
-  for (const [name, data] of Object.entries(groupedParts)) {
-    const row = document.createElement("tr")
-    
-    // UI-ல் தேடுவதற்காக (Search/Highlight) முதல் part-ன் பெயரை dataset-ல் வைக்கிறோம்
-    row.dataset.name = data.partsArray[0].name 
-
-   // 🔥 Part ID fetch from Excel
-const partData = partDescriptions[name] || {}
-const partId = partData.partId || "-"
-
-row.innerHTML = `
-  <td>${serialNo}</td>
-  <td>${name}</td>
-  <td>${partId}</td>   <!-- 🔥 new -->
-  <td>${data.qty}</td>
-`
-
-    // Row-ஐ கிளிக் செய்யும் போது, அந்த குரூப்பில் உள்ள முதல் Part-ஐ செலக்ட் செய்ய
-   row.onclick = (e) => selectPart(data.partsArray, e.ctrlKey || e.metaKey)
-
-    table.querySelector("tbody").appendChild(row)
-    serialNo++
   }
 
   container.appendChild(table)
 }
+
+
+
+
+/* ================= PART DETAILS + REVISION HISTORY POPUP ================= */
+function getPartDescriptionByKey(partKey) {
+  const key = normalizePartKey(partKey)
+  if (!key) return null
+  return partDescriptions[key] || Object.values(partDescriptions).find((item) => {
+    return [item.partId, item.basePartId, item.servicePartNo, item.orderPartNo, item.displayName, item.meshName]
+      .map(normalizePartKey)
+      .includes(key)
+  }) || null
+}
+
+function getPartDescriptionByMeshOrName(name) {
+  const clean = formatName(name)
+  const key = normalizePartKey(clean)
+  return getPartDescriptionByKey(key) || Object.values(partDescriptions).find((item) => {
+    return formatName(item.meshName) === clean || formatName(item.displayName) === clean || formatName(item.partName) === clean
+  }) || null
+}
+
+function findPartMeshesForBomItem(item) {
+  if (!item) return []
+  const meshName = formatName(item.meshName || "")
+  const partName = formatName(item.displayName || item.partName || "")
+  const partId = normalizePartKey(item.partId || "")
+
+  let matched = []
+  if (meshName) {
+    matched = parts.filter((part) => formatName(part.name) === meshName || part.name === item.meshName)
+  }
+
+  if (!matched.length && partName) {
+    matched = parts.filter((part) => formatName(part.name) === partName)
+  }
+
+  if (!matched.length && partId) {
+    matched = parts.filter((part) => normalizePartKey(part.name).includes(partId) || partId.includes(normalizePartKey(part.name)))
+  }
+
+  return matched
+}
+
+function selectBomPart(item, isMultiSelect = false) {
+  const meshes = findPartMeshesForBomItem(item)
+  if (meshes.length) {
+    selectPart(meshes, isMultiSelect)
+  } else {
+    openPartDetailsPopup(item?._partKey || item?.partId || item?.displayName)
+  }
+}
+
+function getHistoryForPart(item) {
+  if (!item) return []
+  const keys = [item._partKey, item.partId, item.basePartId, item.servicePartNo, item.orderPartNo, item.displayName]
+    .map(normalizePartKey)
+    .filter(Boolean)
+  const found = []
+  keys.forEach((key) => {
+    const rows = partHistoryByKey.get(key) || []
+    rows.forEach((row) => {
+      if (!found.includes(row)) found.push(row)
+    })
+  })
+  return found
+}
+
+function ensurePartDetailsModal() {
+  let modal = document.getElementById("partDetailsModal")
+  if (modal) return modal
+
+  modal = document.createElement("div")
+  modal.id = "partDetailsModal"
+  modal.className = "part-details-modal"
+  modal.innerHTML = `
+    <div class="part-details-backdrop" data-close-part-modal="true"></div>
+    <section class="part-details-card" role="dialog" aria-modal="true" aria-labelledby="partDetailsModalTitle">
+      <button type="button" class="part-details-close" data-close-part-modal="true" aria-label="Close">×</button>
+      <div id="partDetailsModalContent"></div>
+    </section>
+  `
+  document.body.appendChild(modal)
+  modal.addEventListener("click", (event) => {
+    if (event.target.closest("[data-close-part-modal]")) closePartDetailsPopup()
+  })
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closePartDetailsPopup()
+  })
+  return modal
+}
+
+function openPartDetailsPopup(partKey) {
+  const item = getPartDescriptionByKey(partKey) || getPartDescriptionByMeshOrName(partKey)
+  if (!item) {
+    showPartsCartToast("Part details not found")
+    return
+  }
+
+  const modal = ensurePartDetailsModal()
+  const content = modal.querySelector("#partDetailsModalContent")
+  const history = getHistoryForPart(item)
+  const meshes = findPartMeshesForBomItem(item)
+  const meshStatus = meshes.length ? `${meshes.length} mesh object(s) matched` : "No mesh mapping yet"
+
+  content.innerHTML = `
+    <div class="part-details-title-row">
+      <div>
+        <span class="part-details-kicker">Part Details</span>
+        <h2 id="partDetailsModalTitle">${escapeHtml(item.displayName || item.partName || "Part")}</h2>
+        <p>${escapeHtml(item.system || "Others")} · ${escapeHtml(item.subsystem || "General")}</p>
+      </div>
+      <span class="part-status-pill">${escapeHtml(item.isActive || "YES")}</span>
+    </div>
+
+    <div class="part-details-grid">
+      ${detailCell("Part ID", item.partId)}
+      ${detailCell("Base Part ID", item.basePartId)}
+      ${detailCell("Service Part No", item.servicePartNo)}
+      ${detailCell("Order Part No", item.orderPartNo)}
+      ${detailCell("Qty", item.qty)}
+      ${detailCell("Colour", [item.colourCode, item.colourName].filter(Boolean).join(" - "))}
+      ${detailCell("Assembly", item.assembly)}
+      ${detailCell("Sub Assembly", item.subassembly)}
+      ${detailCell("Applicability", item.applicability)}
+      ${detailCell("Effective", item.effectiveDate)}
+      ${detailCell("Valid", item.validDate)}
+      ${detailCell("Mesh", item.meshName || meshStatus)}
+    </div>
+
+    ${item.notes ? `<div class="part-detail-note"><strong>Notes:</strong> ${escapeHtml(item.notes)}</div>` : ""}
+
+    <div class="part-detail-actions">
+      <button type="button" class="part-detail-highlight" data-popup-action="highlight">Highlight in 3D</button>
+      <button type="button" class="part-detail-order" data-popup-action="order">Add to Order</button>
+    </div>
+
+    <div class="part-history-section">
+      <h3>Revision History</h3>
+      ${history.length ? renderHistoryList(history) : `<p class="part-history-empty">No old revision history found for this part.</p>`}
+    </div>
+  `
+
+  content.querySelector('[data-popup-action="highlight"]')?.addEventListener("click", () => selectBomPart(item))
+  content.querySelector('[data-popup-action="order"]')?.addEventListener("click", () => {
+    addDetailedPartToCart(item, 1)
+    showPartsCartToast(`${item.displayName || item.partName} added to Cart`)
+  })
+
+  modal.classList.add("open")
+}
+
+function closePartDetailsPopup() {
+  document.getElementById("partDetailsModal")?.classList.remove("open")
+}
+
+function detailCell(label, value) {
+  return `
+    <div class="part-detail-cell">
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value || "-")}</strong>
+    </div>
+  `
+}
+
+function renderHistoryList(history) {
+  return `
+    <div class="part-history-list">
+      ${history.map((record) => `
+        <article class="part-history-item ${escapeAttr(normalizeChangeType(record.changeType || ""))}">
+          <div class="history-head">
+            <strong>${escapeHtml(record.revisionId || "-")}</strong>
+            <span>${escapeHtml(record.changeType || "-")}</span>
+          </div>
+          <div class="history-meta">
+            ${record.oldPartId ? `<span>Old: ${escapeHtml(record.oldPartId)}</span>` : ""}
+            ${record.newPartId ? `<span>New: ${escapeHtml(record.newPartId)}</span>` : ""}
+            ${record.oldQty ? `<span>Old Qty: ${escapeHtml(record.oldQty)}</span>` : ""}
+            ${record.newQty ? `<span>New Qty: ${escapeHtml(record.newQty)}</span>` : ""}
+            ${record.effectiveDate ? `<span>Effective: ${escapeHtml(record.effectiveDate)}</span>` : ""}
+            ${record.validDate ? `<span>Valid: ${escapeHtml(record.validDate)}</span>` : ""}
+            ${record.approvalStatus ? `<span>Status: ${escapeHtml(record.approvalStatus)}</span>` : ""}
+          </div>
+          ${record.remark ? `<p>${escapeHtml(record.remark)}</p>` : ""}
+        </article>
+      `).join("")}
+    </div>
+  `
+}
+
+function addDetailedPartToCart(item, qty = 1) {
+  addPartToCart({
+    vehicleId: selectedVehicle,
+    vehicleName: getVehicleDisplayName(),
+    partName: item.displayName || item.partName,
+    partId: item.partId,
+    basePartId: item.basePartId,
+    servicePartNo: item.servicePartNo,
+    orderPartNo: item.orderPartNo,
+    colourCode: item.colourCode,
+    colourName: item.colourName,
+    system: item.system,
+    subsystem: item.subsystem,
+    assembly: item.assembly,
+    subassembly: item.subassembly,
+    effectiveDate: item.effectiveDate,
+    validDate: item.validDate,
+    meshName: item.meshName,
+    availableQty: Number.parseInt(item.qty, 10) || 1,
+    qty
+  })
+}
+
+document.addEventListener("click", (event) => {
+  const detailButton = event.target.closest('[data-part-action="details"]')
+  if (!detailButton) return
+  event.preventDefault()
+  event.stopPropagation()
+  openPartDetailsPopup(detailButton.dataset.partKey)
+})
 
 /* ================= SELECT & CLEAR (FIXED LABEL DISAPPEARING) ================= */
 
@@ -1440,7 +1947,7 @@ function selectPart(partOrArray, isMultiSelect = false) {
     }
   } else {
     // Single Item UI
-    const data = partDescriptions[cleanName] || partDescriptions[selectedPart.name];
+    const data = getPartDescriptionByMeshOrName(cleanName) || getPartDescriptionByMeshOrName(selectedPart.name);
     if (data) {
       document.getElementById("partDescription").innerText =
         "Part Name: " + data.displayName +
@@ -1457,6 +1964,8 @@ function selectPart(partOrArray, isMultiSelect = false) {
             Qty: ${newGroup.length}
           </div>
           <div style="font-size:12px; margin-bottom:6px;">Part ID: ${data.partId || "-"}</div>
+          <div style="font-size:12px; margin-bottom:6px;">Order No: ${data.orderPartNo || data.partId || "-"}</div>
+          <button type="button" class="floating-part-details-btn" data-part-action="details" data-part-key="${escapeAttr(data._partKey || data.partId || data.displayName)}">Details / History</button>
         `;
         clearTimeout(labelTimeout);
         floatingLabel.style.display = "block";
@@ -2222,12 +2731,13 @@ function buildSystemTree(){
       tree[p.system][p.subsystem][p.assembly][p.subassembly] = []
     }
 
-    tree[p.system][p.subsystem][p.assembly][p.subassembly].push(p.displayName)
+    tree[p.system][p.subsystem][p.assembly][p.subassembly].push(p._partKey || normalizePartKey(p.partId || p.displayName))
 
   })
 
   renderOEMTree(tree)
 }
+
 function createNode(label, level = 0) {
   const div = document.createElement("div")
   div.style.paddingLeft = (level * 12) + "px"
@@ -2276,13 +2786,8 @@ function handleSearch(query){
 const firstMatch = document.querySelector(".tree-leaf.search-hit")
 
 if(firstMatch){
-  // 🔥 innerText-க்கு பதிலாக dataset.partName-ஐ எடுக்கிறோம்
-  const name = firstMatch.dataset.partName 
-
-  const matchedParts = parts.filter(p =>
-    formatName(p.name) === name
-  )
-
+  const item = getPartDescriptionByKey(firstMatch.dataset.partKey || firstMatch.dataset.partName)
+  const matchedParts = findPartMeshesForBomItem(item)
   if(matchedParts.length > 0){
     selectPart(matchedParts)
   }
@@ -2314,8 +2819,9 @@ function getVehicleDisplayName() {
 }
 
 function getPartDescriptionByName(partName) {
-  return Object.values(partDescriptions).find((p) => p.displayName === partName) || partDescriptions[partName] || null
+  return getPartDescriptionByKey(partName) || getPartDescriptionByMeshOrName(partName)
 }
+
 
 function showPartsCartToast(message) {
   let toast = document.getElementById("viewerCartToast")
@@ -2419,14 +2925,19 @@ function createInlineCartControls({ partName, partId, availableQty }) {
 
   panel.querySelector(".part-inline-add")?.addEventListener("click", () => {
     const qty = Math.max(1, Number.parseInt(qtyInput.value, 10) || 1)
-    addPartToCart({
-      vehicleId: selectedVehicle,
-      vehicleName: getVehicleDisplayName(),
-      partName,
-      partId,
-      availableQty,
-      qty
-    })
+    const item = getPartDescriptionByName(partId) || getPartDescriptionByName(partName)
+    if (item) {
+      addDetailedPartToCart(item, qty)
+    } else {
+      addPartToCart({
+        vehicleId: selectedVehicle,
+        vehicleName: getVehicleDisplayName(),
+        partName,
+        partId,
+        availableQty,
+        qty
+      })
+    }
     showPartsCartToast(`${partName} × ${qty} added to Cart`)
     closeInlineCartControl(controls)
   })
@@ -2453,23 +2964,13 @@ function renderOEMTree(tree){
         e.stopPropagation()
         closeAllInlineCartControls()
         const isCurrentlyOpen = childrenContainer.style.display === "block"
-        
         if (isCurrentlyOpen) {
-          // திறந்திருந்தால் மூடுவதற்கான கோடு
           childrenContainer.style.display = "none"
           node.innerHTML = `▶ ${key}`
         } else {
-          // மூடியிருந்தால் திறப்பதற்கான கோடு
           childrenContainer.style.display = "block"
           node.innerHTML = `▼ ${key}`
-
-          // 🔥 நீங்கள் கேட்ட Auto-Scroll மேஜிக்!
-          setTimeout(() => {
-            node.scrollIntoView({
-              behavior: "smooth", // மெதுவாக ஸ்க்ரோல் ஆக
-              block: "start"      // கிளிக் செய்ததை மேல்பகுதிக்கு கொண்டுவர
-            });
-          }, 100); // 100ms தாமதம், அப்போதுதான் UI விரிவடைந்த பின் ஸ்க்ரோல் வேலை செய்யும்
+          setTimeout(() => node.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
         }
       }
 
@@ -2477,46 +2978,43 @@ function renderOEMTree(tree){
       parent.appendChild(childrenContainer)
 
       if (Array.isArray(obj[key])) {
-
-        // FINAL PART LEVEL
-        obj[key].forEach(partName => {
-
+        obj[key].forEach(partKey => {
+          const pData = getPartDescriptionByKey(partKey)
+          if (!pData) return
           const partNode = document.createElement("div")
           partNode.className = "tree-leaf"
           partNode.style.paddingLeft = ((level + 1) * 12) + "px"
-          
-          // 🔥 Part ID மற்றும் Qty-ஐ கணக்கிடுதல்
-          const pData = getPartDescriptionByName(partName)
-          const partId = pData && pData.partId ? pData.partId : "-"
-          const matchedParts = parts.filter(p => formatName(p.name) === partName)
-          const qty = matchedParts.length || 1
-          
-          // லாஜிக்கிற்காக ஒரிஜினல் பெயரை பின்புலத்தில் வைத்தல்
-          partNode.dataset.partName = partName
+          partNode.dataset.partName = pData.displayName
+          partNode.dataset.partKey = pData._partKey || normalizePartKey(pData.partId || pData.displayName)
+
+          const matchedParts = findPartMeshesForBomItem(pData)
+          const qty = pData.qty || matchedParts.length || 1
 
           const labelWrap = document.createElement("div")
           labelWrap.className = "tree-leaf-main"
           labelWrap.innerHTML = `
-            <span class="tree-leaf-part-id">${partId}</span>
-            <span class="tree-leaf-part-name">${partName}</span>
-            <span class="tree-leaf-qty">Qty: ${qty}</span>
+            <span class="tree-leaf-part-id">${escapeHtml(pData.partId || "-")}</span>
+            <span class="tree-leaf-part-name">${escapeHtml(pData.displayName || "Part")}</span>
+            <span class="tree-leaf-qty">Qty: ${escapeHtml(qty)}</span>
+            <button type="button" class="tree-part-details-btn" data-part-action="details" data-part-key="${escapeAttr(partNode.dataset.partKey)}" title="Details / History">ⓘ</button>
           `
 
-          const cartControls = createInlineCartControls({ partName, partId, availableQty: qty })
+          const cartControls = createInlineCartControls({ partName: pData.displayName, partId: pData.partId, availableQty: qty })
           partNode.append(labelWrap, cartControls)
 
           partNode.onclick = (e) => {
             e.stopPropagation()
-            if (e.target.closest(".part-inline-cart")) return
+            if (e.target.closest(".part-inline-cart") || e.target.closest("[data-part-action]")) return
             closeAllInlineCartControls()
             if (matchedParts.length > 0) {
               selectPart(matchedParts, e.ctrlKey || e.metaKey)
+            } else {
+              openPartDetailsPopup(partNode.dataset.partKey)
             }
           }
 
           childrenContainer.appendChild(partNode)
         })
-
       } else {
         buildLevel(obj[key], childrenContainer, level + 1)
       }
@@ -2525,12 +3023,12 @@ function renderOEMTree(tree){
 
   buildLevel(tree, systemsPanel, 0)
 }
+
 function syncTreeHighlight() {
   if (!selectedPart) return;
 
   document.querySelectorAll(".tree-leaf").forEach(el => el.classList.remove("active-tree"));
 
-  // 🔥 Multi-select செய்யும் போது பழைய ஃபோல்டர்களை மூடக்கூடாது (அதனால்தான் if condition)
   if (multiSelectedNames.size <= 1) {
       document.querySelectorAll(".tree-node").forEach(node => {
         node.innerHTML = node.innerHTML.replace("▼", "▶")
@@ -2539,16 +3037,25 @@ function syncTreeHighlight() {
   }
 
   document.querySelectorAll(".tree-leaf").forEach(leaf => {
-    if (multiSelectedNames.has(leaf.dataset.partName)) {
+    const item = getPartDescriptionByKey(leaf.dataset.partKey)
+    const namesToMatch = new Set([
+      leaf.dataset.partName,
+      item?.displayName,
+      item?.meshName,
+      item?.partId
+    ].filter(Boolean).map(formatName))
+
+    const selectedNames = Array.from(multiSelectedNames)
+    const matched = selectedNames.some((name) => namesToMatch.has(formatName(name))) || namesToMatch.has(formatName(selectedPart.name))
+
+    if (matched) {
       leaf.classList.add("active-tree");
       expandParents(leaf);
-      
-      if (leaf.dataset.partName === formatName(selectedPart.name)) {
-        leaf.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+      leaf.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   });
 }
+
 function highlightParts(partNames) {
   
   // 1. IF CLOSING A FOLDER: Reset everything back to normal

@@ -1672,3 +1672,258 @@ padding: 10px;
 .bom-revision-line b {
   word-break: break-word;
 }
+
+
+/* =========================================================
+   OEM part details / revision history popup
+   ========================================================= */
+.part-name-with-actions,
+.tree-leaf-main{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+.part-name-with-actions span,
+.tree-leaf-part-name{
+  flex:1;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.part-details-icon,
+.tree-part-details-btn,
+.floating-part-details-btn{
+  width:auto !important;
+  min-width:28px;
+  height:28px;
+  margin:0;
+  padding:0 8px;
+  border-radius:999px;
+  background:rgba(100,108,255,.18);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.12);
+  cursor:pointer;
+  font-weight:700;
+  line-height:1;
+}
+.part-details-icon:hover,
+.tree-part-details-btn:hover,
+.floating-part-details-btn:hover{
+  background:#646cff;
+  transform:none;
+}
+.floating-part-details-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  pointer-events:auto;
+}
+.part-details-modal{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:none;
+}
+.part-details-modal.open{
+  display:block;
+}
+.part-details-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(2,6,23,.62);
+  backdrop-filter:blur(8px);
+}
+.part-details-card{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:min(920px, calc(100vw - 32px));
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  border-radius:22px;
+  background:#111827;
+  color:#fff;
+  box-shadow:0 28px 90px rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.1);
+  padding:24px;
+}
+.part-details-close{
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+}
+.part-details-title-row{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  padding-right:38px;
+  margin-bottom:18px;
+}
+.part-details-kicker{
+  color:#93c5fd;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-weight:800;
+}
+.part-details-title-row h2{
+  margin:4px 0 6px;
+  font-size:24px;
+}
+.part-details-title-row p{
+  color:#cbd5e1;
+  margin:0;
+}
+.part-status-pill,
+.bom-current-pill{
+  align-self:flex-start;
+  border-radius:999px;
+  padding:7px 12px;
+  background:rgba(34,197,94,.16);
+  color:#bbf7d0;
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.part-details-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+.part-detail-cell{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:12px;
+  min-width:0;
+}
+.part-detail-cell span{
+  display:block;
+  color:#94a3b8;
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-bottom:6px;
+}
+.part-detail-cell strong{
+  display:block;
+  color:#fff;
+  font-size:14px;
+  overflow-wrap:anywhere;
+}
+.part-detail-note{
+  margin-top:14px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(251,191,36,.12);
+  color:#fde68a;
+}
+.part-detail-actions{
+  display:flex;
+  gap:12px;
+  margin:18px 0;
+}
+.part-detail-actions button{
+  width:auto;
+  padding:0 18px;
+  background:#2563eb;
+  color:#fff;
+}
+.part-detail-actions .part-detail-order{
+  background:#16a34a;
+}
+.part-history-section{
+  margin-top:10px;
+}
+.part-history-section h3{
+  font-size:18px;
+  margin-bottom:12px;
+}
+.part-history-list{
+  display:grid;
+  gap:10px;
+}
+.part-history-item{
+  border-radius:16px;
+  padding:14px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.08);
+}
+.part-history-item.add,
+.part-history-item.added{
+  border-color:rgba(34,197,94,.35);
+}
+.part-history-item.change,
+.part-history-item.changed{
+  border-color:rgba(59,130,246,.35);
+}
+.part-history-item.remove,
+.part-history-item.removed{
+  border-color:rgba(239,68,68,.35);
+}
+.history-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+}
+.history-head span{
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  font-size:12px;
+  font-weight:800;
+}
+.history-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  color:#cbd5e1;
+  font-size:12px;
+}
+.history-meta span{
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+}
+.part-history-item p{
+  margin:10px 0 0;
+  color:#e2e8f0;
+  font-size:13px;
+}
+.part-history-empty{
+  color:#cbd5e1;
+  background:rgba(255,255,255,.05);
+  border-radius:12px;
+  padding:12px;
+}
+.parts-oem-table .part-details-icon{
+  opacity:.9;
+}
+.bom-current-pill{
+  background:rgba(59,130,246,.16);
+  color:#bfdbfe;
+}
+@media (max-width: 768px){
+  .part-details-card{
+    width:calc(100vw - 18px);
+    padding:18px;
+  }
+  .part-details-grid{
+    grid-template-columns:1fr;
+  }
+  .part-detail-actions{
+    flex-direction:column;
+  }
+  .part-detail-actions button{
+    width:100%;
+  }
+}

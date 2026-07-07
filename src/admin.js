@@ -126,6 +126,7 @@ const GROUP_EXCLUDED_HEADER_KEYS = new Set([
 ].map(normalizeHeader));
 
 const PROGRAM_FIELD_ALIASES = {
+  programId: ["Program ID", "ProgramID", "Program"],
   vinNumber: VIN_HEADER_ALIASES,
   modelName: ["MODEL", "Vehicle Model", "Car Model", "Model Name"],
   seriesLabel: ["SERIES", "Model Series", "Program Series"],
@@ -593,12 +594,13 @@ function countChangeActions(rows) {
 }
 
 function rowToProgram(row) {
+  const programId = getProgramValue(row, "programId");
   const modelName = getProgramValue(row, "modelName");
   const seriesLabel = getProgramValue(row, "seriesLabel");
   const variantName = getProgramValue(row, "variantName") || "BASE";
   const variantType = getProgramValue(row, "variantType") || variantName;
   const bodyTypeLabel = getProgramValue(row, "bodyType");
-  const year = getProgramValue(row, "modelYear");
+  const year = getProgramValue(row, "modelYear") || sheetValue(row, ["Model Year", "MODEL YEAR", "Year"]);
   const regionLabel = getProgramValue(row, "region");
   const fuelType = getProgramValue(row, "fuelType");
   const transmission = getProgramValue(row, "transmission");
@@ -608,9 +610,10 @@ function rowToProgram(row) {
   const effectiveDate = getProgramValue(row, "effectiveDate");
   const validDate = getProgramValue(row, "validDate");
   const vinNumber = getProgramValue(row, "vinNumber");
-  const displayName = buildOemDisplayName({ modelName, seriesLabel, variantName, variantType, fuelType, transmission });
+  const displayName = buildOemDisplayName({ modelName, seriesLabel, variantName, variantType, fuelType, transmission }) || programId;
 
   return {
+    programId,
     vehicleName: displayName,
     model: modelName || displayName,
     modelName,
@@ -718,25 +721,33 @@ function groupRevisionRows(rows, mode) {
 
   rows.forEach((row, index) => {
     const program = rowToProgram(row);
-    if (!program.displayName || !program.series || !program.variant || !program.year || !program.region || !program.type) return;
+    const programIdFromRow = program.programId || sheetValue(row, ["Program ID", "ProgramID", "Program"]);
+    const key = programIdFromRow
+      ? normalizeSelectValue(programIdFromRow)
+      : [
+          program.displayName,
+          program.series,
+          program.variant,
+          program.year,
+          program.region,
+          program.type,
+          program.effectiveDate,
+          program.validDate
+        ].map((part) => String(part || "").toLowerCase()).join("|");
 
-    const key = [
-      program.displayName,
-      program.series,
-      program.variant,
-      program.year,
-      program.region,
-      program.type,
-      program.effectiveDate,
-      program.validDate
-    ].map((part) => String(part || "").toLowerCase()).join("|");
+    if (!key || key === "|||||||") return;
 
     if (!map.has(key)) {
-      const groupId = createProgramId(program, buildNormalizedGroupFields(row));
+      const groupId = createProgramId({ ...program, programId: programIdFromRow }, buildNormalizedGroupFields(row));
       map.set(key, {
         ...program,
+        programId: programIdFromRow,
         groupId,
+        displayName: program.displayName || programIdFromRow,
+        vehicleName: program.vehicleName || programIdFromRow,
         rows: [],
+        rawRows: [],
+        normalizedRows: [],
         rowIndexes: [],
         vinNumbers: [],
         saved: false,
@@ -746,14 +757,17 @@ function groupRevisionRows(rows, mode) {
 
     const group = map.get(key);
     group.rows.push(row);
+    group.rawRows.push(getRawRow(row));
+    group.normalizedRows.push(getNormalizedRow(row));
     group.rowIndexes.push(index + 2);
     if (program.vinNumber && !group.vinNumbers.includes(program.vinNumber)) {
       group.vinNumbers.push(program.vinNumber);
     }
   });
 
-  return Array.from(map.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  return Array.from(map.values()).sort((a, b) => String(a.displayName || "").localeCompare(String(b.displayName || "")));
 }
+
 
 function buildConfigurationKey(row) {
   const normalized = getNormalizedRow(row);
@@ -805,6 +819,7 @@ function validateDuplicateVinRows(rows) {
 }
 
 function createProgramId(program, normalizedGroupFields = {}) {
+  if (program.programId) return createVehicleIdFromName(program.programId);
   return createVehicleIdFromName([
     program.displayName,
     program.modelName,
@@ -945,17 +960,22 @@ function renderExistingProgramGroups() {
 }
 
 function findMatchingVehicle(group) {
+  const groupId = createVehicleIdFromName(group.programId || group.groupId || "");
   const groupName = normalizeSelectValue(group.displayName);
   const groupSeries = String(group.series || "").toLowerCase();
   const groupVariant = String(group.variant || "").toLowerCase();
 
   return vehicles.find((vehicle) => {
+    if (groupId && String(vehicle.id || "").toLowerCase() === groupId) return true;
+    const vehicleProgramId = createVehicleIdFromName(vehicle.programId || vehicle.groupId || vehicle.groupFields?.["Program ID"] || "");
+    if (groupId && vehicleProgramId === groupId) return true;
     const vehicleName = normalizeSelectValue(vehicle.name);
     const vehicleSeries = String(vehicle.series || "").toLowerCase();
     const vehicleVariant = String(vehicle.variant || "").toLowerCase();
-    return vehicleName === groupName && vehicleSeries === groupSeries && (!groupVariant || vehicleVariant === groupVariant);
+    return vehicleName === groupName && (!groupSeries || vehicleSeries === groupSeries) && (!groupVariant || vehicleVariant === groupVariant);
   }) || null;
 }
+
 
 function openProgramAssetDialog(group) {
   selectedProgramGroup = group;
@@ -1025,6 +1045,7 @@ async function saveSelectedProgramAssets() {
 
     const formData = new FormData();
     formData.append("id", selectedProgramGroup.groupId);
+    formData.append("programId", selectedProgramGroup.programId || selectedProgramGroup.groupId);
     formData.append("editingId", existingVehicle ? selectedProgramGroup.groupId : "");
     formData.append("name", selectedProgramGroup.displayName);
     formData.append("modelName", selectedProgramGroup.modelName || selectedProgramGroup.model || "");
@@ -1147,6 +1168,7 @@ async function saveExistingRevision() {
   const formData = new FormData();
   formData.append("groups", JSON.stringify(existingProgramGroups.map((group) => ({
     groupId: group.groupId,
+    programId: group.programId || group.groupId,
     vehicleId: group.matchedVehicle?.id || "",
     vehicleName: group.displayName,
     model: group.model,

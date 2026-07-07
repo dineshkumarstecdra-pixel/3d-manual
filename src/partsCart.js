@@ -87,6 +87,18 @@ export function addPartToCart(part) {
     vehicleName: formatVehicleName(part.vehicleName, part.vehicleId),
     partName: String(part.partName || "Unnamed Part").trim(),
     partId: String(part.partId || "-").trim(),
+    basePartId: String(part.basePartId || part.partId || "-").trim(),
+    servicePartNo: String(part.servicePartNo || part.partId || "-").trim(),
+    orderPartNo: String(part.orderPartNo || part.servicePartNo || part.partId || "-").trim(),
+    colourCode: String(part.colourCode || "").trim(),
+    colourName: String(part.colourName || "").trim(),
+    system: String(part.system || "").trim(),
+    subsystem: String(part.subsystem || "").trim(),
+    assembly: String(part.assembly || "").trim(),
+    subassembly: String(part.subassembly || "").trim(),
+    effectiveDate: String(part.effectiveDate || "").trim(),
+    validDate: String(part.validDate || "").trim(),
+    meshName: String(part.meshName || "").trim(),
     availableQty: toNumber(part.availableQty, 0),
     qty,
     addedAt: new Date().toISOString()
@@ -98,6 +110,13 @@ export function addPartToCart(part) {
   if (existing) {
     existing.qty = toNumber(existing.qty, 0) + qty;
     existing.availableQty = normalized.availableQty || existing.availableQty || 0;
+    existing.orderPartNo = normalized.orderPartNo || existing.orderPartNo;
+    existing.colourCode = normalized.colourCode || existing.colourCode;
+    existing.colourName = normalized.colourName || existing.colourName;
+    existing.system = normalized.system || existing.system;
+    existing.subsystem = normalized.subsystem || existing.subsystem;
+    existing.effectiveDate = normalized.effectiveDate || existing.effectiveDate;
+    existing.validDate = normalized.validDate || existing.validDate;
     existing.addedAt = normalized.addedAt;
   } else {
     cart.push(normalized);
@@ -347,6 +366,9 @@ function renderCartDrawer() {
           <div class="parts-cart-item-title">${escapeHtml(item.partName)}</div>
           <div class="parts-cart-item-meta">
             Vehicle ID: ${escapeHtml(item.vehicleId || "-")} · Part ID: ${escapeHtml(item.partId || "-")}
+            ${item.orderPartNo ? ` · Order No: ${escapeHtml(item.orderPartNo)}` : ""}
+            ${item.colourName || item.colourCode ? ` · Colour: ${escapeHtml([item.colourCode, item.colourName].filter(Boolean).join(" - "))}` : ""}
+            ${item.system ? ` · System: ${escapeHtml(item.system)}` : ""}
             ${item.availableQty ? ` · Available: ${escapeHtml(item.availableQty)}` : ""}
           </div>
         </div>
@@ -413,7 +435,7 @@ async function renderMyOrdersDrawer() {
             ${items.map((item) => `
               <div class="parts-order-item-line">
                 <span>${escapeHtml(item.partName)}</span>
-                <small>${escapeHtml(formatVehicleName(item.vehicleName, item.vehicleId))} · Part ID: ${escapeHtml(item.partId || "-")} · Qty: ${escapeHtml(item.qty)}</small>
+                <small>${escapeHtml(formatVehicleName(item.vehicleName, item.vehicleId))} · Part ID: ${escapeHtml(item.partId || "-")} · Order No: ${escapeHtml(item.orderPartNo || item.partId || "-")} · Qty: ${escapeHtml(item.qty)}</small>
               </div>
             `).join("")}
           </div>

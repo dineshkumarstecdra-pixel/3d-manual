@@ -223,6 +223,7 @@ app.post(
       const vehicle = {
         ...(previous || {}),
         id: vehicleId,
+        programId: String(req.body.programId || previous?.programId || req.body.id || vehicleId).trim(),
         name: String(req.body.name || "").trim(),
         vinNumber: String(req.body.vinNumber || previous?.vinNumber || "").trim(),
         vinNumbers: safeJsonArray(req.body.vinNumbers, previous?.vinNumbers || []),
