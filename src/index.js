@@ -54,7 +54,7 @@ let revisionBomRows = []
 let appliedRevisionEntries = []
 let partHistoryByKey = new Map()
 let currentBomByKey = new Map()
-let latestRevisionLabel = "Base BOM"
+let latestRevisionLabel = "Base BOM
 
 if (!selectedVehicle) {
   alert("Vehicle missing")
@@ -173,7 +173,13 @@ const partMetadata = {
 
 /* ================= CONSTANT ================= */
 
-const SIDEBAR_WIDTH = 500
+function getSidebarWidth() {
+  const sidebar = document.getElementById("ui")
+  const width = sidebar?.getBoundingClientRect?.().width || 430
+  return Math.max(320, Math.round(width))
+}
+
+let SIDEBAR_WIDTH = getSidebarWidth()
 
 /* ================= SCENE ================= */
 
@@ -192,10 +198,12 @@ const camera = new THREE.PerspectiveCamera(
 /* ================= RENDERER ================= */
 
 const renderer = new THREE.WebGLRenderer({ antialias: true })
-renderer.setSize(window.innerWidth - SIDEBAR_WIDTH, window.innerHeight)
+renderer.setSize(Math.max(1, window.innerWidth - SIDEBAR_WIDTH), window.innerHeight)
 renderer.domElement.style.position = "absolute"
 renderer.domElement.style.left = SIDEBAR_WIDTH + "px"
 renderer.domElement.style.top = "0"
+renderer.domElement.style.width = `calc(100vw - ${SIDEBAR_WIDTH}px)`
+renderer.domElement.style.height = "100vh"
 document.body.appendChild(renderer.domElement)
 
 /* ================= CONTROLS ================= */
@@ -1652,6 +1660,12 @@ function createPartsTable() {
   table.className = "parts-oem-table"
 
   table.innerHTML = `
+    <colgroup>
+      <col class="col-item-no" />
+      <col class="col-part-name" />
+      <col class="col-part-id" />
+      <col class="col-qty" />
+    </colgroup>
     <thead>
       <tr>
         <th>ITEM NO</th>
@@ -1955,6 +1969,61 @@ document.addEventListener("click", (event) => {
   openPartDetailsPopup(detailButton.dataset.partKey)
 })
 
+
+function clearPartVisualHighlight(part) {
+  if (!part?.material) return
+  const materials = Array.isArray(part.material) ? part.material : [part.material]
+  materials.forEach((material) => {
+    if (!material) return
+    if (material.emissive) {
+      material.emissive.set(0x000000)
+      material.emissiveIntensity = 0
+    }
+    if (material.color && part.userData?.originalColor) {
+      material.color.copy(part.userData.originalColor)
+    }
+    material.needsUpdate = true
+  })
+}
+
+function applyPartVisualHighlight(part) {
+  if (!part?.material) return
+  const materials = Array.isArray(part.material) ? part.material : [part.material]
+  materials.forEach((material) => {
+    if (!material) return
+    if (material.emissive) {
+      material.emissive.set(0x2563eb)
+      material.emissiveIntensity = 1.4
+    }
+    if (material.color) {
+      material.color.set(0xffc857)
+    }
+    material.needsUpdate = true
+  })
+}
+
+function getSelectedPartNameSet() {
+  const names = new Set()
+  ;(selectedPartsGroup || []).forEach((part) => {
+    if (part?.name) names.add(formatName(part.name))
+  })
+  multiSelectedNames.forEach((name) => names.add(formatName(name)))
+  return names
+}
+
+function focusSelectedPartsInView(partsToFocus) {
+  const focusParts = Array.isArray(partsToFocus) ? partsToFocus.filter(Boolean) : []
+  if (!focusParts.length) return
+
+  const box = new THREE.Box3()
+  focusParts.forEach((part) => box.expandByObject(part))
+  if (box.isEmpty()) return
+
+  const center = box.getCenter(new THREE.Vector3())
+  controls.target.copy(center)
+  controls.update()
+}
+
 /* ================= SELECT & CLEAR (FIXED LABEL DISAPPEARING) ================= */
 
 let labelTimeout = null; // 🔥 புதிதாக சேர்க்கப்பட்ட டைமர் வேரியபிள்
@@ -1971,9 +2040,7 @@ function selectPart(partOrArray, isMultiSelect = false) {
 
   // 🔥 Toggle Logic: ஏற்கனவே செலக்ட் ஆகியிருந்தால், அதை நீக்க வேண்டும் (Deselect)
   if (isMultiSelect && multiSelectedNames.has(cleanName)) {
-    newGroup.forEach(p => {
-      if (p.material && p.material.emissive) p.material.emissive.set(0x000000)
-    })
+    newGroup.forEach(p => clearPartVisualHighlight(p))
     selectedPartsGroup = selectedPartsGroup.filter(p => !newGroup.includes(p))
     multiSelectedNames.delete(cleanName)
 
@@ -1985,10 +2052,7 @@ function selectPart(partOrArray, isMultiSelect = false) {
   } else {
     // 🔥 புதிதாக ஒன்றை சேர்க்க (Add to Selection)
     newGroup.forEach(p => {
-      if (p.material && p.material.emissive) {
-        p.material.emissive.set(0x646cff)
-        p.material.emissiveIntensity = 0.6
-      }
+      applyPartVisualHighlight(p)
       if (!selectedPartsGroup.includes(p)) {
         selectedPartsGroup.push(p)
       }
@@ -1996,6 +2060,8 @@ function selectPart(partOrArray, isMultiSelect = false) {
     multiSelectedNames.add(cleanName)
     selectedPart = mainPart
   }
+
+  focusSelectedPartsInView(newGroup)
 
   // 🔥 UI Update (ஒன்றா அல்லது பலவா என்று பார்த்து UI-ஐ மாற்றுவது)
   if (multiSelectedNames.size > 1) {
@@ -2051,11 +2117,9 @@ function selectPart(partOrArray, isMultiSelect = false) {
 function clearSelection() {
   // குழுவில் உள்ள எல்லா பார்ட்களின் Glow-ஐயும் அணைக்கிறோம்
   if (selectedPartsGroup && selectedPartsGroup.length > 0) {
-    selectedPartsGroup.forEach(p => {
-      if (p.material && p.material.emissive) p.material.emissive.set(0x000000)
-    })
-  } else if (selectedPart && selectedPart.material && selectedPart.material.emissive) {
-    selectedPart.material.emissive.set(0x000000)
+    selectedPartsGroup.forEach(p => clearPartVisualHighlight(p))
+  } else if (selectedPart) {
+    clearPartVisualHighlight(selectedPart)
   }
 
   selectedPart = null
@@ -2106,19 +2170,32 @@ document.getElementById("partDescription").innerText = "Select a part to see det
 /* ================= SYNC TABLE (FIXED FOR MERGED PARTS) ================= */
 
 function syncTableHighlight() {
-  document.querySelectorAll("#partsList tr").forEach(row => {
-    if (!row.dataset.name) return;
-    const rowCleanName = formatName(row.dataset.name); 
+  const selectedNames = getSelectedPartNameSet()
+  const selectedKeys = new Set()
 
-    if (multiSelectedNames.has(rowCleanName)) {
-      row.classList.add("active");
-      if (selectedPart && rowCleanName === formatName(selectedPart.name)) {
-        row.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    } else {
-      row.classList.remove("active");
+  ;(selectedPartsGroup || []).forEach((part) => {
+    const desc = getPartDescriptionByMeshOrName(part?.name)
+    ;[desc?._partKey, desc?.partId, desc?.displayName, desc?.meshName, part?.name]
+      .filter(Boolean)
+      .forEach((value) => selectedKeys.add(normalizePartKey(value)))
+  })
+
+  document.querySelectorAll("#partsList tbody tr").forEach(row => {
+    const item = getPartDescriptionByKey(row.dataset.partKey)
+    const rowNames = [row.dataset.name, item?.displayName, item?.meshName, item?.partId]
+      .filter(Boolean)
+      .map(formatName)
+    const rowKeys = [row.dataset.partKey, item?._partKey, item?.partId, item?.displayName, item?.meshName]
+      .filter(Boolean)
+      .map(normalizePartKey)
+
+    const matched = rowNames.some((name) => selectedNames.has(name)) || rowKeys.some((key) => selectedKeys.has(key))
+    row.classList.toggle("active", matched)
+
+    if (matched && selectedPart) {
+      row.scrollIntoView({ behavior: "smooth", block: "nearest" })
     }
-  });
+  })
 }
 /* ================= MOUSE TRACKING FOR LABEL ================= */
 let currentMouseX = 0;
@@ -2140,9 +2217,10 @@ window.addEventListener("click", (event) => {
   const sidebar = document.getElementById("ui")
   if (sidebar && sidebar.contains(event.target)) return
 
+  const canvasWidth = Math.max(1, window.innerWidth - SIDEBAR_WIDTH)
   mouse.x =
     ((event.clientX - SIDEBAR_WIDTH) /
-      (window.innerWidth - SIDEBAR_WIDTH)) * 2 - 1
+      canvasWidth) * 2 - 1
 
   mouse.y =
     -(event.clientY / window.innerHeight) * 2 + 1
@@ -2383,19 +2461,21 @@ function updateFloatingLabel() {
 }
 /* ================= RESIZE ================= */
 
-window.addEventListener("resize", () => {
-renderer.setSize(window.innerWidth, window.innerHeight)
-  camera.aspect =
-    (window.innerWidth - SIDEBAR_WIDTH) /
-    window.innerHeight
+function updateRendererLayout() {
+  SIDEBAR_WIDTH = getSidebarWidth()
+  const width = Math.max(1, window.innerWidth - SIDEBAR_WIDTH)
+  const height = Math.max(1, window.innerHeight)
 
+  renderer.domElement.style.left = SIDEBAR_WIDTH + "px"
+  renderer.domElement.style.width = `calc(100vw - ${SIDEBAR_WIDTH}px)`
+  renderer.domElement.style.height = "100vh"
+
+  camera.aspect = width / height
   camera.updateProjectionMatrix()
+  renderer.setSize(width, height)
+}
 
-  renderer.setSize(
-    window.innerWidth - SIDEBAR_WIDTH,
-    window.innerHeight
-  )
-})
+window.addEventListener("resize", updateRendererLayout)
 
 /* ================= LOGOUT ================= */
 
@@ -3131,7 +3211,7 @@ function highlightParts(partNames) {
   if (partNames.length === 0) {
     parts.forEach(p => {
       p.visible = true; // Unhide everything
-      if (p.material && p.material.emissive) p.material.emissive.set(0x000000); // Remove glow
+      clearPartVisualHighlight(p); // Remove glow
     });
     
     hiddenParts = []; // Clear hidden list
@@ -3149,16 +3229,12 @@ function highlightParts(partNames) {
 
   if (partNames.includes(cleanName)) {
   p.visible = true
-
-  if (p.material && p.material.emissive) {
-    p.material.emissive.set(0x646cff)
-    p.material.emissiveIntensity = 0.6
-  }
+  applyPartVisualHighlight(p)
 } else {
       // ❌ NOT IN THE SYSTEM: Hide it completely
       p.visible = false;
       if (!hiddenParts.includes(p.name)) hiddenParts.push(p.name);
-      if (p.material && p.material.emissive) p.material.emissive.set(0x000000);
+      clearPartVisualHighlight(p);
     }
   });
 
@@ -3170,12 +3246,7 @@ clearTimeout(highlightTimeout)
 // 🔥 auto remove highlight after 2 sec
 highlightTimeout = setTimeout(() => {
 
-  parts.forEach(p => {
-    if (p.material && p.material.emissive) {
-      p.material.emissive.set(0x000000)
-      p.material.emissiveIntensity = 0
-    }
-  })
+  parts.forEach(p => clearPartVisualHighlight(p))
 
 }, 1000) // ⏳ 2 seconds
 }
@@ -3222,12 +3293,7 @@ clearTimeout(highlightTimeout)
 // 🔥 auto remove highlight after 2 sec
 highlightTimeout = setTimeout(() => {
 
-  parts.forEach(p => {
-    if (p.material && p.material.emissive) {
-      p.material.emissive.set(0x000000)
-      p.material.emissiveIntensity = 0
-    }
-  })
+  parts.forEach(p => clearPartVisualHighlight(p))
 
 }, 500)
 //search//
