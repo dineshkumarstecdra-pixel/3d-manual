@@ -113,6 +113,8 @@ let selectedProgramGroup = null;
 let latestNewProgramRows = [];
 let latestExistingProgramRows = [];
 let latestNewProgramHeaders = [];
+let savedProgramRevisions = [];
+let loadingSavedRevisions = false;
 
 const VIN_HEADER_ALIASES = [
   "VEHICLE IDENTIFICATION NUMBER", "VIN", "VIN NUMBER", "VIN NO", "CHASSIS NUMBER", "SERIAL NUMBER"
@@ -204,6 +206,10 @@ existingProgramPreview?.addEventListener("click", async (event) => {
   if (!button) return;
   if (button.dataset.existingAction === "save-revision") {
     await saveExistingRevision();
+    return;
+  }
+  if (button.dataset.existingAction === "delete-revision") {
+    await deleteSavedRevision(button.dataset.revisionId || "");
   }
 });
 
@@ -303,6 +309,10 @@ function showProgramPane(mode) {
     panel.classList.toggle("mode-new", showNew);
     panel.classList.toggle("mode-existing", !showNew);
   }
+
+  if (!showNew && !latestExistingProgramRows.length) {
+    loadSavedRevisions();
+  }
 }
 
 function clearProgramUpdateUI() {
@@ -322,8 +332,7 @@ function clearProgramUpdateUI() {
     programPreview.innerHTML = `<h3>No sheet imported yet</h3><p>After reading the sheet, each unique model/series/variant/date range will appear here with an asset upload action.</p>`;
   }
   if (existingProgramPreview) {
-    existingProgramPreview.className = "program-preview empty-preview";
-    existingProgramPreview.innerHTML = `<h3>No update sheet imported yet</h3><p>Preview the matched programs and date ranges before saving a revision record.</p>`;
+    renderSavedRevisions();
   }
 }
 
@@ -956,7 +965,104 @@ function renderExistingProgramGroups() {
         </article>
       `).join("")}
     </div>
+    ${renderSavedRevisionSection()}
   `;
+}
+
+async function loadSavedRevisions() {
+  if (loadingSavedRevisions) return;
+  loadingSavedRevisions = true;
+  try {
+    const response = await fetch(`${API_BASE}/program-revisions?_=${Date.now()}`, {
+      headers: await getAdminHeaders()
+    });
+    const data = await response.json().catch(() => []);
+    if (!response.ok) throw new Error(data.error || "Could not load saved revisions.");
+    savedProgramRevisions = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error(error);
+    showMessage(error.message || "Could not load saved revisions.", "error");
+  } finally {
+    loadingSavedRevisions = false;
+    if (!latestExistingProgramRows.length) renderSavedRevisions();
+  }
+}
+
+function renderSavedRevisions() {
+  if (!existingProgramPreview) return;
+  existingProgramPreview.className = "program-preview existing-preview";
+  existingProgramPreview.innerHTML = renderSavedRevisionSection();
+}
+
+function renderSavedRevisionSection() {
+  if (!savedProgramRevisions.length) {
+    return `
+      <div class="saved-revision-section empty-preview">
+        <h3>No saved revision BOM found</h3>
+        <p>Upload a revision BOM sheet and save the revision record. Saved revisions will appear here with a delete option.</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="saved-revision-section">
+      <div class="revision-toolbar saved-revision-toolbar">
+        <div>
+          <h3>Saved Revision BOM Records</h3>
+          <p>Delete wrong or duplicate revision records from here. After delete, refresh the 3D viewer.</p>
+        </div>
+        <div class="revision-action-summary"><span>${savedProgramRevisions.length} saved</span></div>
+      </div>
+      <div class="revision-list">
+        ${savedProgramRevisions.map((revision) => savedRevisionCard(revision)).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function savedRevisionCard(revision) {
+  const groups = Array.isArray(revision.groups) ? revision.groups : [];
+  const firstGroup = groups[0] || {};
+  return `
+    <article class="revision-card saved-revision-card">
+      <div>
+        <h4>${escapeHtml(revision.id || "Revision")}</h4>
+        <p>${escapeHtml(firstGroup.vehicleName || firstGroup.programId || firstGroup.groupId || "-")} · ${escapeHtml(revision.revisionMode || "auto")}</p>
+      </div>
+      <div class="program-meta-grid">
+        <span><strong>Groups</strong>${escapeHtml(groups.length)}</span>
+        <span><strong>Sheet</strong>${escapeHtml(revision.sheet?.name || revision.sourceUrl || "-")}</span>
+        <span><strong>Status</strong>${escapeHtml(revision.status || "saved")}</span>
+        <span><strong>Created</strong>${escapeHtml(formatDate(revision.createdAt))}</span>
+      </div>
+      <button class="danger-btn revision-delete-btn" data-existing-action="delete-revision" data-revision-id="${escapeAttr(revision.id)}" type="button">Delete Revision</button>
+    </article>
+  `;
+}
+
+async function deleteSavedRevision(revisionId) {
+  if (!revisionId) return;
+  const ok = window.confirm(`Delete revision ${revisionId}? This will remove the saved revision record and its uploaded sheet file.`);
+  if (!ok) return;
+
+  try {
+    setProgress("Deleting revision...", 20);
+    const response = await fetch(`${API_BASE}/program-revisions/${encodeURIComponent(revisionId)}`, {
+      method: "DELETE",
+      headers: await getAdminHeaders()
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Revision delete failed.");
+    savedProgramRevisions = savedProgramRevisions.filter((revision) => revision.id !== revisionId);
+    setProgress("Revision deleted", 100);
+    showMessage("Revision BOM deleted. Refresh the 3D viewer to see base/current parts again.", "success");
+    if (!latestExistingProgramRows.length) renderSavedRevisions();
+    else renderExistingProgramGroups();
+  } catch (error) {
+    console.error(error);
+    setProgress("Failed", 0);
+    showMessage(error.message || "Revision delete failed.", "error");
+  }
 }
 
 function findMatchingVehicle(group) {
@@ -1120,80 +1226,36 @@ async function saveSelectedProgramAssets() {
 function buildMergedProgramRows(group, existingVehicle, importMode) {
   const newRawRows = group.rawRows || group.rows.map(getRawRow);
   const newNormalizedRows = group.normalizedRows || group.rows.map(getNormalizedRow);
-  const newVinNumbers = uniqueTextList(group.vinNumbers || []);
+  const newVinNumbers = Array.from(new Set((group.vinNumbers || []).filter(Boolean)));
 
-  if (!existingVehicle || importMode === "replace") {
-    return {
-      rawRows: newRawRows,
-      normalizedRows: newNormalizedRows,
-      vinNumbers: newVinNumbers
-    };
+  if (!existingVehicle) {
+    return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
   }
 
   const existingRawRows = Array.isArray(existingVehicle.rawRows)
     ? existingVehicle.rawRows
     : (Array.isArray(existingVehicle.sheetRows) ? existingVehicle.sheetRows : []);
   const existingNormalizedRows = Array.isArray(existingVehicle.normalizedRows) ? existingVehicle.normalizedRows : [];
-  const existingVinNumbers = uniqueTextList([
+  const existingVinNumbers = Array.from(new Set([
     ...(Array.isArray(existingVehicle.vinNumbers) ? existingVehicle.vinNumbers : []),
-    existingVehicle.vinNumber,
-    ...extractVinNumbersFromRows(existingRawRows)
-  ]);
-  const existingVinKeySet = new Set(existingVinNumbers.map(normalizeComparisonValue));
+    existingVehicle.vinNumber
+  ].filter(Boolean)));
 
-  // Append mode should not resend existing VIN rows to the backend.
-  // If the same sheet is re-imported to replace/update assets, this avoids the
-  // server receiving VIN001 twice from vinNumbers + rawRows + sheetRows.
-  const appendRawRows = [];
-  const appendNormalizedRows = [];
-  newRawRows.forEach((row, index) => {
-    const vin = extractVinNumberFromRow(row) || newVinNumbers[index] || "";
-    if (vin && existingVinKeySet.has(normalizeComparisonValue(vin))) return;
-    appendRawRows.push(row);
-    appendNormalizedRows.push(newNormalizedRows[index] || {});
-  });
+  const duplicateVins = newVinNumbers.filter((vin) => existingVinNumbers.some((existing) => normalizeComparisonValue(existing) === normalizeComparisonValue(vin)));
+
+  if (importMode === "append" && duplicateVins.length) {
+    throw new Error(`These VINs already exist in this program: ${duplicateVins.slice(0, 10).join(", ")}. Change Import Mode to Replace existing group to update them.`);
+  }
+
+  if (importMode === "replace") {
+    return { rawRows: newRawRows, normalizedRows: newNormalizedRows, vinNumbers: newVinNumbers };
+  }
 
   return {
-    rawRows: [...existingRawRows, ...appendRawRows],
-    normalizedRows: [...existingNormalizedRows, ...appendNormalizedRows],
-    vinNumbers: uniqueTextList([...existingVinNumbers, ...newVinNumbers])
+    rawRows: [...existingRawRows, ...newRawRows],
+    normalizedRows: [...existingNormalizedRows, ...newNormalizedRows],
+    vinNumbers: Array.from(new Set([...existingVinNumbers, ...newVinNumbers]))
   };
-}
-
-function uniqueTextList(values = []) {
-  const seen = new Set();
-  const list = [];
-  (Array.isArray(values) ? values : []).forEach((value) => {
-    const text = String(value || "").trim();
-    if (!text) return;
-    const key = normalizeComparisonValue(text);
-    if (seen.has(key)) return;
-    seen.add(key);
-    list.push(text);
-  });
-  return list;
-}
-
-function extractVinNumbersFromRows(rows = []) {
-  return (Array.isArray(rows) ? rows : [])
-    .map(extractVinNumberFromRow)
-    .filter(Boolean);
-}
-
-function extractVinNumberFromRow(row = {}) {
-  if (!row || typeof row !== "object") return "";
-  for (const [key, value] of Object.entries(row)) {
-    const normalizedKey = normalizeHeader(key);
-    if (GROUP_EXCLUDED_HEADER_KEYS.has(normalizedKey) && String(value || "").trim()) {
-      if ([...VIN_HEADER_ALIASES.map(normalizeHeader)].includes(normalizedKey)) {
-        return String(value || "").trim();
-      }
-    }
-    if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber", "serialnumber"].includes(normalizedKey)) {
-      return String(value || "").trim();
-    }
-  }
-  return "";
 }
 
 function findFirstHeaderName(headers, aliases) {
@@ -1247,6 +1309,7 @@ async function saveExistingRevision() {
     if (!response.ok) throw new Error(data.error || "Revision save failed.");
     setProgress("Revision saved", 100);
     showMessage(`${revisionMode === "delta" ? "Delta" : "Full BOM"} revision saved. The viewer will load the correct BOM automatically for the matching effective/valid date.`, "success");
+    await loadSavedRevisions();
   } catch (error) {
     console.error(error);
     showMessage(error.message || "Revision save failed.", "error");

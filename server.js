@@ -548,6 +548,33 @@ app.post("/api/program-revisions", requireAdmin, upload.single("revisionSheet"),
   }
 });
 
+
+app.delete("/api/program-revisions/:id", requireAdmin, async (req, res) => {
+  try {
+    const revisionId = String(req.params.id || "").trim();
+    if (!revisionId) throw httpError(400, "Revision ID is required.");
+
+    const revisions = await readProgramRevisions();
+    const revision = revisions.find((item) => item.id === revisionId);
+    if (!revision) throw httpError(404, "Revision not found.");
+
+    const next = revisions.filter((item) => item.id !== revisionId);
+    await writeProgramRevisions(next);
+
+    const storedName = revision.sheet?.storedName;
+    if (storedName) {
+      const safeName = path.basename(storedName);
+      const filePath = path.join(PROGRAM_REVISION_UPLOAD_DIR, safeName);
+      await fsp.unlink(filePath).catch(() => {});
+    }
+
+    res.json({ ok: true, id: revisionId });
+  } catch (error) {
+    console.error(error);
+    res.status(error.status || 500).json({ error: error.message || "Program revision delete failed." });
+  }
+});
+
 connectMongo()
   .then(() => {
     app.listen(PORT, () => {
@@ -717,53 +744,21 @@ function getVehicleVinNumbers(vehicle) {
   if (vehicle?.vinNumber) values.push(vehicle.vinNumber);
   if (Array.isArray(vehicle?.vinNumbers)) values.push(...vehicle.vinNumbers);
 
-  // rawRows and sheetRows usually contain the same production sheet rows.
-  // Read only one row source, otherwise VIN001 appears multiple times and
-  // the backend incorrectly rejects a valid upload as duplicate.
-  const rows = Array.isArray(vehicle?.rawRows) && vehicle.rawRows.length
-    ? vehicle.rawRows
-    : (Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : []);
+  const rows = [
+    ...(Array.isArray(vehicle?.rawRows) ? vehicle.rawRows : []),
+    ...(Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : [])
+  ];
 
-  values.push(...getVinNumbersFromRows(rows));
-  return uniqueTextList(values);
-}
-
-function getVinNumbersFromRows(rows = []) {
-  const values = [];
-  (Array.isArray(rows) ? rows : []).forEach((row) => {
+  rows.forEach((row) => {
     Object.entries(row || {}).forEach(([key, value]) => {
       const normalizedKey = normalizeHeaderForVin(key);
-      if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber"].includes(normalizedKey)) {
+      if (["vin", "vinnumber", "vehicleidentificationnumber", "chassisnumber", "serialnumber"].includes(normalizedKey)) {
         if (value) values.push(value);
       }
     });
   });
+
   return values.map((value) => String(value || "").trim()).filter(Boolean);
-}
-
-function uniqueTextList(values = []) {
-  const seen = new Set();
-  const list = [];
-  (Array.isArray(values) ? values : []).forEach((value) => {
-    const text = String(value || "").trim();
-    if (!text) return;
-    const key = normalizeVin(text);
-    if (seen.has(key)) return;
-    seen.add(key);
-    list.push(text);
-  });
-  return list;
-}
-
-function findDuplicateVinRows(rows = []) {
-  const seen = new Set();
-  const duplicates = [];
-  getVinNumbersFromRows(rows).forEach((vin) => {
-    const key = normalizeVin(vin);
-    if (seen.has(key)) duplicates.push(vin);
-    else seen.add(key);
-  });
-  return duplicates;
 }
 
 function normalizeHeaderForVin(value) {
@@ -779,15 +774,20 @@ function normalizeVin(value) {
 }
 
 function assertNoDuplicateVinConflicts(vehicle, vehicles, currentVehicleId) {
-  const rowSource = Array.isArray(vehicle?.rawRows) && vehicle.rawRows.length
-    ? vehicle.rawRows
-    : (Array.isArray(vehicle?.sheetRows) ? vehicle.sheetRows : []);
-  const duplicateRows = findDuplicateVinRows(rowSource);
-  if (duplicateRows.length) {
-    throw httpError(400, `Duplicate VIN in sheet rows: ${duplicateRows.slice(0, 10).join(", ")}`);
+  const vinNumbers = getVehicleVinNumbers(vehicle);
+  const seen = new Set();
+  const duplicatesInRequest = [];
+
+  vinNumbers.forEach((vin) => {
+    const key = normalizeVin(vin);
+    if (seen.has(key)) duplicatesInRequest.push(vin);
+    seen.add(key);
+  });
+
+  if (duplicatesInRequest.length) {
+    throw httpError(400, `Duplicate VIN in uploaded data: ${duplicatesInRequest.slice(0, 10).join(", ")}`);
   }
 
-  const vinNumbers = getVehicleVinNumbers(vehicle);
   const currentId = normalizeVehicleId(currentVehicleId || vehicle.id);
   const conflicts = [];
 

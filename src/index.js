@@ -54,7 +54,7 @@ let revisionBomRows = []
 let appliedRevisionEntries = []
 let partHistoryByKey = new Map()
 let currentBomByKey = new Map()
-let latestRevisionLabel = "Base BOM"
+let latestRevisionLabel = "Base BOM
 
 if (!selectedVehicle) {
   alert("Vehicle missing")
@@ -1066,7 +1066,26 @@ function buildPartHistory(baseRows, entries, activeRows) {
 function addPartHistoryRecord(map, key, record) {
   if (!key) return
   if (!map.has(key)) map.set(key, [])
-  map.get(key).push(record)
+  const signature = historyRecordSignature(record)
+  const list = map.get(key)
+  if (!list.some((item) => historyRecordSignature(item) === signature)) {
+    list.push(record)
+  }
+}
+
+function historyRecordSignature(record = {}) {
+  return [
+    record.revisionId,
+    record.changeType,
+    record.oldPartId,
+    record.newPartId,
+    record.partId,
+    normalizeComparable(record.partName),
+    normalizeDateInput(record.effectiveDate),
+    normalizeDateInput(record.validDate),
+    record.oldQty,
+    record.newQty
+  ].map((value) => String(value || "").trim().toLowerCase()).join("|")
 }
 
 async function loadSheetRows(url, extension = "") {
@@ -1237,20 +1256,39 @@ function applyDeltaBomRows(baseRows, deltaRows) {
   let removed = 0
   let changed = 0
   let ignored = 0
+  const seenChanges = new Set()
 
   ;(Array.isArray(deltaRows) ? deltaRows : []).forEach((row) => {
     const item = normalizeBomRow(row)
-    if (!item.key) {
+    const action = normalizeChangeType(getChangeType(row)) || "change"
+    const oldKey = normalizePartKey(item.oldPartId || getRowValue(row, ["Old Part ID", "Old PartId", "Previous Part ID", "Old ID"]))
+    const newKey = normalizePartKey(item.newPartId || item.partId || item.partName)
+    const targetKey = action === "remove" ? (oldKey || item.key) : (newKey || item.key)
+    const changeSignature = [
+      getRowValue(row, ["Revision ID", "RevisionId", "Revision", "Rev"]),
+      action,
+      oldKey,
+      newKey,
+      normalizePartKey(item.partName),
+      normalizeDateInput(item.effectiveDate),
+      normalizeDateInput(item.validDate)
+    ].join("|")
+
+    if (seenChanges.has(changeSignature)) {
+      ignored += 1
+      return
+    }
+    seenChanges.add(changeSignature)
+
+    if (!targetKey) {
       ignored += 1
       return
     }
 
-    const action = normalizeChangeType(getChangeType(row))
-    const existed = finalMap.has(item.key)
-
     if (action === "remove") {
-      if (existed) {
-        finalMap.delete(item.key)
+      const keyToRemove = oldKey || item.key || findBomKeyByPartName(finalMap, item.partName)
+      if (keyToRemove && finalMap.has(keyToRemove)) {
+        finalMap.delete(keyToRemove)
         removed += 1
       } else {
         ignored += 1
@@ -1258,22 +1296,37 @@ function applyDeltaBomRows(baseRows, deltaRows) {
       return
     }
 
-    if (action === "add") {
-      finalMap.set(item.key, item)
-      added += existed ? 0 : 1
-      changed += existed ? 1 : 0
-      return
-    }
-
     if (action === "change") {
-      finalMap.set(item.key, item)
-      changed += existed ? 1 : 0
-      added += existed ? 0 : 1
+      const keyToRemove = oldKey || findBomKeyByPartName(finalMap, item.partName)
+      if (keyToRemove && keyToRemove !== targetKey && finalMap.has(keyToRemove)) {
+        finalMap.delete(keyToRemove)
+      }
+
+      const existed = finalMap.has(targetKey)
+      const rowForCurrent = {
+        ...row,
+        "Part ID": item.newPartId || item.partId || item.oldPartId || item.partName,
+        "Base Part ID": item.newPartId || item.basePartId || item.partId || item.oldPartId || "",
+        "Service Part No": item.newPartId || item.servicePartNo || item.partId || item.oldPartId || "",
+        "Order Part No": item.orderPartNo || item.newPartId || item.servicePartNo || item.partId || item.oldPartId || ""
+      }
+      const currentItem = { ...normalizeBomRow(rowForCurrent), key: targetKey, row: rowForCurrent }
+      finalMap.set(targetKey, currentItem)
+      changed += existed || keyToRemove ? 1 : 0
+      added += existed || keyToRemove ? 0 : 1
       return
     }
 
-    // No/unknown change type: safe upsert. Existing part is changed; new part is added.
-    finalMap.set(item.key, item)
+    if (action === "add") {
+      const existed = finalMap.has(targetKey)
+      finalMap.set(targetKey, { ...item, key: targetKey })
+      added += existed ? 0 : 1
+      changed += existed ? 1 : 0
+      return
+    }
+
+    const existed = finalMap.has(targetKey)
+    finalMap.set(targetKey, { ...item, key: targetKey })
     changed += existed ? 1 : 0
     added += existed ? 0 : 1
   })
@@ -1285,6 +1338,15 @@ function applyDeltaBomRows(baseRows, deltaRows) {
     changed,
     ignored
   }
+}
+
+function findBomKeyByPartName(map, partName) {
+  const wanted = normalizeComparable(partName)
+  if (!wanted) return ""
+  for (const [key, item] of map.entries()) {
+    if (normalizeComparable(item.partName) === wanted) return key
+  }
+  return ""
 }
 
 function getChangeType(row) {
@@ -1323,7 +1385,11 @@ function normalizeBomRow(row) {
   const partName = getRowValue(row, ["Part Name", "PartName", "partName", "Name", "Part", "Component", "Description"])
   const oldPartId = getRowValue(row, ["Old Part ID", "Old PartId", "Previous Part ID", "Old ID"])
   const newPartId = getRowValue(row, ["New Part ID", "New PartId", "Replacement Part ID"])
-  const partId = getRowValue(row, ["Part ID", "PartId", "partId", "ID", "Item No", "ItemNo"]) || newPartId || oldPartId
+  const rawPartId = getRowValue(row, ["Part ID", "PartId", "partId"])
+  const action = normalizeChangeType(getChangeType(row))
+  const partId = action === "change"
+    ? (newPartId || rawPartId || oldPartId)
+    : (rawPartId || newPartId || oldPartId || getRowValue(row, ["Service Part No", "Service Part Number", "Order Part No", "Order Part Number"]))
   const qty = getRowValue(row, ["Qty", "Quantity", "QTY", "Count", "New Qty", "New Quantity"]) || "1"
   const system = getRowValue(row, ["System", "Category"]) || "Others"
   const subsystem = getRowValue(row, ["Subsystem", "Sub System", "Group"]) || "General"
@@ -1364,8 +1430,6 @@ function normalizeBomRow(row) {
     remark: getRowValue(row, ["Notes", "Remark", "Remarks", "Reason"])
   }
 }
-
-
 
 function normalizePartKey(value) {
   return String(value || "")
@@ -1724,10 +1788,15 @@ function getHistoryForPart(item) {
     .map(normalizePartKey)
     .filter(Boolean)
   const found = []
+  const signatures = new Set()
   keys.forEach((key) => {
     const rows = partHistoryByKey.get(key) || []
     rows.forEach((row) => {
-      if (!found.includes(row)) found.push(row)
+      const signature = historyRecordSignature(row)
+      if (!signatures.has(signature)) {
+        signatures.add(signature)
+        found.push(row)
+      }
     })
   })
   return found
